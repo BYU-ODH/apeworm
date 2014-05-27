@@ -50,46 +50,32 @@ function smoothCurve(y, window_size, order, derive, rate) {
 
 function convolve(m, y) {
 	//var size = Math.abs(m.length - y.length) + 1;
-	var result = new Array();	
-	if(m.length > y.length) {
-		var size = m.length - y.length + 1;	
-		y = flipArray(y);	
-		for(var i = 0; i < size; i++) {
-			if(i != 0) {
-				y[y.length-1] = m.length;			
-			}
-			var newNum = 0;
-			for(var j = 0; j < y.length; j++) {
-				newNum = newNum + y[j]*m[j+i];
-			}
-			result.push(newNum);
-		}
-		return result;	 		
-	}
-	else if(y.length > m.length) {
-		var size = y.length - m.length + 1;
-		m = flipArray(m);
-		for(var i = 0; i < size; i++) {
-			if(i != 0) {
-				m[m.length-1] = y.length;
-			}
-			var newNum = 0;
-			for(var j = 0; j < m.length; j++) {
-				newNum = newNum + m[j]*y[j+i];
-			}
-			result.push(newNum);
-		}
-		return result;
-	}
-	else {
-		m = flipArray(m);
-		var newNum = 0;
-		for(var i = 0; i < y.length; i++) {
-			newNum = newNum + m[i]*y[i];
-		}
-		result.push(newNum);
-		return result;
-	}
+	var result = new Array(),
+      first  = null,
+      second = null;
+
+  if(m.length > y.length) {
+    first  = y;
+    second = m;
+  }
+  else
+  {
+    first  = m;
+    second = y;
+  }
+  var size = second.length - first.length + 1;	
+  first = flipArray(first);	
+  for(var i = 0; i < size; i++) {
+    if(i != 0) {
+      first[first.length-1] = second.length;			
+    }
+    var newNum = 0;
+    for(var j = 0; j < first.length; j++) {
+      newNum = newNum + first[j]*second[j+i];
+    }
+    result.push(newNum);
+  }
+  return result;	 		
 }
 
 function concatenate(firstvals, y, lastvals) {
