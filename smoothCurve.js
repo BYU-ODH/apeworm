@@ -40,7 +40,6 @@ function smoothCurve(y, window_size, order, derive, rate) {
 	var lastvals = yTemp2;
 	
 	y = concatenate(firstvals, y, lastvals);
-	console.log(y);
 	m = flipArray(m);
 	var result = new Array();
 	result = convolve(m,y);
