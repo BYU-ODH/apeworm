@@ -66,9 +66,6 @@ function convolve(m, y) {
   var size = second.length - first.length + 1;	
   first = flipArray(first);	
   for(var i = 0; i < size; i++) {
-    if(i != 0) {
-      first[first.length-1] = second.length;			
-    }
     var newNum = 0;
     for(var j = 0; j < first.length; j++) {
       newNum = newNum + first[j]*second[j+i];
