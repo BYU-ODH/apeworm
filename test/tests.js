@@ -18,6 +18,6 @@ test( "smooth method", function() {
   var result = smoothCurve(vowel, WINDOW_SIZE, ORDER, DERIVATIVE, 0);
   var uint8result = smoothCurve(new Uint8Array(vowel), WINDOW_SIZE, ORDER, DERIVATIVE, 0);
 
-  deepEqual(result, desired.map(Math.round), "Smoothing matches expected.");
-  deepEqual(uint8result, desired.map(Math.round), "Smoothing works with unsigned array.");
+  deepEqual(result.map(Math.round), desired.map(Math.round), "Smoothing matches expected.");
+  deepEqual(uint8result.map(Math.round), desired.map(Math.round), "Smoothing works with unsigned array.");
 });

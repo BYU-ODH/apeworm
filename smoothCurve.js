@@ -23,8 +23,8 @@ function smoothCurve(y, window_size, order, derive, rate) {
 	var m = temp[0];
 	//if you take a look at firstvals in the python code, and then at this code you'll see that I've only broken firstvals down into different parts such as first taking a sub array, flipping it, and so on
 	var yTemp = new Array();
-	yTemp = y.slice(1, half_window+1);
-	yTemp.reverse();
+	yTemp = y.subarray ? y.subarray(1, half_window+1) :  y.slice(1, half_window+1);
+	yTemp = flipArray(yTemp);
 	yTemp = subtractFromArray(yTemp, y[0]);
 	yTemp = arrayAbs(yTemp);
 	yTemp = negArrayAddValue(yTemp, y[0]);
@@ -32,15 +32,15 @@ function smoothCurve(y, window_size, order, derive, rate) {
 	
 	//Same thing was done for lastvals
 	var yTemp2 = new Array();
-	yTemp2 = y.slice(-half_window -1, -1);
-	yTemp2.reverse();
+	yTemp2 = y.subarray ? y.subarray(-half_window -1, -1) : y.slice(-half_window -1, -1);
+	yTemp2 = flipArray(yTemp2);
 	yTemp2 = subtractFromArray(yTemp2, y[y.length-1]);
 	yTemp2 = arrayAbs(yTemp2);
 	yTemp2 = addToArray(yTemp2, y[y.length-1]);
 	var lastvals = yTemp2;
 	
-	y = firstvals.concat(y, lastvals);
-	m.reverse();
+	y = concatenate(firstvals, y, lastvals);
+	m = flipArray(m);
 	var result = new Array();
 	result = convolve(m,y);
 	return result;
@@ -63,7 +63,7 @@ function convolve(m, y) {
     second = y;
   }
   var size = second.length - first.length + 1;	
-  first.reverse();	
+  first = flipArray(first);
   for(var i = 0; i < size; i++) {
     var newNum = 0;
     for(var j = 0; j < first.length; j++) {
@@ -117,4 +117,24 @@ function addToArray(y, value) {
 	return y;
 }
 
+function concatenate(firstvals, y, lastvals) {
+ var p = new Array();
+ for(var i = 0; i < firstvals.length; i++) {
+   p.push(firstvals[i]);
+ }
+ for(var i = 0; i < y.length; i++) {
+   p.push(y[i]); 
+ }
+ for(var i = 0; i < lastvals.length; i++) {
+   p.push(lastvals[i]);
+ }
+ return p;
+}
 
+function flipArray(y) {
+ var p = new Array();
+ for(var i = y.length-1; i > -1; i--) {
+   p.push(y[i]); 
+ }
+ return p;
+}
