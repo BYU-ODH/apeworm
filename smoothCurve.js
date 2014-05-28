@@ -74,21 +74,6 @@ function convolve(m, y) {
   return result;	 		
 }
 
-function subArrayNegPos(y, leftBoundary, rightBoundary) {
-	var p = new Array();
-	//var i = -1;
-	var rightTemp = -1 - rightBoundary; 
-	var rightBound = y.length - 1 - rightTemp;
-	
-	var leftTemp = -1 -leftBoundary;
-	var leftBound = y.length - 1 - leftTemp;
-
-	for(var i = leftBound; i < rightBound; i++) {
-		p.push(y[i]);
-	}  
-	return p;
-}
-
 function arrayAbs(y) {
 	for(var i = 0; i < y.length; i++) {
 		y[i] = Math.abs(y[i]);
