@@ -66,11 +66,12 @@ function convolve(m, y) {
     second = y;
   }
   var size = second.length - first.length + 1;	
-  first = flipArray(first);
   for(var i = 0; i < size; i++) {
-    var newNum = 0;
+    var newNum = 0,
+        len = first.length;
+
     for(var j = 0; j < first.length; j++) {
-      newNum = newNum + first[j]*second[j+i];
+      newNum = newNum + first[len-1-j]*second[j+i];
     }
     result.push(newNum);
   }
