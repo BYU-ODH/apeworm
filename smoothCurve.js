@@ -1,3 +1,6 @@
+/*!
+ * Adapted from http://wiki.scipy.org/Cookbook/SavitzkyGolay
+ */
 //returns an array that if plotted gives you a smooth curve version of an parameter array
 //uses numeric javascript
 "use strict";
