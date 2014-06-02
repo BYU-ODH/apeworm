@@ -26,7 +26,7 @@ function peaksFinder(smoothedArray) {
 			nextNum = smoothedArray[i+1];
 		}
 		
-		 if(currentNum >= previousNum && currentNum <= nextNum)
+		 if(currentNum > previousNum && currentNum > nextNum)
 			peakPositions.push(i);
 	}
 	return peakPositions;
