@@ -9,17 +9,12 @@
             .apply(navigator, arguments);
     }
 
-    function barkScale( f ) { // Traunmuller conversion
-        var result = 26.81/(1+(1960/f)) - 0.53;
-        //var result = ( (26.81 * f) / (1960 + f) ) - 0.53;
-        /*if(result < 2) {
-            result += 0.15*(2-result);
-        }
-        else if(result > 20.1) {
-            result += 0.22 * (result - 20.1);
-        }*/
-        return result;
-    }
+		function barkScale( formant ) { // Traunmuller conversion
+			if(formant == 0) {
+				formant = 1;
+			}
+			return 26.81/(1+(1960/formant)) - 0.53;
+		}
 
     function success( stream ) {
 	
@@ -51,8 +46,9 @@
 				var peaks = peaksFinder(final); 
 				var formants = frequencyFinder(peaks, context.sampleRate, analyser.fftSize);
             // @TODO: need Cory's input
-        var f1 = barkScale(formants[1]) - barkScale(formants[3]);
-        var f2 = barkScale(formants[2]) - barkScale(formants[3]); 
+            // we believe that the first peak is not the fundamental frequency, but the first formant
+        var f1 = barkScale(formants[2]) - barkScale(formants[0]);
+        var f2 = barkScale(formants[2]) - barkScale(formants[1]); 
 		    
 				makeWorm(f1, f2, stage, renderer, width, height);
             // restart
