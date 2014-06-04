@@ -20,12 +20,16 @@
 	
         var streamSource = context.createMediaStreamSource(stream);
         streamSource.connect(analyser);
+        var maxDesiredHz = 5500;
        
-       var data = new Uint8Array(analyser.frequencyBinCount);
+        var binCount =  Math.ceil(maxDesiredHz/(context.sampleRate/analyser.fftSize));
+
+        if(binCount > analyser.frequencyBinCount) {
+          binCount = analyser.frequencyBinCount;
+        }
+       
+        var data = new Uint8Array(binCount);
       
-        /**
-        @todo: polyfill
-        **/
 				var width = 500;
 				var height = 400;
 
@@ -33,7 +37,10 @@
 				var renderer = PIXI.autoDetectRenderer(width+40, height+40);
 			
 				makeGraph(stage, renderer, width, height);
-		
+
+        /**
+        @todo: polyfill
+        **/
         requestAnimationFrame(function analyze() {   //This is an event, called every time the frame has animated
 			
         analyser.getByteFrequencyData(data);
@@ -42,8 +49,8 @@
 				var ORDER = 1;
 				var DERIVATIVE = 0;
 				var first = smoothCurve(data, WINDOW_SIZE, ORDER, DERIVATIVE, 0);  
-        var final = smoothCurve(first, WINDOW_SIZE, ORDER, DERIVATIVE, 0);
-				var peaks = peaksFinder(final); 
+        //var final = smoothCurve(first, WINDOW_SIZE, ORDER, DERIVATIVE, 0);
+				var peaks = peaksFinder(first); 
 				var formants = frequencyFinder(peaks, context.sampleRate, analyser.fftSize);
             // @TODO: need Cory's input
             // we believe that the first peak is not the fundamental frequency, but the first formant
