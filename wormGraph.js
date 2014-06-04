@@ -49,7 +49,7 @@ function makeGraph(stage, renderer, width, height) {
 
 function makeWorm(x, y, stage, renderer, width, height) {
 	//deletes previous worm
-	stage.removeChild(graphics);	
+	//stage.removeChild(graphics);	
 	var xDist = width/8;
 	xDist = xDist.toFixed(2);
 	var yDist = height/8;

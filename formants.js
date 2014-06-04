@@ -41,11 +41,18 @@
 		
         requestAnimationFrame(function analyze() {   //This is an event, called every time the frame has animated
 			
-        analyser.getByteFrequencyData(data);  
-         
+        analyser.getByteFrequencyData(data);
+			
+				var WINDOW_SIZE = 55;
+				var ORDER = 1;
+				var DERIVATIVE = 0;
+				var first = smoothCurve(data, WINDOW_SIZE, ORDER, DERIVATIVE, 0);  
+        var final = smoothCurve(first, WINDOW_SIZE, ORDER, DERIVATIVE, 0);
+				var peaks = peaksFinder(final); 
+				var formants = frequencyFinder(peaks, context.sampleRate, analyser.fftSize);
             // @TODO: need Cory's input
-        var f1 = barkScale(formants[0]) - barkScale(formants[2]);
-        var f2 = barkScale(formants[1]) - barkScale(formants[2]); 
+        var f1 = barkScale(formants[1]) - barkScale(formants[3]);
+        var f2 = barkScale(formants[2]) - barkScale(formants[3]); 
 		    
 				makeWorm(f1, f2, stage, renderer, width, height);
             // restart

@@ -11,7 +11,7 @@ function frequencyFinder(peakPositions, sampleRate, fftSize) {
 		var frequency = peakPositions[i]*(sampleRate/fftSize);
 		//keeps only two decimals
 		frequency = frequency.toFixed(2);
-		frequencyAtPeaks.push(frequency);
+		frequenciesAtPeaks.push(frequency);
 	} 
 	return frequenciesAtPeaks;
 }
