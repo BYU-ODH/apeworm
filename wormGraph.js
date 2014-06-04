@@ -1,17 +1,17 @@
+var xStart = 0;
+var xEnd = 24;
+var yStart = 0;
+var yEnd = 24;
+
 function makeGraph(stage, renderer, width, height) {
 	//var stage = new PIXI.Stage(0xFFFFFF, true);
 	//var renderer = new PIXI.autoDetectRenderer(width+40, height+40);
 	document.body.appendChild(renderer.view);
-	
+
 	var xDist = width/8;
 	xDist = xDist.toFixed(2);
 	var yDist = height/8;
 	yDist = yDist.toFixed(2);
-
-	var xStart = 1;
-	var xEnd = 9;
-	var yStart = 6;
-	var yEnd = 14;
 
 	var graphics = new PIXI.Graphics();
 	graphics.lineStyle(1,0x000000,1);
@@ -54,18 +54,12 @@ var makeWorm = (function(){
 		if(graphics) {
 			stage.removeChild(graphics);
 		}
-		var xDist = width/8;
-		xDist = xDist.toFixed(2);
-		var yDist = height/8;
-		yDist = yDist.toFixed(2);
 
-		var xStart = 1;
-		var xEnd = 9;
-		var yStart = 6;
-		var yEnd = 14;				
-		
-		var adjustedX = (x-xStart)*xDist+20;
-		var adjustedY = height+40 - ((y-yStart)*yDist+20);
+		var xDist = width/(xEnd-xStart);
+		var yDist = height/(yEnd-yStart);
+
+		var adjustedX = x*xDist;
+		var adjustedY = height-y*yDist;
 		graphics = new PIXI.Graphics();
 		graphics.beginFill(0x99000,1);
 		graphics.drawCircle(adjustedX,adjustedY ,width/20);
