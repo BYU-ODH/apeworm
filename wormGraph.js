@@ -47,24 +47,29 @@ function makeGraph(stage, renderer, width, height) {
 	renderer.render(stage);
 }
 
-function makeWorm(x, y, stage, renderer, width, height) {
-	//deletes previous worm
-	//stage.removeChild(graphics);	
-	var xDist = width/8;
-	xDist = xDist.toFixed(2);
-	var yDist = height/8;
-	yDist = yDist.toFixed(2);
+var makeWorm = (function(){
+	var graphics = null;
+	return function make(x, y, stage, renderer, width, height) {
+		//deletes previous worm
+		if(graphics) {
+			stage.removeChild(graphics);
+		}
+		var xDist = width/8;
+		xDist = xDist.toFixed(2);
+		var yDist = height/8;
+		yDist = yDist.toFixed(2);
 
-	var xStart = 1;
-	var xEnd = 9;
-	var yStart = 6;
-	var yEnd = 14;				
-	
-	var adjustedX = (x-xStart)*xDist+20;
-	var adjustedY = height+40 - ((y-yStart)*yDist+20);
-	var graphics = new PIXI.Graphics();
-	graphics.beginFill(0x99000,1);
-	graphics.drawCircle(adjustedX,adjustedY ,width/20);
-	stage.addChild(graphics);
-	renderer.render(stage);
-}
+		var xStart = 1;
+		var xEnd = 9;
+		var yStart = 6;
+		var yEnd = 14;				
+		
+		var adjustedX = (x-xStart)*xDist+20;
+		var adjustedY = height+40 - ((y-yStart)*yDist+20);
+		graphics = new PIXI.Graphics();
+		graphics.beginFill(0x99000,1);
+		graphics.drawCircle(adjustedX,adjustedY ,width/20);
+		stage.addChild(graphics);
+		renderer.render(stage);
+	}
+})();
