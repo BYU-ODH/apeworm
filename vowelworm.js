@@ -66,10 +66,14 @@ VowelWorm.getPeaks = function getPeaks(smoothedArray) {
 	return peakPositions;
 };
 
-/*!
- * Adapted from http://wiki.scipy.org/Cookbook/SavitzkyGolay
+/**
+ * @license Savitsky-Golay filter (VowelWorm.smoothCurve)
+ * adapted from http://wiki.scipy.org/Cookbook/SavitzkyGolay
+ */
+/**
  * Applies the Savitsky-Golay filter to the given array
  * uses numeric javascript
+ * Adapted from http://wiki.scipy.org/Cookbook/SavitzkyGolay
  * @param {Array.<number>} y The values to smooth
  * @param {number} window_size The window size
  * @param {number} order the 
