@@ -76,7 +76,7 @@ VowelWorm.getPeaks = function getPeaks(smoothedArray) {
  * @return {Array.<number>} if plotted gives you a smooth curve version of an parameter array
  * @nosideeffects
  */
-VowelWorm.smooth = function smooth(y, window_size, order) {
+VowelWorm.smoothCurve = function smoothCurve(y, window_size, order) {
 	//probably we don't need to parseInt anything or take the absolute value if we always make sure that our windown size and order are positive.  "golay.py" gave a window size of 55 and said that anything higuer will make a flatter graph
   //window size must be positive and an odd number for this to work better
 	var windowSize = Math.abs(parseInt(window_size));
