@@ -1,12 +1,13 @@
 window.VowelWorm = window.VowelWorm || {};
 
-(function(VowelWorm){
+(function(VowelWorm, numeric){
 "use strict";
 
 /**
  * Contains methods used in the analysis of vowel audio data
  * @param {?AudioContext} context The audio context to analyze
  * @constructor
+ * @struct
  * @final
  */
 VowelWorm.instance = function VowelWorm(context) {};
@@ -98,7 +99,7 @@ VowelWorm.smoothCurve = function smoothCurve(y, window_size, order) {
 		b.push(row);	
 	}
 	//This line needs to be changed if you use something other than 0 for derivative
-	var temp = numeric.pinv(b);
+	var temp = pinv(b);
 	var m = temp[0];
 	//if you take a look at firstvals in the python code, and then at this code you'll see that I've only broken firstvals down into different parts such as first taking a sub array, flipping it, and so on
 	var yTemp = new Array();
@@ -236,4 +237,21 @@ function flipArray(y) {
  return p;
 };
 
-}(window.VowelWorm));
+/**
+ * @license Psuedo-inverse function from http://www.numericjs.com/workshop.php?link=aacea378e9958c51af91f9eadd5bc7446e0c4616fc7161b384e5ca6d4ec036c7
+ */
+/**
+ * Finds the pseudo-inverse of the given array
+ * @param {Array.<number>} A The array to apply the psuedo-inverse to
+ * @return {Array.<number>} The psuedo-inverse applied to the array
+ */
+function pinv(A) {
+  var z = numeric.svd(A), foo = z.S[0];
+  var U = z.U, S = z.S, V = z.V;
+  var m = A.length, n = A[0].length, tol = Math.max(m,n)*numeric.epsilon*foo,M = S.length;
+  var i,Sinv = new Array(M);
+  for(i=M-1;i!==-1;i--) { if(S[i]>tol) Sinv[i] = 1/S[i]; else Sinv[i] = 0; }
+  return numeric.dot(numeric.dot(V,numeric.diag(Sinv)),numeric.transpose(U))
+};
+
+}(window.VowelWorm, window.numeric));
