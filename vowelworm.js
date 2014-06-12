@@ -5,12 +5,37 @@ window.VowelWorm = window.VowelWorm || {};
 
 /**
  * Contains methods used in the analysis of vowel audio data
- * @param {?AudioContext} context The audio context to analyze
+ * @param {MediaStream|string} stream The audio stream to analyze OR a string representing the URL for an audio file
  * @constructor
  * @struct
  * @final
  */
-VowelWorm.instance = function VowelWorm(context) {};
+VowelWorm.instance = function VowelWorm(stream) {
+  /**
+   * @license Borrows heavily from Chris Wilson's pitch detector, under the MIT
+   * license. See https://github.com/cwilso/pitchdetect
+   */
+  var context    = new AudioContext(),
+      analyzer   = null,
+      buffer     = null,
+      sourceNode = null;
+
+  if(typeof stream === "string") {
+    loadFromURL(url);
+  };
+  
+  function loadFromURL(url) {
+    var request = new XMLHttpRequest();
+    request.open("GET", url, true);
+    request.responseType = "arraybuffer";
+    request.onload = function() {
+      audioContext.decodeAudioData( request.response, function(b) { 
+          buffer = b;
+      } );
+    }
+    request.send();
+  };
+};
 
 /**
  * Contains methods for normalizing Hz values
@@ -252,6 +277,27 @@ function pinv(A) {
   var i,Sinv = new Array(M);
   for(i=M-1;i!==-1;i--) { if(S[i]>tol) Sinv[i] = 1/S[i]; else Sinv[i] = 0; }
   return numeric.dot(numeric.dot(V,numeric.diag(Sinv)),numeric.transpose(U))
+};
+
+/**
+ * Gets the frequencies at the given indices
+ * @param {Array.<number>} the positions of the peaks
+ * @param {number} sampleRate
+ * @param {number} fftSize
+ * @return {Array.<number>} the frequencies at the peaks
+ * @nosideeffects
+ */
+function frequencyFinder(peakPositions, sampleRate, fftSize) {
+	var frequenciesAtPeaks = new Array();
+	for(var i = 0; i < peakPositions.length; i++) {
+		//equation to find frequency.  Found online		
+		//http://stackoverflow.com/questions/14789283/what-does-the-fft-data-in-the-web-audio-api-correspond-to	
+		var frequency = peakPositions[i]*(sampleRate/fftSize);
+		//keeps only two decimals [TODO: why?]
+		frequency = frequency.toFixed(2);
+		frequenciesAtPeaks.push(frequency);
+	} 
+	return frequenciesAtPeaks;
 };
 
 }(window.VowelWorm, window.numeric));
