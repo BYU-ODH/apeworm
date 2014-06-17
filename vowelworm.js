@@ -268,7 +268,7 @@ function frequencyFinder(peakPositions, sampleRate, fftSize) {
 
 /**
  * Contains methods used in the analysis of vowel audio data
- * @param {?MediaStream|string} stream The audio stream to analyze OR a string representing the URL for an audio file
+ * @param {MediaStream|string=} stream The audio stream to analyze OR a string representing the URL for an audio file
  * @constructor
  * @struct
  * @final
@@ -344,6 +344,21 @@ instance.getFormantsAtTime = function getFormantsAtTime(seconds) {
                     " seconds. Time cannot be negative.");
   }
 };
+
+Object.defineProperties(instance, {
+  duration: {
+    /**
+     * Retrieves the duration of the audio file, if present
+     * @return {number|null} The duration. If no audio file present, then null
+     */
+    get: function() {
+      if(!this._sourceNode) {
+        return null;
+      }
+      return this._sourceNode.buffer.duration;
+    }
+  }
+});
 
 /**
  * @param {string} url Where to fetch the audio data from
