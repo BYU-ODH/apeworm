@@ -4,40 +4,6 @@ window.VowelWorm = window.VowelWorm || {};
 "use strict";
 
 /**
- * Contains methods used in the analysis of vowel audio data
- * @param {MediaStream|string} stream The audio stream to analyze OR a string representing the URL for an audio file
- * @constructor
- * @struct
- * @final
- */
-VowelWorm.instance = function VowelWorm(stream) {
-  /**
-   * @license Borrows heavily from Chris Wilson's pitch detector, under the MIT
-   * license. See https://github.com/cwilso/pitchdetect
-   */
-  var context    = new AudioContext(),
-      analyzer   = null,
-      buffer     = null,
-      sourceNode = null;
-
-  if(typeof stream === "string") {
-    loadFromURL(url);
-  };
-  
-  function loadFromURL(url) {
-    var request = new XMLHttpRequest();
-    request.open("GET", url, true);
-    request.responseType = "arraybuffer";
-    request.onload = function() {
-      audioContext.decodeAudioData( request.response, function(b) { 
-          buffer = b;
-      } );
-    }
-    request.send();
-  };
-};
-
-/**
  * Contains methods for normalizing Hz values
  * @const
  */
@@ -298,6 +264,95 @@ function frequencyFinder(peakPositions, sampleRate, fftSize) {
 		frequenciesAtPeaks.push(frequency);
 	} 
 	return frequenciesAtPeaks;
+};
+
+/**
+ * Contains methods used in the analysis of vowel audio data
+ * @param {?MediaStream|string} stream The audio stream to analyze OR a string representing the URL for an audio file
+ * @constructor
+ * @struct
+ * @final
+ */
+VowelWorm.instance = function VowelWorm(stream) {
+  /**
+   * @license Borrows heavily from Chris Wilson's pitch detector, under the MIT
+   * license. See https://github.com/cwilso/pitchdetect
+   */
+  this._context    = new AudioContext();
+  this._analyzer   = this._context.createAnalyser();
+  this._sourceNode = null; // for analysis with audio streams
+  this._analyzer.fftSize = 2048;
+  var that  = this;
+
+
+  (function initialize() {
+    if(stream) {
+      that.setStream(stream);
+    }
+  })();
+};
+
+VowelWorm.instance.prototype = Object.create(VowelWorm);
+VowelWorm.instance.constructor = VowelWorm.instance;
+
+var instance = VowelWorm.instance.prototype;
+
+/**
+ * @param {MediaStream|string} stream The audio stream to analyze OR a string representing the URL for an audio file
+ * @throws An error if stream is neither a Mediastream or a string
+ */
+instance.setStream = function setStream(stream) {
+  if(typeof stream === 'string') {
+    this._loadFromURL(stream);
+  }
+  else if(typeof stream === 'object' && stream['constructor']['name'] === 'MediaStream')
+  {
+    this._loadFromStream(stream);
+  }
+  else
+  {
+    throw new Error("VowelWorm.instance.setStream only accepts URL strings "+
+                     "and instances of MediaStream (as from getUserMedia)");
+  }
+};
+
+/**
+ * @param {string} url Where to fetch the audio data from
+ * @throws An error when the server returns an error status code
+ * @throws An error when the audio file cannot be decoded
+ */
+instance._loadFromURL = function loadFromURL(url) {
+  var that = this,
+      request = new XMLHttpRequest();
+
+  request.open("GET", url, true);
+  request.responseType = "arraybuffer";
+  request.onerror = function error() {
+    throw new Error("Tried to load audio file at '" + url + "', but a " +
+                     "netowrk error occurred: " + request.statusText);
+  };
+  request.onload = function() {
+    if(request.status !== 200) {
+      throw new Error("Tried to load audio file at '" + url + "', but the " +
+                       "server returned " + request.status + " " +
+                       request.statusText + ". Make sure the URL you are " +
+                       "passing to setStream or VowelWorm.instance is " +
+                       "correct");
+    }
+    that._context.decodeAudioData( request.response, function success(buffer) {
+      var sourceNode = that._context.createBufferSource();
+      sourceNode.buffer = buffer;
+      sourceNode.connect(analyzer);
+      // TODO - enable playback through speakers, looping, etc.
+      //sourceNode.
+    }, function error() {
+      throw new Error("Could not parse audio data. Make sure the file " +
+                       "(" + url + ") you are passing to " +
+                       "setStream or VowelWorm.instance is a valid audio " +
+                       "file.");
+    });
+  }
+  request.send();
 };
 
 }(window.VowelWorm, window.numeric));
