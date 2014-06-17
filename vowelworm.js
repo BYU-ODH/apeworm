@@ -303,7 +303,7 @@ var instance = VowelWorm.instance.prototype;
  */
 instance.setStream = function setStream(stream) {
   if(typeof stream === 'string') {
-    this._loadFromURL(stream);
+    loadFromURL(this, stream);
   }
   else if(typeof stream === 'object' && stream['constructor']['name'] === 'MediaStream')
   {
@@ -317,20 +317,65 @@ instance.setStream = function setStream(stream) {
 };
 
 /**
+ * Retrieves formants at the given time for a loaded audio file
+ * @param {number} The time, in seconds, to retrieve formants from
+ * @throws An error if no sound file is loaded
+ * @throws An error if seconds is less than zero
+ * @throws An error if seconds is not a valid number representation
+ * @throws An error if seconds is greater than the audio duration
+ * @return {Array.<number>} The formants found at the given time
+ */
+instance.getFormantsAtTime = function getFormantsAtTime(seconds) {
+  if(this._sourceNode === null) {
+    throw new Error("No audio file found to pull formants from. If you are " +
+                    "using a stream, use getFormants() instead. If you are " +
+                    "trying to use an audio file, set the URL via " +
+                    "setStream(url)");
+  }
+  seconds = window.parseFloat(seconds);
+  var duration = this._sourceNode.buffer.duration;
+
+  if(seconds > duration) {
+    throw new Error("Cannot retrieve formants at " + seconds + " seconds. " +
+                     "Audio is only " + duration + " seconds long.");
+  }
+  if(seconds < 0) {
+    throw new Error("Cannot get formants from the audio at " + seconds +
+                    " seconds. Time cannot be negative.");
+  }
+};
+
+/**
  * @param {string} url Where to fetch the audio data from
  * @throws An error when the server returns an error status code
  * @throws An error when the audio file cannot be decoded
  */
-instance._loadFromURL = function loadFromURL(url) {
-  var that = this,
+function loadFromURL(instance, url) {
+  var that = instance,
       request = new XMLHttpRequest();
 
   request.open("GET", url, true);
   request.responseType = "arraybuffer";
+
   request.onerror = function error() {
     throw new Error("Tried to load audio file at '" + url + "', but a " +
                      "netowrk error occurred: " + request.statusText);
   };
+  
+  function decodeSuccess(buffer) {
+    that._sourceNode = that._context.createBufferSource();
+    that._sourceNode.buffer = buffer;
+    that._sourceNode.connect(that._analyzer);
+    // TODO - enable playback through speakers, looping, etc.
+  };
+
+  function decodeError() {
+    throw new Error("Could not parse audio data. Make sure the file " +
+                     "(" + url + ") you are passing to " +
+                     "setStream or VowelWorm.instance is a valid audio " +
+                     "file.");
+  };
+
   request.onload = function() {
     if(request.status !== 200) {
       throw new Error("Tried to load audio file at '" + url + "', but the " +
@@ -339,19 +384,9 @@ instance._loadFromURL = function loadFromURL(url) {
                        "passing to setStream or VowelWorm.instance is " +
                        "correct");
     }
-    that._context.decodeAudioData( request.response, function success(buffer) {
-      var sourceNode = that._context.createBufferSource();
-      sourceNode.buffer = buffer;
-      sourceNode.connect(analyzer);
-      // TODO - enable playback through speakers, looping, etc.
-      //sourceNode.
-    }, function error() {
-      throw new Error("Could not parse audio data. Make sure the file " +
-                       "(" + url + ") you are passing to " +
-                       "setStream or VowelWorm.instance is a valid audio " +
-                       "file.");
-    });
-  }
+    that._context.decodeAudioData(this.response, decodeSuccess, decodeError);
+  };
+
   request.send();
 };
 
