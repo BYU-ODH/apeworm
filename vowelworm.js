@@ -69,8 +69,8 @@ VowelWorm.getPeaks = function getPeaks(smoothedArray) {
  * uses numeric javascript
  * Adapted from http://wiki.scipy.org/Cookbook/SavitzkyGolay
  * @param {Array.<number>} y The values to smooth
- * @param {number} window_size The window size
- * @param {number} order the 
+ * @param {number=} window_size The window size. If null, uses this.window_size
+ * @param {number=} order the...? If null, uses this.order TODO
  * @return {Array.<number>} if plotted gives you a smooth curve version of an parameter array
  * @nosideeffects
  */
@@ -285,6 +285,10 @@ VowelWorm.instance = function VowelWorm(stream) {
   this._sourceNode = null; // for analysis with files rather than mic input
   this._analyzer.fftSize = 2048;
   this._buffer = new Uint8Array(this._analyzer.fftSize);
+  this._audioBuffer = null; // comes from downloading an audio file
+
+  this.windowSize = 55; // used in the Savitsky-Golay filter
+  this.order = 0; // also used in the Savitsky-Golay filter
 
   var that  = this;
 
@@ -330,12 +334,14 @@ proto.setStream = function setStream(stream) {
  * @return {Array.<number>} The formants found at the given time
  */
 proto.getFormantsAtTime = function getFormantsAtTime(seconds) {
-  if(this._sourceNode === null) {
+  if(this._audioBuffer === null) {
     throw new Error("No audio file found to pull formants from. If you are " +
                     "using a stream, use getFormants() instead. If you are " +
                     "trying to use an audio file, set the URL via " +
                     "setStream(url)");
   }
+  this._resetSourceNode();
+
   seconds = window.parseFloat(seconds);
   var duration = this._sourceNode.buffer.duration;
 
@@ -362,8 +368,9 @@ proto.getFormants = function getFormants() {
   this._analyzer.getByteFrequencyData(this._buffer);
 
   // smooth it twice
-  var smoothed = this.smoothCurve(this.smoothCurve(this._buffer));
-  return this.getPeaks(smoothed);
+  var first = this.smoothCurve(this._buffer, this.windowSize, this.order);
+  var second = this.smoothCurve(first, this.windowSize, this.order);
+  return this.getPeaks(second);
 };
 
 Object.defineProperties(proto, {
@@ -399,9 +406,8 @@ function loadFromURL(instance, url) {
   };
   
   function decodeSuccess(buffer) {
-    that._sourceNode = that._context.createBufferSource();
-    that._sourceNode.buffer = buffer;
-    that._sourceNode.connect(that._analyzer);
+    that._audioBuffer = buffer;
+    that._resetSourceNode();
     // TODO - enable playback through speakers, looping, etc.
   };
 
@@ -424,6 +430,16 @@ function loadFromURL(instance, url) {
   };
 
   request.send();
+};
+
+/**
+ * Creates (or resets) a source node, as long as an available audioBuffer
+ * exists
+ */
+proto._resetSourceNode = function resetSourceNode() {
+    this._sourceNode = this._context.createBufferSource();
+    this._sourceNode.buffer = this._audioBuffer;
+    this._sourceNode.connect(this._analyzer);
 };
 
 }(window.VowelWorm, window.numeric));
