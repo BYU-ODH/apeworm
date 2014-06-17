@@ -1,3 +1,5 @@
+// TODO: change x.getFormants() to x.formants ?
+
 window.VowelWorm = window.VowelWorm || {};
 
 (function(VowelWorm, numeric){
@@ -280,8 +282,10 @@ VowelWorm.instance = function VowelWorm(stream) {
    */
   this._context    = new AudioContext();
   this._analyzer   = this._context.createAnalyser();
-  this._sourceNode = null; // for analysis with audio streams
+  this._sourceNode = null; // for analysis with files rather than mic input
   this._analyzer.fftSize = 2048;
+  this._buffer = new Uint8Array(this._analyzer.fftSize);
+
   var that  = this;
 
 
@@ -295,13 +299,13 @@ VowelWorm.instance = function VowelWorm(stream) {
 VowelWorm.instance.prototype = Object.create(VowelWorm);
 VowelWorm.instance.constructor = VowelWorm.instance;
 
-var instance = VowelWorm.instance.prototype;
+var proto = VowelWorm.instance.prototype;
 
 /**
  * @param {MediaStream|string} stream The audio stream to analyze OR a string representing the URL for an audio file
  * @throws An error if stream is neither a Mediastream or a string
  */
-instance.setStream = function setStream(stream) {
+proto.setStream = function setStream(stream) {
   if(typeof stream === 'string') {
     loadFromURL(this, stream);
   }
@@ -325,7 +329,7 @@ instance.setStream = function setStream(stream) {
  * @throws An error if seconds is greater than the audio duration
  * @return {Array.<number>} The formants found at the given time
  */
-instance.getFormantsAtTime = function getFormantsAtTime(seconds) {
+proto.getFormantsAtTime = function getFormantsAtTime(seconds) {
   if(this._sourceNode === null) {
     throw new Error("No audio file found to pull formants from. If you are " +
                     "using a stream, use getFormants() instead. If you are " +
@@ -343,9 +347,26 @@ instance.getFormantsAtTime = function getFormantsAtTime(seconds) {
     throw new Error("Cannot get formants from the audio at " + seconds +
                     " seconds. Time cannot be negative.");
   }
+  this._sourceNode.start(seconds);
+  return this.getFormants();
 };
 
-Object.defineProperties(instance, {
+/**
+ * Retrieves formants. Uses the current time of the audio file or stream.
+ * @see getFormantsAtTime If you want to retrieve formants for an audio file
+ * at a specific time
+ * @return {Array.<number>} The formants found for the audio stream/file
+ * @nosideeffects
+ */
+proto.getFormants = function getFormants() {
+  this._analyzer.getByteFrequencyData(this._buffer);
+
+  // smooth it twice
+  var smoothed = this.smoothCurve(this.smoothCurve(this._buffer));
+  return this.getPeaks(smoothed);
+};
+
+Object.defineProperties(proto, {
   duration: {
     /**
      * Retrieves the duration of the audio file, if present
