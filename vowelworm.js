@@ -150,7 +150,7 @@ VowelWorm.convolve = function convolve(m, y) {
     }
     result.push(newNum);
   }
-  return result;	 		
+  return result;
 };
 
 /*******************
@@ -248,27 +248,6 @@ function pinv(A) {
 };
 
 /**
- * Gets the frequencies at the given indices
- * @param {Array.<number>} the positions of the peaks
- * @param {number} sampleRate
- * @param {number} fftSize
- * @return {Array.<number>} the frequencies at the peaks
- * @nosideeffects
- */
-function frequencyFinder(peakPositions, sampleRate, fftSize) {
-	var frequenciesAtPeaks = new Array();
-	for(var i = 0; i < peakPositions.length; i++) {
-		//equation to find frequency.  Found online		
-		//http://stackoverflow.com/questions/14789283/what-does-the-fft-data-in-the-web-audio-api-correspond-to	
-		var frequency = peakPositions[i]*(sampleRate/fftSize);
-		//keeps only two decimals [TODO: why?]
-		frequency = frequency.toFixed(2);
-		frequenciesAtPeaks.push(frequency);
-	} 
-	return frequenciesAtPeaks;
-};
-
-/**
  * Contains methods used in the analysis of vowel audio data
  * @param {MediaStream|string=} stream The audio stream to analyze OR a string representing the URL for an audio file
  * @constructor
@@ -325,6 +304,29 @@ proto.setStream = function setStream(stream) {
 };
 
 /**
+ * Gets the frequency at the given index
+ * @param {number} the positions of the index
+ * @return {number} the frequencies at the peaks
+ * @nosideeffects
+ */
+/**
+ * @license Help from kr1 at http://stackoverflow.com/questions/14789283/what-does-the-fft-data-in-the-web-audio-api-correspond-to 
+ */
+proto.frequencyAt = function frequencyAt(position) {
+  var sampleRate = null;
+  if(this._sourceNode) {
+    sampleRate = this._sourceNode.buffer.sampleRate;
+  }
+  else
+  {
+    // TODO
+    throw new Error("Not implemented yet.");
+  }
+  return position*(sampleRate/this._analyzer.fftSize);
+};
+
+
+/**
  * Retrieves formants at the given time for a loaded audio file
  * @param {number} The time, in seconds, to retrieve formants from
  * @throws An error if no sound file is loaded
@@ -370,7 +372,7 @@ proto.getFormants = function getFormants() {
   // smooth it twice
   var first = this.smoothCurve(this._buffer, this.windowSize, this.order);
   var second = this.smoothCurve(first, this.windowSize, this.order);
-  return this.getPeaks(second);
+  return this.getPeaks(second).map(this.frequencyAt, this);
 };
 
 Object.defineProperties(proto, {
