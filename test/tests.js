@@ -59,15 +59,33 @@ test( "no peaks", function() {
 });
 
 
-var LEEWAY = 300; // amount to forgive, in Hz
 module( "vs. Wavesurfer's LPC" );
 
+function promiseError(e) {
+  if(e && e.stack) {
+    ok(false, e.stack);
+  }
+  else
+  {
+    okay(false, e);
+  }
+  start();
+};
+
+function testFileFormants(filepath, expected) {
+  var LEEWAY = 300; // amount to forgive, in Hz
+  var worm = new VowelWorm.instance(filepath);
+  expect(3);
+  stop();
+  worm.wait.then(function(){
+    worm.setTime(worm.duration/2);
+    var formants = worm.getFormants();
+    close(formants[0], expected[0], LEEWAY, "F1 doesn't match");
+    close(formants[1], expected[1], LEEWAY, "F2 doesn't match");
+    close(formants[2], expected[2], LEEWAY, "F3 doesn't match");
+  }).then(start, promiseError);
+}
+
 test( "ae", function() {
-  var worm = new VowelWorm.instance( "audio/ae.wav" );
-  var expected = [764, 1763, 3326];
-  worm.setTime(worm.duration/2);
-  var formants = worm.getFormants();
-  close(formants[0], expected[0], LEEWAY, "F1 doesn't match");
-  close(formants[1], expected[1], LEEWAY, "F2 doesn't match");
-  close(formants[2], expected[2], LEEWAY, "F3 doesn't match");
+  testFileFormants( "audio/ae.wav", [764, 1763, 3326] );
 });

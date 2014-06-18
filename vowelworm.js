@@ -69,8 +69,8 @@ VowelWorm.getPeaks = function getPeaks(smoothedArray) {
  * uses numeric javascript
  * Adapted from http://wiki.scipy.org/Cookbook/SavitzkyGolay
  * @param {Array.<number>} y The values to smooth
- * @param {number=} window_size The window size. If null, uses this.window_size
- * @param {number=} order the...? If null, uses this.order TODO
+ * @param {number} window_size The window size.
+ * @param {number} order The...? TODO
  * @return {Array.<number>} if plotted gives you a smooth curve version of an parameter array
  * @nosideeffects
  */
@@ -249,7 +249,7 @@ function pinv(A) {
 
 /**
  * Contains methods used in the analysis of vowel audio data
- * @param {MediaStream|string=} stream The audio stream to analyze OR a string representing the URL for an audio file
+ * @param {MediaStream=|string=} stream The audio stream to analyze OR a string representing the URL for an audio file
  * @constructor
  * @struct
  * @final
@@ -271,12 +271,16 @@ VowelWorm.instance = function VowelWorm(stream) {
 
   var that  = this;
 
-
-  (function initialize() {
+  this.wait = new Promise(function(resolve, reject) {
     if(stream) {
-      that.setStream(stream);
+      that.setStream(stream).then(resolve);
     }
-  })();
+    else
+    {
+      resolve();
+    }
+  });
+
 };
 
 VowelWorm.instance.prototype = Object.create(VowelWorm);
@@ -287,20 +291,27 @@ var proto = VowelWorm.instance.prototype;
 /**
  * @param {MediaStream|string} stream The audio stream to analyze OR a string representing the URL for an audio file
  * @throws An error if stream is neither a Mediastream or a string
+ * @return {Promise} resolved when the stream has been loaded
  */
 proto.setStream = function setStream(stream) {
-  if(typeof stream === 'string') {
-    loadFromURL(this, stream);
-  }
-  else if(typeof stream === 'object' && stream['constructor']['name'] === 'MediaStream')
-  {
-    this._loadFromStream(stream);
-  }
-  else
-  {
-    throw new Error("VowelWorm.instance.setStream only accepts URL strings "+
-                     "and instances of MediaStream (as from getUserMedia)");
-  }
+  var that = this;
+  return new Promise(function(resolve, reject) {
+
+    if(typeof stream === 'string') {
+      that._loadFromURL(stream).then(resolve);
+    }
+    else if(typeof stream === 'object' && stream['constructor']['name'] === 'MediaStream')
+    {
+      that._loadFromStream(stream);
+      resolve();
+    }
+    else
+    {
+      throw new Error("VowelWorm.instance.setStream only accepts URL strings "+
+                       "and instances of MediaStream (as from getUserMedia)");
+    }
+
+  });
 };
 
 /**
@@ -343,8 +354,8 @@ proto.setTime = function setTime(seconds) {
                     "setStream(url) and wait for the Promise to resolve.");
   }
 
-  parsed_seconds = window.parseFloat(seconds);
-  var duration = this._sourceNode.buffer.duration;
+  var parsed_seconds = window.parseFloat(seconds),
+      duration = this._sourceNode.buffer.duration;
 
   if(parsed_seconds === NaN) {
     throw new Error("Invalid time code: " + seconds);
@@ -396,44 +407,49 @@ Object.defineProperties(proto, {
  * @param {string} url Where to fetch the audio data from
  * @throws An error when the server returns an error status code
  * @throws An error when the audio file cannot be decoded
+ * @return {Promise} resolved when everything has loaded
  */
-function loadFromURL(instance, url) {
-  var that = instance,
+proto._loadFromURL = function loadFromURL(url) {
+  var that = this,
       request = new XMLHttpRequest();
 
-  request.open("GET", url, true);
-  request.responseType = "arraybuffer";
+  var promise = new Promise(function(resolve, reject) {
+    request.open("GET", url, true);
+    request.responseType = "arraybuffer";
 
-  request.onerror = function error() {
-    throw new Error("Tried to load audio file at '" + url + "', but a " +
-                     "netowrk error occurred: " + request.statusText);
-  };
-  
-  function decodeSuccess(buffer) {
-    that._audioBuffer = buffer;
-    that._resetSourceNode();
-    // TODO - enable playback through speakers, looping, etc.
-  };
+    request.onerror = function error() {
+      throw new Error("Tried to load audio file at '" + url + "', but a " +
+                       "netowrk error occurred: " + request.statusText);
+    };
+    
+    function decodeSuccess(buffer) {
+      that._audioBuffer = buffer;
+      that._resetSourceNode();
+      resolve();
+      // TODO - enable playback through speakers, looping, etc.
+    };
 
-  function decodeError() {
-    throw new Error("Could not parse audio data. Make sure the file " +
-                     "(" + url + ") you are passing to " +
-                     "setStream or VowelWorm.instance is a valid audio " +
-                     "file.");
-  };
+    function decodeError() {
+      throw new Error("Could not parse audio data. Make sure the file " +
+                       "(" + url + ") you are passing to " +
+                       "setStream or VowelWorm.instance is a valid audio " +
+                       "file.");
+    };
 
-  request.onload = function() {
-    if(request.status !== 200) {
-      throw new Error("Tried to load audio file at '" + url + "', but the " +
-                       "server returned " + request.status + " " +
-                       request.statusText + ". Make sure the URL you are " +
-                       "passing to setStream or VowelWorm.instance is " +
-                       "correct");
-    }
-    that._context.decodeAudioData(this.response, decodeSuccess, decodeError);
-  };
+    request.onload = function() {
+      if(request.status !== 200) {
+        throw new Error("Tried to load audio file at '" + url + "', but the " +
+                         "server returned " + request.status + " " +
+                         request.statusText + ". Make sure the URL you are " +
+                         "passing to setStream or VowelWorm.instance is " +
+                         "correct");
+      }
+      that._context.decodeAudioData(this.response, decodeSuccess, decodeError);
+    };
 
-  request.send();
+    request.send();
+  });
+  return promise;
 };
 
 /**
