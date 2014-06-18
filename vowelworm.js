@@ -327,36 +327,38 @@ proto.frequencyAt = function frequencyAt(position) {
 
 
 /**
- * Retrieves formants at the given time for a loaded audio file
- * @param {number} The time, in seconds, to retrieve formants from
+ * Sets the time of the currently loaded audio file, if it exists
+ * @param {number} The time, in seconds, to set the audio file to
  * @throws An error if no sound file is loaded
  * @throws An error if seconds is less than zero
  * @throws An error if seconds is not a valid number representation
  * @throws An error if seconds is greater than the audio duration
- * @return {Array.<number>} The formants found at the given time
+ * @return {Promise} Resolved when the source node has updated
  */
-proto.getFormantsAtTime = function getFormantsAtTime(seconds) {
+proto.setTime = function setTime(seconds) {
   if(this._audioBuffer === null) {
-    throw new Error("No audio file found to pull formants from. If you are " +
-                    "using a stream, use getFormants() instead. If you are " +
+    throw new Error("No audio file found to set the time for. If you are " +
+                    "using a stream, you cannot update the time. If you are " +
                     "trying to use an audio file, set the URL via " +
-                    "setStream(url)");
+                    "setStream(url) and wait for the Promise to resolve.");
   }
-  this._resetSourceNode();
 
-  seconds = window.parseFloat(seconds);
+  parsed_seconds = window.parseFloat(seconds);
   var duration = this._sourceNode.buffer.duration;
 
-  if(seconds > duration) {
+  if(parsed_seconds === NaN) {
+    throw new Error("Invalid time code: " + seconds);
+  }
+  if(parsed_seconds > duration) {
     throw new Error("Cannot retrieve formants at " + seconds + " seconds. " +
                      "Audio is only " + duration + " seconds long.");
   }
-  if(seconds < 0) {
+  if(parsed_seconds < 0) {
     throw new Error("Cannot get formants from the audio at " + seconds +
                     " seconds. Time cannot be negative.");
   }
-  this._sourceNode.start(seconds);
-  return this.getFormants();
+  this._resetSourceNode();
+  this._sourceNode.start(parsed_seconds);
 };
 
 /**
