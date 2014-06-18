@@ -344,7 +344,7 @@ proto.frequencyAt = function frequencyAt(position) {
  * @throws An error if seconds is less than zero
  * @throws An error if seconds is not a valid number representation
  * @throws An error if seconds is greater than the audio duration
- * @return {Promise} Resolved when the source node has updated
+ * @return {Promise} Resolved when the audio is at the required time
  */
 proto.setTime = function setTime(seconds) {
   if(this._audioBuffer === null) {
@@ -369,7 +369,23 @@ proto.setTime = function setTime(seconds) {
                     " seconds. Time cannot be negative.");
   }
   this._resetSourceNode();
-  this._sourceNode.start(parsed_seconds);
+
+  var that = this;
+
+  return new Promise(function(resolve, reject) {
+    // i.e., we want to issue playback of the audio at the given time, but we
+    // don't actually want to continue playing at that point, otherwise our
+    // data will get off track from what we expect in our tests
+    var START_IMMEDIATELY = 0;
+    var AT_TIME = parsed_seconds;
+    var AND_DO_NOT_ADVANCE = 0;
+
+    that._sourceNode.start(START_IMMEDIATELY, AT_TIME, AND_DO_NOT_ADVANCE);
+    that._sourceNode.onended = function() {
+      that._sourceNode.stop();
+      resolve();
+    };
+  });
 };
 
 /**

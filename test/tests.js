@@ -78,11 +78,13 @@ function testFileFormants(filepath, expected) {
   expect(3);
   stop();
   worm.wait.then(function(){
-    worm.setTime(worm.duration/2);
-    var formants = worm.getFormants();
-    close(formants[0], expected[0], LEEWAY, "F1 doesn't match");
-    close(formants[1], expected[1], LEEWAY, "F2 doesn't match");
-    close(formants[2], expected[2], LEEWAY, "F3 doesn't match");
+    worm.setTime(worm.duration/2).then(function(){
+      var b = new Uint8Array(2048);
+      var formants = worm.getFormants();
+      equal(formants[0], expected[0], LEEWAY, "F1 matches");
+      equal(formants[1], expected[1], LEEWAY, "F2 matches");
+      equal(formants[2], expected[2], LEEWAY, "F3 matches");
+    }, promiseError);
   }).then(start, promiseError);
 }
 
