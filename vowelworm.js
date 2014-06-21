@@ -271,15 +271,9 @@ VowelWorm.instance = function VowelWorm(stream) {
 
   var that  = this;
 
-  this.wait = new Promise(function(resolve, reject) {
-    if(stream) {
-      that.setStream(stream).then(resolve);
-    }
-    else
-    {
-      resolve();
-    }
-  });
+  if(stream) {
+    that.setStream(stream);
+  }
 
 };
 
@@ -310,98 +304,60 @@ proto.setStream = function setStream(stream) {
       throw new Error("VowelWorm.instance.setStream only accepts URL strings "+
                        "and instances of MediaStream (as from getUserMedia)");
     }
-
   });
 };
 
 /**
  * Gets the frequency at the given index
- * @param {number} the positions of the index
- * @return {number} the frequencies at the peaks
+ * @param {number} index the position of the data to get the frequency of
+ * @param {number} sampleRate the sample rate of the data
+ * @param {number} fftSize the FFT size
+ * @return {number} the frequency at the given index
  * @nosideeffects
  */
 /**
  * @license Help from kr1 at http://stackoverflow.com/questions/14789283/what-does-the-fft-data-in-the-web-audio-api-correspond-to 
  */
-proto.frequencyAt = function frequencyAt(position) {
-  var sampleRate = null;
-  if(this._sourceNode) {
-    sampleRate = this._sourceNode.buffer.sampleRate;
-  }
-  else
-  {
-    // TODO
-    throw new Error("Not implemented yet.");
-  }
-  return position*(sampleRate/this._analyzer.fftSize);
-};
-
-
-/**
- * Sets the time of the currently loaded audio file, if it exists
- * @param {number} The time, in seconds, to set the audio file to
- * @throws An error if no sound file is loaded
- * @throws An error if seconds is less than zero
- * @throws An error if seconds is not a valid number representation
- * @throws An error if seconds is greater than the audio duration
- * @return {Promise} Resolved when the audio is at the required time
- */
-proto.setTime = function setTime(seconds) {
-  if(this._audioBuffer === null) {
-    throw new Error("No audio file found to set the time for. If you are " +
-                    "using a stream, you cannot update the time. If you are " +
-                    "trying to use an audio file, set the URL via " +
-                    "setStream(url) and wait for the Promise to resolve.");
-  }
-
-  var parsed_seconds = window.parseFloat(seconds),
-      duration = this._sourceNode.buffer.duration;
-
-  if(parsed_seconds === NaN) {
-    throw new Error("Invalid time code: " + seconds);
-  }
-  if(parsed_seconds > duration) {
-    throw new Error("Cannot retrieve formants at " + seconds + " seconds. " +
-                     "Audio is only " + duration + " seconds long.");
-  }
-  if(parsed_seconds < 0) {
-    throw new Error("Cannot get formants from the audio at " + seconds +
-                    " seconds. Time cannot be negative.");
-  }
-  this._resetSourceNode();
-
-  var that = this;
-
-  return new Promise(function(resolve, reject) {
-    // i.e., we want to issue playback of the audio at the given time, but we
-    // don't actually want to continue playing at that point, otherwise our
-    // data will get off track from what we expect in our tests
-    var START_IMMEDIATELY = 0;
-    var AT_TIME = parsed_seconds;
-    var AND_DO_NOT_ADVANCE = 0;
-
-    that._sourceNode.start(START_IMMEDIATELY, AT_TIME, AND_DO_NOT_ADVANCE);
-    that._sourceNode.onended = function() {
-      that._sourceNode.stop();
-      resolve();
-    };
-  });
+proto.toFrequency = function toFrequency(position, sampleRate, fftSize) {
+  return position*(sampleRate/fftSize);
 };
 
 /**
- * Retrieves formants. Uses the current time of the audio file or stream.
- * @see getFormantsAtTime If you want to retrieve formants for an audio file
- * at a specific time
+ * Retrieves formants. Uses the current time of the audio file or stream,
+ * unless data is passed in.
+ * @param {Array.<number>=} data FFT transformation data. If null, pulls from the analyzer
+ * @param {number=} sampleRate the sample rate of the data. Required if data is not null
  * @return {Array.<number>} The formants found for the audio stream/file
  * @nosideeffects
  */
-proto.getFormants = function getFormants() {
+proto.getFormants = function getFormants(data, sampleRate) {
   this._analyzer.getByteFrequencyData(this._buffer);
+
+  if(arguments.length !== 2 && arguments.length !== 0) {
+    throw new Error("Invalid arguments. Function must be called either as "+
+                    " getFormants(data, sampleRate) or getFormants()");
+  }
+
+  var fftSize = data ? data.length*2 : this._analyzer.fftSize;
+
+  if(!sampleRate) {
+    if(this._sourceNode) {
+      sampleRate = this._sourceNode.buffer.sampleRate;
+    }
+    else
+    {
+      // TODO
+      throw new Error("Not implemented yet.");
+    }
+  }
 
   // smooth it twice
   var first = this.smoothCurve(this._buffer, this.windowSize, this.order);
   var second = this.smoothCurve(first, this.windowSize, this.order);
-  return this.getPeaks(second).map(this.frequencyAt, this);
+  
+  return this.getPeaks(second).map(function(peakIndex){
+    this.toFrequency(index, sampleRate, fftSize);
+  });
 };
 
 Object.defineProperties(proto, {
@@ -429,43 +385,39 @@ proto._loadFromURL = function loadFromURL(url) {
   var that = this,
       request = new XMLHttpRequest();
 
-  var promise = new Promise(function(resolve, reject) {
-    request.open("GET", url, true);
-    request.responseType = "arraybuffer";
+  request.open("GET", url, true);
+  request.responseType = "arraybuffer";
 
-    request.onerror = function error() {
-      throw new Error("Tried to load audio file at '" + url + "', but a " +
-                       "netowrk error occurred: " + request.statusText);
-    };
-    
-    function decodeSuccess(buffer) {
-      that._audioBuffer = buffer;
-      that._resetSourceNode();
-      resolve();
-      // TODO - enable playback through speakers, looping, etc.
-    };
+  request.onerror = function error() {
+    throw new Error("Tried to load audio file at '" + url + "', but a " +
+                     "netowrk error occurred: " + request.statusText);
+  };
+  
+  function decodeSuccess(buffer) {
+    that._audioBuffer = buffer;
+    that._resetSourceNode();
+    // TODO - enable playback through speakers, looping, etc.
+  };
 
-    function decodeError() {
-      throw new Error("Could not parse audio data. Make sure the file " +
-                       "(" + url + ") you are passing to " +
-                       "setStream or VowelWorm.instance is a valid audio " +
-                       "file.");
-    };
+  function decodeError() {
+    throw new Error("Could not parse audio data. Make sure the file " +
+                     "(" + url + ") you are passing to " +
+                     "setStream or VowelWorm.instance is a valid audio " +
+                     "file.");
+  };
 
-    request.onload = function() {
-      if(request.status !== 200) {
-        throw new Error("Tried to load audio file at '" + url + "', but the " +
-                         "server returned " + request.status + " " +
-                         request.statusText + ". Make sure the URL you are " +
-                         "passing to setStream or VowelWorm.instance is " +
-                         "correct");
-      }
-      that._context.decodeAudioData(this.response, decodeSuccess, decodeError);
-    };
+  request.onload = function() {
+    if(request.status !== 200) {
+      throw new Error("Tried to load audio file at '" + url + "', but the " +
+                       "server returned " + request.status + " " +
+                       request.statusText + ". Make sure the URL you are " +
+                       "passing to setStream or VowelWorm.instance is " +
+                       "correct");
+    }
+    that._context.decodeAudioData(this.response, decodeSuccess, decodeError);
+  };
 
-    request.send();
-  });
-  return promise;
+  request.send();
 };
 
 /**
