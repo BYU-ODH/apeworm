@@ -65,9 +65,9 @@ function testGetFormants(sampleRate, data, expected) {
   var LEEWAY = 300; // amount to forgive, in Hz
   var worm = new VowelWorm.instance();
   var formants = worm.getFormants(data, sampleRate);
-  equal(formants[0], expected[0], LEEWAY, "F1 matches");
-  equal(formants[1], expected[1], LEEWAY, "F2 matches");
-  equal(formants[2], expected[2], LEEWAY, "F3 matches");
+  close(formants[0], expected[0], LEEWAY, "F1 matches");
+  close(formants[1], expected[1], LEEWAY, "F2 matches");
+  close(formants[2], expected[2], LEEWAY, "F3 matches");
 }
 
 test( "ae", function() {
