@@ -339,6 +339,7 @@ proto.getFormants = function getFormants(data, sampleRate) {
   }
 
   var fftSize = data ? data.length*2 : this._analyzer.fftSize;
+  var data = data || this._buffer;
 
   if(!sampleRate) {
     if(this._sourceNode) {
@@ -352,12 +353,12 @@ proto.getFormants = function getFormants(data, sampleRate) {
   }
 
   // smooth it twice
-  var first = this.smoothCurve(this._buffer, this.windowSize, this.order);
+  var first = this.smoothCurve(data, this.windowSize, this.order);
   var second = this.smoothCurve(first, this.windowSize, this.order);
   
   return this.getPeaks(second).map(function(peakIndex){
-    this.toFrequency(index, sampleRate, fftSize);
-  });
+    return this.toFrequency(peakIndex, sampleRate, fftSize);
+  }, this);
 };
 
 Object.defineProperties(proto, {
