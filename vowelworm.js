@@ -12,8 +12,8 @@ window.VowelWorm = window.VowelWorm || {};
  * These indicate the minimum values in Hz in which we should find our formants
  */
 var F1_MIN = 100,
-    F2_MIN = 700,
-    F3_MIN = 2200;
+    F2_MIN = 730,
+    F3_MIN = 1700;
 
 /**
  * Represent the minimum differences between formants, to ensure they are
@@ -21,8 +21,8 @@ var F1_MIN = 100,
  *
  * TODO
  */
-var MIN_DIFF_F1_F2 = 100,
-    MIN_DIFF_F2_F3 = 0;
+var MIN_DIFF_F1_F2 = 150,
+    MIN_DIFF_F2_F3 = 400;
 
 /**
  * Contains methods for normalizing Hz values
