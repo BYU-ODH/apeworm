@@ -6,6 +6,25 @@ window.VowelWorm = window.VowelWorm || {};
 "use strict";
 
 /**
+ * From both Wikipedia (http://en.wikipedia.org/wiki/Formant; retrieved 23 Jun.
+ * 2014, 2:52 PM UTC) and Cory Robinson's chart (personal email)
+ *
+ * These indicate the minimum values in Hz in which we should find our formants
+ */
+var F1_MIN = 100,
+    F2_MIN = 700,
+    F3_MIN = 2200;
+
+/**
+ * Represent the minimum differences between formants, to ensure they are
+ * properly spaced
+ *
+ * TODO
+ */
+var MIN_DIFF_F1_F2 = 100,
+    MIN_DIFF_F2_F3 = 0;
+
+/**
  * Contains methods for normalizing Hz values
  * @const
  */
@@ -22,42 +41,6 @@ VowelWorm.Normalization = {
     }
     return 26.81/(1+(1960/formant)) - 0.53;
   }
-};
-
-/**
- * Finds the peaks of the curve
- * Use this file only after you have passed your array through the smoothCurve function twice
- * @param {Array.<number>} smoothedArray data, expected to have been smoothed, to extract peaks from
- * @return {Array.<number>} the positions of all the peaks found
- * @nosideeffects
- */
-VowelWorm.getPeaks = function getPeaks(smoothedArray) {
-	var peakPositions = new Array();
-	var previousNum;
-	var currentNum;
-	var nextNum;
-
-	for(var i = 0; i < smoothedArray.length; i++) {
-		if(i == 0) {
-			previousNum = 0;
-			currentNum = smoothedArray[i];
-			nextNum = smoothedArray[i+1];
-		}
-		else if(i == smoothedArray.length - 1) {
-			previousNum = smoothedArray[i-1];
-			currentNum = smoothedArray[i];
-			nextNum = 0;
-		}
-		else {
-			previousNum = smoothedArray[i-1];
-			currentNum = smoothedArray[i];
-			nextNum = smoothedArray[i+1];
-		}
-		
-		 if(currentNum > previousNum && currentNum > nextNum)
-			peakPositions.push(i);
-	}
-	return peakPositions;
 };
 
 /**
@@ -152,6 +135,22 @@ VowelWorm.convolve = function convolve(m, y) {
   }
   return result;
 };
+
+/**
+ * Gets the frequency at the given index
+ * @param {number} index the position of the data to get the frequency of
+ * @param {number} sampleRate the sample rate of the data
+ * @param {number} fftSize the FFT size
+ * @return {number} the frequency at the given index
+ * @nosideeffects
+ */
+/**
+ * @license Help from kr1 at http://stackoverflow.com/questions/14789283/what-does-the-fft-data-in-the-web-audio-api-correspond-to 
+ */
+VowelWorm._toFrequency = function toFrequency(position, sampleRate, fftSize) {
+  return position*(sampleRate/fftSize);
+};
+
 
 /*******************
  * HELPER FUNCTIONS
@@ -308,18 +307,53 @@ proto.setStream = function setStream(stream) {
 };
 
 /**
- * Gets the frequency at the given index
- * @param {number} index the position of the data to get the frequency of
+ * Finds the first three peaks of the curve, representative of the first three formants
+ * Use this file only after you have passed your array through the smoothCurve function twice
+ * @param {Array.<number>} smoothedArray data, expected to have been smoothed, to extract peaks from
  * @param {number} sampleRate the sample rate of the data
  * @param {number} fftSize the FFT size
- * @return {number} the frequency at the given index
+ * @return {Array.<number>} the positions of all the peaks found, in Hz
  * @nosideeffects
  */
-/**
- * @license Help from kr1 at http://stackoverflow.com/questions/14789283/what-does-the-fft-data-in-the-web-audio-api-correspond-to 
- */
-proto.toFrequency = function toFrequency(position, sampleRate, fftSize) {
-  return position*(sampleRate/fftSize);
+proto._getPeaks = function getPeaks(smoothedArray, sampleRate, fftSize) {
+	var peaks = new Array();
+	var previousNum;
+	var currentNum;
+	var nextNum;
+
+	for(var i = 0; i < smoothedArray.length; i++) {
+    var hz = this._toFrequency(i, sampleRate, fftSize);
+    var formant = peaks.length+1;
+
+    switch(formant) {
+      case 1:
+        if(hz < F1_MIN) { continue; }
+        break;
+      case 2:
+        if(hz < F2_MIN || hz - peaks[0] < MIN_DIFF_F1_F2) { continue; }
+        break;
+      case 3:
+        if(hz < F3_MIN || hz - peaks[1] < MIN_DIFF_F2_F3) { continue; }
+        break;
+      default:
+        return;
+    }
+
+    previousNum = smoothedArray[i-1] || 0;
+    currentNum = smoothedArray[i] || 0;
+    nextNum = smoothedArray[i+1] || 0;
+		
+    if(currentNum > previousNum && currentNum > nextNum) {
+      /**
+       * @license Help from kr1 at http://stackoverflow.com/questions/14789283/what-does-the-fft-data-in-the-web-audio-api-correspond-to 
+       */
+      peaks.push(hz);
+      if(formant === 3) {
+        return peaks;
+      }
+    }
+	}
+	return peaks;
 };
 
 /**
@@ -356,9 +390,7 @@ proto.getFormants = function getFormants(data, sampleRate) {
   var first = this.smoothCurve(data, this.windowSize, this.order);
   var second = this.smoothCurve(first, this.windowSize, this.order);
   
-  return this.getPeaks(second).map(function(peakIndex){
-    return this.toFrequency(peakIndex, sampleRate, fftSize);
-  }, this);
+  return this._getPeaks(second, sampleRate, fftSize);
 };
 
 Object.defineProperties(proto, {

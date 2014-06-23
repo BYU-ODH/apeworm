@@ -24,45 +24,20 @@ test( "smooth method", function() {
   deepEqual(uint8result.map(Math.round), desired.map(Math.round), "Smoothing works with unsigned array.");
 });
 
+module( "frequency finding" );
+test( "_toFrequency", function() {
+  equal(VowelWorm._toFrequency(0, 16000, 2048), 0);
+  equal(VowelWorm._toFrequency(512, 16000, 2048), 4000);
+  equal(VowelWorm._toFrequency(1024, 16000, 2048), 8000);
+  equal(VowelWorm._toFrequency(2048, 16000, 2048), 16000);
+});
+
 /*************************/
-
-module( "peak finding" );
-
-test( "simple array", function() {
-  var data = [0,10,0,0,10,0],
-      expected = [1,4];
-  deepEqual(VowelWorm.getPeaks(data), expected);
-});
-
-test( "typed array", function() {
-  var data = new Uint8Array([0,10,0,0,10,0]),
-      expected = [1,4];
-  deepEqual(VowelWorm.getPeaks(data), expected);
-});
-
-test( "starts high", function() {
-  var data = [255,0,0,0,0],
-      expected = [0];
-  deepEqual(VowelWorm.getPeaks(data), expected);
-});
-
-test( "ends high", function() {
-  var data = [0,0,255],
-      expected = [2];
-  deepEqual(VowelWorm.getPeaks(data), expected);
-});
-
-test( "no peaks", function() {
-  var data = [0,0,0,0,0],
-      expected = [];
-  deepEqual(VowelWorm.getPeaks(data), expected);
-});
-
 
 module( "vs. Wavesurfer's LPC" );
 
 function testGetFormants(data, sampleRate, expected) {
-  var LEEWAY = 300; // amount to forgive, in Hz
+  var LEEWAY = 150; // amount to forgive, in Hz
   var worm = new VowelWorm.instance();
   var formants = worm.getFormants(data, sampleRate);
   close(formants[0], expected[0], LEEWAY, "F1");
