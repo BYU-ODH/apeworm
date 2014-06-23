@@ -24,6 +24,29 @@ test( "smooth method", function() {
   deepEqual(uint8result.map(Math.round), desired.map(Math.round), "Smoothing works with unsigned array.");
 });
 
+module( "peak height determination" );
+test( "left peak", function() {
+  equal(VowelWorm._peakHeight(0, [10,0,0]), 10);
+});
+test( "right peak", function() {
+  equal(VowelWorm._peakHeight(2, [0,0,10]), 10);
+});
+test( "middle peak", function() {
+  equal(VowelWorm._peakHeight(1, [0,10,0]), 10);
+});
+test( "unequal sides", function() {
+  equal(VowelWorm._peakHeight(1, [5,10,3]), 5);
+});
+test( "not a peak", function() {
+  equal(VowelWorm._peakHeight(1, [20,10,20]), 0);
+});
+test( "long right decline", function() {
+  equal(VowelWorm._peakHeight(1, [0,50,40,30,20,10,0]), 50);
+});
+test( "long left decline", function() {
+  equal(VowelWorm._peakHeight(5, [0,10,20,30,40,50,0]), 50);
+});
+
 module( "frequency finding" );
 test( "_toFrequency", function() {
   equal(VowelWorm._toFrequency(0, 16000, 2048), 0);

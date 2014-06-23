@@ -10,6 +10,8 @@ window.VowelWorm = window.VowelWorm || {};
  * 2014, 2:52 PM UTC) and Cory Robinson's chart (personal email)
  *
  * These indicate the minimum values in Hz in which we should find our formants
+ *
+ * TODO ensure accuracy; find official source
  */
 var F1_MIN = 100,
     F2_MIN = 730,
@@ -19,10 +21,18 @@ var F1_MIN = 100,
  * Represent the minimum differences between formants, to ensure they are
  * properly spaced
  *
- * TODO
+ * TODO ensure accuracy; find official source
  */
 var MIN_DIFF_F1_F2 = 150,
     MIN_DIFF_F2_F3 = 400;
+
+/**
+ * Specifies that a peak must be this many decibels higher than the closest
+ * valleys to be considered a formant
+ *
+ * TODO ensure accuracy; find official source
+ */
+var MIN_PEAK_HEIGHT = 10;
 
 /**
  * Contains methods for normalizing Hz values
@@ -136,6 +146,11 @@ VowelWorm.convolve = function convolve(m, y) {
   return result;
 };
 
+/*******************
+ * HELPER FUNCTIONS
+ * Most of these are attached to VowelWorm so they can be easily tested
+ *******************/
+
 /**
  * Gets the frequency at the given index
  * @param {number} index the position of the data to get the frequency of
@@ -151,10 +166,69 @@ VowelWorm._toFrequency = function toFrequency(position, sampleRate, fftSize) {
   return position*(sampleRate/fftSize);
 };
 
+/**
+ * Returns the smallest side of a given peak, based on its valleys
+ * to the left and to the right. If a peak occurs in index 0 or
+ * values.length -1 (i.e., the leftmost or rightmost values of the array),
+ * then this just returns the height of the peak from the only available side.
+ * @param {number} index The index of the array, where the peak can be found
+ * @param {Array.<number>} values The values of the array
+ * @return {number} The height of the peak, or 0 if it is not a peak
+ * @nosideeffects
+ */
+VowelWorm._peakHeight = function peakHeight(index, values) {
+  var peak = values[index],
+      lheight = null,
+      rheight = null;
 
-/*******************
- * HELPER FUNCTIONS
- *******************/
+  var prev = null;
+
+  // check the left
+  for(var i = index-1; i >= 0; i--) {
+    if(prev === null) {
+      prev = values[i];
+      lheight = peak - prev;
+      continue;
+    }
+    if(values[i] > prev) {
+      lheight = peak - prev;
+      break;
+    }
+    prev = values[i];
+  }
+
+  prev = null;
+  // check the right
+  for(var i = index+1; i < values.length; i++) {
+    if(prev === null) {
+      prev = values[i];
+      rheight = peak - prev;
+      continue;
+    }
+    if(values[i] > prev) {
+      rheight = peak - prev;
+      break;
+    }
+    prev = values[i];
+  }
+
+  var result;
+  if(lheight === null) {
+    result = +rheight;
+  }
+  else if(rheight === null) {
+    result = +lheight;
+  }
+  else
+  {
+    result = lheight < rheight ? lheight : rheight;
+  }
+
+  if(result < 0) {
+    return 0;
+  }
+  return result;
+};
 
 /**
  * Iterates through an array, applying the absolute value to each item
@@ -344,12 +418,11 @@ proto._getPeaks = function getPeaks(smoothedArray, sampleRate, fftSize) {
     nextNum = smoothedArray[i+1] || 0;
 		
     if(currentNum > previousNum && currentNum > nextNum) {
-      /**
-       * @license Help from kr1 at http://stackoverflow.com/questions/14789283/what-does-the-fft-data-in-the-web-audio-api-correspond-to 
-       */
-      peaks.push(hz);
-      if(formant === 3) {
-        return peaks;
+      if(true /*this._peakHeight(i, smoothedArray) >= MIN_PEAK_HEIGHT*/) {
+        peaks.push(hz);
+        if(formant === 3) {
+          return peaks;
+        }
       }
     }
 	}
