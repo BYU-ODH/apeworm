@@ -182,34 +182,23 @@ VowelWorm._peakHeight = function peakHeight(index, values) {
       rheight = null;
 
   var prev = null;
-
   // check the left
   for(var i = index-1; i >= 0; i--) {
-    if(prev === null) {
-      prev = values[i];
-      lheight = peak - prev;
-      continue;
-    }
-    if(values[i] > prev) {
-      lheight = peak - prev;
+    if(prev !== null && values[i] > prev) {
       break;
     }
     prev = values[i];
+    lheight = peak - prev;
   }
 
   prev = null;
   // check the right
   for(var i = index+1; i < values.length; i++) {
-    if(prev === null) {
-      prev = values[i];
-      rheight = peak - prev;
-      continue;
-    }
-    if(values[i] > prev) {
-      rheight = peak - prev;
+    if(prev !== null && values[i] > prev) {
       break;
     }
     prev = values[i];
+    rheight = peak - prev;
   }
 
   var result;
