@@ -32,7 +32,7 @@ var MIN_DIFF_F1_F2 = 150,
  *
  * TODO ensure accuracy; find official source
  */
-var MIN_PEAK_HEIGHT = 10;
+var MIN_PEAK_HEIGHT = 0.1;
 
 /**
  * Contains methods for normalizing Hz values
@@ -407,7 +407,7 @@ proto._getPeaks = function getPeaks(smoothedArray, sampleRate, fftSize) {
     nextNum = smoothedArray[i+1] || 0;
 		
     if(currentNum > previousNum && currentNum > nextNum) {
-      if(true /*this._peakHeight(i, smoothedArray) >= MIN_PEAK_HEIGHT*/) {
+      if(this._peakHeight(i, smoothedArray) >= MIN_PEAK_HEIGHT) {
         peaks.push(hz);
         if(formant === 3) {
           return peaks;
