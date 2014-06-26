@@ -6,6 +6,34 @@ window.VowelWorm = window.VowelWorm || {};
 "use strict";
 
 /**
+ * Used in the Savitsky-Golay filter
+ * @constant
+ */
+var WINDOW_SIZE = 55;
+/**
+ * Used in the Savitsky-Golay filter
+ * @constant
+ */
+var ORDER = 0;
+
+/**
+ * The amount of times we should try to look for accurate formants before
+ * giving up. This will run the passes until the F1-F3 MIN and MAX values (as
+ * given below match up with what we have.
+ * @constant
+ */
+var MAX_PASSES = 5;
+
+/**
+ * When using the Savitsky-Golay filter to smooth the FFT, the window parameter
+ * affects how smooth the curve ends up becoming. This will be subtracted from
+ * whatever WINDOW_SIZE is until MAX_PASSES is reached or accurate formants
+ * have been discovered.
+ * @constant
+ */
+var WINDOW_SIZE_DELTA = 2;
+
+/**
  * From both Wikipedia (http://en.wikipedia.org/wiki/Formant; retrieved 23 Jun.
  * 2014, 2:52 PM UTC) and Cory Robinson's chart (personal email)
  *
@@ -13,9 +41,12 @@ window.VowelWorm = window.VowelWorm || {};
  *
  * TODO ensure accuracy; find official source
  */
-var F1_MIN = 100,
-    F2_MIN = 730,
-    F3_MIN = 1700;
+var F1_MIN = 0,
+    F1_MAX = 1000,
+    F2_MIN = 600,
+    F2_MAX = 3000,
+    F3_MIN = 1500,
+    F3_MAX = 5000;
 
 /**
  * Represent the minimum differences between formants, to ensure they are
@@ -24,13 +55,14 @@ var F1_MIN = 100,
  * TODO ensure accuracy; find official source
  */
 var MIN_DIFF_F1_F2 = 150,
-    MIN_DIFF_F2_F3 = 400;
+    MIN_DIFF_F2_F3 = 500;
 
 /**
  * Specifies that a peak must be this many decibels higher than the closest
  * valleys to be considered a formant
  *
  * TODO ensure accuracy; find official source
+ * @constant
  */
 var MIN_PEAK_HEIGHT = 0.1;
 
@@ -328,9 +360,6 @@ VowelWorm.instance = function VowelWorm(stream) {
   this._buffer = new Uint8Array(this._analyzer.fftSize);
   this._audioBuffer = null; // comes from downloading an audio file
 
-  this.windowSize = 55; // used in the Savitsky-Golay filter
-  this.order = 0; // also used in the Savitsky-Golay filter
-
   var that  = this;
 
   if(stream) {
@@ -423,7 +452,8 @@ proto._getPeaks = function getPeaks(smoothedArray, sampleRate, fftSize) {
  * unless data is passed in.
  * @param {Array.<number>=} data FFT transformation data. If null, pulls from the analyzer
  * @param {number=} sampleRate the sample rate of the data. Required if data is not null
- * @return {Array.<number>} The formants found for the audio stream/file
+ * @return {Array.<number>} The formants found for the audio stream/file. If
+ * nothing worthwhile has been found, returns an empty array.
  * @nosideeffects
  */
 proto.getFormants = function getFormants(data, sampleRate) {
@@ -448,11 +478,27 @@ proto.getFormants = function getFormants(data, sampleRate) {
     }
   }
 
-  // smooth it twice
-  var first = this.smoothCurve(data, this.windowSize, this.order);
-  var second = this.smoothCurve(first, this.windowSize, this.order);
-  
-  return this._getPeaks(second, sampleRate, fftSize);
+  var wsize = WINDOW_SIZE;
+
+  for(var i = 0; i<MAX_PASSES; i++) {
+    // smooth it twice
+    var first = this.smoothCurve(data, wsize, ORDER);
+    var second = this.smoothCurve(first, wsize, ORDER);
+    var formants = this._getPeaks(second, sampleRate, fftSize);
+
+    if( formants[0]<F1_MIN || formants[0]>F1_MAX || formants[0]>=formants[1] ||
+        formants[1]<F2_MIN || formants[1]>F2_MAX || formants[1]>=formants[2] ||
+        formants[2]<F3_MIN || formants[2]>F3_MAX )
+    {
+      wsize -= WINDOW_SIZE_DELTA;  
+      continue;
+    }
+    else
+    {
+      return formants;
+    }
+  }
+  return [];  // no good formants found
 };
 
 Object.defineProperties(proto, {
