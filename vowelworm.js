@@ -14,6 +14,9 @@ window.VowelWorm = window.VowelWorm || {};
  * that contains distinct enough peaks is returned.
  *
  * @const
+ *
+ * TODO: When this is low (set to 6), we get much better results for the vowel
+ * 'u', but it messes everything else up
  */
 var FIRST_SMOOTH_WINDOW_SIZE = 35;
 
