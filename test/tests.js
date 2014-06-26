@@ -60,7 +60,7 @@ test( "_toFrequency", function() {
 module( "vs. Wavesurfer's LPC" );
 
 function testGetFormants(data, sampleRate, expected) {
-  var LEEWAY = 150; // amount to forgive, in Hz
+  var LEEWAY = 100; // amount to forgive, in Hz
   var worm = new VowelWorm.instance();
   var formants = worm.getFormants(data, sampleRate);
   close(formants[0], expected[0], LEEWAY, "F1");
