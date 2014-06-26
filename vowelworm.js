@@ -6,10 +6,23 @@ window.VowelWorm = window.VowelWorm || {};
 "use strict";
 
 /**
+ * When the Savitsky-Golay filter is used, it is called twice. This is the
+ * value used by the first time it is smoothed, and is never affected by the
+ * WINDOW_SIZE_DELTA or number of passes.
+ *
+ * The lower the number, the more jagged the result. By using 35, a curve
+ * that contains distinct enough peaks is returned.
+ *
+ * @const
+ */
+var FIRST_SMOOTH_WINDOW_SIZE = 35;
+
+/**
  * Used in the Savitsky-Golay filter
  * @constant
  */
 var WINDOW_SIZE = 55;
+
 /**
  * Used in the Savitsky-Golay filter
  * @constant
@@ -479,10 +492,10 @@ proto.getFormants = function getFormants(data, sampleRate) {
   }
 
   var wsize = WINDOW_SIZE;
+  var first = this.smoothCurve(data, FIRST_SMOOTH_WINDOW_SIZE, ORDER);
 
   for(var i = 0; i<MAX_PASSES; i++) {
     // smooth it twice
-    var first = this.smoothCurve(data, wsize, ORDER);
     var second = this.smoothCurve(first, wsize, ORDER);
     var formants = this._getPeaks(second, sampleRate, fftSize);
 
