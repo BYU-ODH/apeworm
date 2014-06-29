@@ -6,50 +6,6 @@ window.VowelWorm = window.VowelWorm || {};
 "use strict";
 
 /**
- * When the Savitsky-Golay filter is used, it is called twice. This is the
- * value used by the first time it is smoothed, and is never affected by the
- * WINDOW_SIZE_DELTA or number of passes.
- *
- * The lower the number, the more jagged the result. By using 35, a curve
- * that contains distinct enough peaks is returned.
- *
- * @const
- *
- * TODO: When this is low (set to 6), we get much better results for the vowel
- * 'u', but it messes everything else up
- */
-var FIRST_SMOOTH_WINDOW_SIZE = 35;
-
-/**
- * Used in the Savitsky-Golay filter
- * @constant
- */
-var WINDOW_SIZE = 55;
-
-/**
- * Used in the Savitsky-Golay filter
- * @constant
- */
-var ORDER = 0;
-
-/**
- * The amount of times we should try to look for accurate formants before
- * giving up. This will run the passes until the F1-F3 MIN and MAX values (as
- * given below match up with what we have.
- * @constant
- */
-var MAX_PASSES = 5;
-
-/**
- * When using the Savitsky-Golay filter to smooth the FFT, the window parameter
- * affects how smooth the curve ends up becoming. This will be subtracted from
- * whatever WINDOW_SIZE is until MAX_PASSES is reached or accurate formants
- * have been discovered.
- * @constant
- */
-var WINDOW_SIZE_DELTA = 2;
-
-/**
  * From both Wikipedia (http://en.wikipedia.org/wiki/Formant; retrieved 23 Jun.
  * 2014, 2:52 PM UTC) and Cory Robinson's chart (personal email)
  *
@@ -83,6 +39,39 @@ var MIN_DIFF_F1_F2 = 150,
 var MIN_PEAK_HEIGHT = 0.1;
 
 /**
+ * All window sizes to try when pulling data, in the order they should
+ * be tried
+ * @constant
+ */
+var WINDOW_SIZES = [
+  75
+];
+
+/***
+ * Contains precomputed values for the Hanning function at specific window
+ * lengths.
+ *
+ * @constant
+ */
+VowelWorm._HANNING_WINDOW = {
+  75: new Float32Array([ 0.        ,  0.00180126,  0.00719204,  0.01613353,  0.02856128,
+          0.04438575,  0.06349294,  0.08574518,  0.11098212,  0.13902195,
+          0.16966264,  0.20268341,  0.23784636,  0.27489813,  0.31357176,
+          0.35358861,  0.39466037,  0.43649109,  0.4787794 ,  0.5212206 ,
+          0.56350891,  0.60533963,  0.64641139,  0.68642824,  0.72510187,
+          0.76215364,  0.79731659,  0.83033736,  0.86097805,  0.88901788,
+          0.91425482,  0.93650706,  0.95561425,  0.97143872,  0.98386647,
+          0.99280796,  0.99819874,  1.        ,  0.99819874,  0.99280796,
+          0.98386647,  0.97143872,  0.95561425,  0.93650706,  0.91425482,
+          0.88901788,  0.86097805,  0.83033736,  0.79731659,  0.76215364,
+          0.72510187,  0.68642824,  0.64641139,  0.60533963,  0.56350891,
+          0.5212206 ,  0.4787794 ,  0.43649109,  0.39466037,  0.35358861,
+          0.31357176,  0.27489813,  0.23784636,  0.20268341,  0.16966264,
+          0.13902195,  0.11098212,  0.08574518,  0.06349294,  0.04438575,
+          0.02856128,  0.01613353,  0.00719204,  0.00180126,  0.        ])
+};
+
+/**
  * Contains methods for normalizing Hz values
  * @const
  */
@@ -102,6 +91,43 @@ VowelWorm.Normalization = {
 };
 
 /**
+ * Applies a hanning window to the given dataset, returning a new array
+ * @param {Array.<number>} vals The values to change
+ * @param {number} window_size the size of the window
+ * @return {Array.<number>} the new values
+ */
+VowelWorm.hann = function hann(vals, window_size) {
+  if(typeof VowelWorm._HANNING_WINDOW[window_size] === 'undefined') {
+    throw new Error('No precomputed Hanning Window values found for ' +
+        window_size);
+  }
+  
+  var s = [];
+
+  for(var i = window_size-1; i > 0; i--) {
+    s.push(vals[i]);
+  }
+  for(var i = 0; i<vals.length; i++) {
+    s.push(vals[i]);
+  }
+  for(var i = vals.length-1; i>vals.length-window_size; i--) {
+    s.push(vals[i]);
+  }
+
+  var w = VowelWorm._HANNING_WINDOW[window_size];
+
+  var sum = 0;
+  var wMorph = new Float32Array(w.length);
+  for(var i = 0; i<w.length; i++) {
+    sum += w[i];
+  }
+  for(var i = 0; i<w.length; i++) {
+    wMorph[i] = w[i]/sum;
+  }
+  return VowelWorm.convolve(wMorph, s);
+};
+
+/**
  * @license Savitsky-Golay filter (VowelWorm.smoothCurve)
  * adapted from http://wiki.scipy.org/Cookbook/SavitzkyGolay
  */
@@ -115,7 +141,7 @@ VowelWorm.Normalization = {
  * @return {Array.<number>} if plotted gives you a smooth curve version of an parameter array
  * @nosideeffects
  */
-VowelWorm.smoothCurve = function smoothCurve(y, window_size, order) {
+VowelWorm.savitzkyGolay = function savitzkyGolay(y, window_size, order) {
 	//probably we don't need to parseInt anything or take the absolute value if we always make sure that our windown size and order are positive.  "golay.py" gave a window size of 55 and said that anything higuer will make a flatter graph
   //window size must be positive and an odd number for this to work better
 	var windowSize = Math.abs(parseInt(window_size));
@@ -416,7 +442,7 @@ proto.setStream = function setStream(stream) {
 
 /**
  * Finds the first three peaks of the curve, representative of the first three formants
- * Use this file only after you have passed your array through the smoothCurve function twice
+ * Use this file only after you have passed your array through a smoothing filter
  * @param {Array.<number>} smoothedArray data, expected to have been smoothed, to extract peaks from
  * @param {number} sampleRate the sample rate of the data
  * @param {number} fftSize the FFT size
@@ -473,11 +499,20 @@ proto._getPeaks = function getPeaks(smoothedArray, sampleRate, fftSize) {
  * @nosideeffects
  */
 proto.getFormants = function getFormants(data, sampleRate) {
-  this._analyzer.getByteFrequencyData(this._buffer);
+  /**
+   * The amount the Hanning window needs to be shifted to line up correctly.
+   * TODO is this the same for all sample rates and FFT sizes?
+   * TODO This should be proportional to the window size
+   */
+  var HANNING_SHIFT = 32; 
 
   if(arguments.length !== 2 && arguments.length !== 0) {
     throw new Error("Invalid arguments. Function must be called either as "+
                     " getFormants(data, sampleRate) or getFormants()");
+  }
+  
+  if(!data) {
+    this._analyzer.getByteFrequencyData(this._buffer);
   }
 
   var fftSize = data ? data.length*2 : this._analyzer.fftSize;
@@ -494,19 +529,14 @@ proto.getFormants = function getFormants(data, sampleRate) {
     }
   }
 
-  var wsize = WINDOW_SIZE;
-  var first = this.smoothCurve(data, FIRST_SMOOTH_WINDOW_SIZE, ORDER);
-
-  for(var i = 0; i<MAX_PASSES; i++) {
-    // smooth it twice
-    var second = this.smoothCurve(first, wsize, ORDER);
-    var formants = this._getPeaks(second, sampleRate, fftSize);
+  for(var i = 0; i<WINDOW_SIZES.length; i++) {
+    var smooth = this.hann(data, WINDOW_SIZES[i]).slice(HANNING_SHIFT);
+    var formants = this._getPeaks(smooth, sampleRate, fftSize);
 
     if( formants[0]<F1_MIN || formants[0]>F1_MAX || formants[0]>=formants[1] ||
         formants[1]<F2_MIN || formants[1]>F2_MAX || formants[1]>=formants[2] ||
         formants[2]<F3_MIN || formants[2]>F3_MAX )
     {
-      wsize -= WINDOW_SIZE_DELTA;  
       continue;
     }
     else
