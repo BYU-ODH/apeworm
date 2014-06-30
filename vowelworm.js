@@ -174,7 +174,7 @@ VowelWorm.hann = function hann(vals, window_size) {
   var w = VowelWorm._HANNING_WINDOW[window_size];
 
   var sum = 0;
-  var wMorph = new Float32Array(w.length);
+  var wMorph = [];
   for(var i = 0; i<w.length; i++) {
     sum += w[i];
   }
