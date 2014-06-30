@@ -91,12 +91,55 @@ VowelWorm.Normalization = {
    * @return {number} The formant converted to the Bark Scale
    * @nosideeffects
    */
-  toBarkScale: function toBarkScale(formant) {
+  barkScale: function barkScale(formant) {
     if(formant == 0) {
       formant = 1;
     }
     return 26.81/(1+(1960/formant)) - 0.53;
   }
+};
+
+/**
+ * Given an array of formants, returns normalized X and Y coordinates
+ * representing advancement and height, respectively.
+ * @param {Array.<number>} formants The formants to normalize
+ * @param {function} [method=VowelWorm.Normalization.barkScale]
+ *  the method to use for Normalization. Must be a property of
+ *  {@see VowelWorm.Normalization}. Defaults to barkScale
+ * 
+ * @return {Array.<number>} an array formatted thusly: [x,y]. May be empty
+ * @nosideeffects
+ *
+ * TODO: check to see if passing a method in as a param seems sane with everyone else
+ */
+VowelWorm.normalize = function normalize(formants, method) {
+  if(!formants.length) {
+    return [];
+  }
+  if(method === undefined || method === null) {
+    method = VowelWorm.Normalization.barkScale;
+  }
+  if(typeof method !== 'function') {
+    throw new Error("Expecting a function as a method for VowelWorm.normalize");
+  }
+  if(!(method.name in VowelWorm.Normalization)) {
+    throw new Error("Method '" + method.name + "' is not part of " +
+        "VowelWorm.Normalization and cannot be used for normalization.");
+  }
+
+  var x = null;
+  var y = null;
+
+  switch(method) {
+    case this.Normalization.barkScale:
+      x = method(formants[2]) - method(formants[1]);
+      y = method(formants[2]) - method(formants[0]);
+  };
+
+  if(x === null || y === null) {
+    return [];
+  }
+  return [x,y];
 };
 
 /**
@@ -442,7 +485,6 @@ VowelWorm.instance = function VowelWorm(stream) {
   if(stream) {
     that.setStream(stream);
   }
-
 };
 
 VowelWorm.instance.prototype = Object.create(VowelWorm);

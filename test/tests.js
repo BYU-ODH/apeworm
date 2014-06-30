@@ -2,6 +2,16 @@ function _round(number) {
   return Math.round(number*1000)/1000;
 }
 
+module( "normalization" );
+
+test( "Bark Scale", function() {
+  var formants = [100,1200,2400];
+  var expected = [4.576785506909767, 13.456341854458003].map(_round);
+  var result = VowelWorm.normalize(formants, VowelWorm.Normalization.barkScale);
+  result = result.map(_round);
+  deepEqual(result, expected)
+});
+
 module( "smoothing" );
 
 test( "convolve method", function() {
