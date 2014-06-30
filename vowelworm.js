@@ -6,14 +6,21 @@ window.VowelWorm = window.VowelWorm || {};
 "use strict";
 
 /**
+ * The sample rate used when one cannot be found.
+ */
+var DEFAULT_SAMPLE_RATE = 44100;
+
+/**
  * From both Wikipedia (http://en.wikipedia.org/wiki/Formant; retrieved 23 Jun.
  * 2014, 2:52 PM UTC) and Cory Robinson's chart (personal email)
  *
  * These indicate the minimum values in Hz in which we should find our formants
  *
+ * @const
+ *
  * TODO ensure accuracy; find official source
  */
-var F1_MIN = 0,
+var F1_MIN = 100,
     F1_MAX = 1000,
     F2_MIN = 600,
     F2_MAX = 3000,
@@ -23,6 +30,8 @@ var F1_MIN = 0,
 /**
  * Represent the minimum differences between formants, to ensure they are
  * properly spaced
+ *
+ * @const
  *
  * TODO ensure accuracy; find official source
  */
@@ -225,6 +234,27 @@ VowelWorm.convolve = function convolve(m, y) {
   return result;
 };
 
+/**
+ * Representative of the current mode VowelWorm is in.
+ * In this case, an audio element
+ * @const
+ */
+VowelWorm.AUDIO = 1;
+
+/**
+ * Representative of the current mode VowelWorm is in.
+ * In this case, a media stream
+ * @const
+ */
+VowelWorm.STREAM = 2;
+
+/**
+ * Representative of the current mode VowelWorm is in.
+ * In this case, a remote URL turned into a source node
+ * @const
+ */
+VowelWorm.REMOTE_URL = 3;
+
 /*******************
  * HELPER FUNCTIONS
  * Most of these are attached to VowelWorm so they can be easily tested
@@ -421,28 +451,36 @@ VowelWorm.instance.constructor = VowelWorm.instance;
 var proto = VowelWorm.instance.prototype;
 
 /**
- * @param {MediaStream|string} stream The audio stream to analyze OR a string representing the URL for an audio file
+ * The current mode the vowel worm is in (e.g., stream, audio element, etc.)
+ * @type {?number}
+ */
+proto.mode = null;
+
+/**
+ * @param {MediaStream|string|Audio} stream The audio stream to analyze OR a string representing the URL for an audio file OR an Audio file
  * @throws An error if stream is neither a Mediastream or a string
- * @return {Promise} resolved when the stream has been loaded
  */
 proto.setStream = function setStream(stream) {
-  var that = this;
-  return new Promise(function(resolve, reject) {
-
-    if(typeof stream === 'string') {
-      that._loadFromURL(stream).then(resolve);
-    }
-    else if(typeof stream === 'object' && stream['constructor']['name'] === 'MediaStream')
-    {
-      that._loadFromStream(stream);
-      resolve();
-    }
-    else
-    {
-      throw new Error("VowelWorm.instance.setStream only accepts URL strings "+
-                       "and instances of MediaStream (as from getUserMedia)");
-    }
-  });
+  if(typeof stream === 'string') {
+    this.mode = this.REMOTE_URL;
+    this._loadFromURL(stream);
+  }
+  else if(typeof stream === 'object' && stream['constructor']['name'] === 'MediaStream')
+  {
+    this.mode = this.STREAM;
+    this._loadFromStream(stream);
+  }
+  else if(stream && (stream instanceof window.Audio || stream.tagName === 'AUDIO'))
+  {
+    this.mode = this.AUDIO;
+    this._loadFromAudio(stream);
+  }
+  else
+  {
+    throw new Error("VowelWorm.instance.setStream only accepts URL strings, "+
+                     "instances of MediaStream (as from getUserMedia), or " +
+                     "<audio> elements");
+  }
 };
 
 /**
@@ -515,22 +553,27 @@ proto.getFormants = function getFormants(data, sampleRate) {
     throw new Error("Invalid arguments. Function must be called either as "+
                     " getFormants(data, sampleRate) or getFormants()");
   }
-  
-  if(!data) {
-    this._analyzer.getByteFrequencyData(this._buffer);
+  var fftSize = null;
+
+  if(data) {
+    fftSize = data.length*2;
   }
+  else
+  {
+    data = this._buffer;
+    fftSize = this._analyzer.fftSize;
+    this._analyzer.getFloatFrequencyData(data);
 
-  var fftSize = data ? data.length*2 : this._analyzer.fftSize;
-  var data = data || this._buffer;
-
-  if(!sampleRate) {
-    if(this._sourceNode) {
-      sampleRate = this._sourceNode.buffer.sampleRate;
-    }
-    else
-    {
-      // TODO
-      throw new Error("Not implemented yet.");
+    switch(this.mode) {
+      case this.REMOTE_URL:
+        sampleRate = this._sourceNode.buffer.sampleRate;
+        break;
+      case this.AUDIO:
+        sampleRate = DEFAULT_SAMPLE_RATE; // this cannot be retrieved from the element
+        break;
+      case this.STREAM: // TODO
+      default:
+        throw new Error("Not implemented yet.");
     }
   }
 
@@ -571,7 +614,6 @@ Object.defineProperties(proto, {
  * @param {string} url Where to fetch the audio data from
  * @throws An error when the server returns an error status code
  * @throws An error when the audio file cannot be decoded
- * @return {Promise} resolved when everything has loaded
  */
 proto._loadFromURL = function loadFromURL(url) {
   var that = this,
@@ -610,6 +652,18 @@ proto._loadFromURL = function loadFromURL(url) {
   };
 
   request.send();
+};
+
+/**
+ * Loads an audio element as the data to be processed
+ * @param {Audio} audio
+ */
+proto._loadFromAudio = function loadFromAudio(audio) {
+  console.warn( "Cannot determine sample rate. Setting as " + DEFAULT_SAMPLE_RATE );
+
+  this._sourceNode = this._context.createMediaElementSource(audio);
+  this._sourceNode.connect(this._analyzer);
+  this._analyzer.connect(this._context.destination);
 };
 
 /**
