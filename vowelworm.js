@@ -96,6 +96,11 @@ VowelWorm.Normalization = {
  * @param {number} window_size the size of the window
  * @return {Array.<number>} the new values
  */
+/**
+ * @license
+ * Hanning window taken from http://wiki.scipy.org/Cookbook/SignalSmooth
+ * both constant values and code preparing data for convolution
+ */
 VowelWorm.hann = function hann(vals, window_size) {
   if(typeof VowelWorm._HANNING_WINDOW[window_size] === 'undefined') {
     throw new Error('No precomputed Hanning Window values found for ' +
