@@ -434,7 +434,7 @@ VowelWorm.instance = function VowelWorm(stream) {
   this._analyzer   = this._context.createAnalyser();
   this._sourceNode = null; // for analysis with files rather than mic input
   this._analyzer.fftSize = 2048;
-  this._buffer = new Uint8Array(this._analyzer.fftSize);
+  this._buffer = new Float32Array(this._analyzer.fftSize);
   this._audioBuffer = null; // comes from downloading an audio file
 
   var that  = this;
