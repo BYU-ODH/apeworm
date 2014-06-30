@@ -637,21 +637,6 @@ proto.getFormants = function getFormants(data, sampleRate) {
   return [];  // no good formants found
 };
 
-Object.defineProperties(proto, {
-  duration: {
-    /**
-     * Retrieves the duration of the audio file, if present
-     * @return {number|null} The duration. If no audio file present, then null
-     */
-    get: function() {
-      if(!this._sourceNode) {
-        return null;
-      }
-      return this._sourceNode.buffer.duration;
-    }
-  }
-});
-
 /**
  * @param {string} url Where to fetch the audio data from
  * @throws An error when the server returns an error status code
