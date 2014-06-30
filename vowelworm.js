@@ -504,17 +504,14 @@ proto.mode = null;
  */
 proto.setStream = function setStream(stream) {
   if(typeof stream === 'string') {
-    this.mode = this.REMOTE_URL;
     this._loadFromURL(stream);
   }
   else if(typeof stream === 'object' && stream['constructor']['name'] === 'MediaStream')
   {
-    this.mode = this.STREAM;
     this._loadFromStream(stream);
   }
   else if(stream && (stream instanceof window.Audio || stream.tagName === 'AUDIO'))
   {
-    this.mode = this.AUDIO;
     this._loadFromAudio(stream);
   }
   else
@@ -523,6 +520,12 @@ proto.setStream = function setStream(stream) {
                      "instances of MediaStream (as from getUserMedia), or " +
                      "<audio> elements");
   }
+};
+
+proto._loadFromStream = function loadFromStream(stream) {
+  this.mode = this.STREAM;
+  var streamSource = this._context.createMediaStreamSource(stream);
+  streamSource.connect(this._analyzer);
 };
 
 /**
@@ -613,7 +616,9 @@ proto.getFormants = function getFormants(data, sampleRate) {
       case this.AUDIO:
         sampleRate = DEFAULT_SAMPLE_RATE; // this cannot be retrieved from the element
         break;
-      case this.STREAM: // TODO
+      case this.STREAM:
+        sampleRate = this._context.sampleRate;
+        break;
       default:
         throw new Error("Not implemented yet.");
     }
@@ -655,6 +660,7 @@ proto._loadFromURL = function loadFromURL(url) {
   };
   
   function decodeSuccess(buffer) {
+    that.mode = this.REMOTE_URL;
     that._audioBuffer = buffer;
     that._resetSourceNode();
     // TODO - enable playback through speakers, looping, etc.
@@ -688,6 +694,7 @@ proto._loadFromURL = function loadFromURL(url) {
 proto._loadFromAudio = function loadFromAudio(audio) {
   console.warn( "Cannot determine sample rate. Setting as " + DEFAULT_SAMPLE_RATE );
 
+  this.mode = this.AUDIO;
   this._sourceNode = this._context.createMediaElementSource(audio);
   this._sourceNode.connect(this._analyzer);
   this._analyzer.connect(this._context.destination);

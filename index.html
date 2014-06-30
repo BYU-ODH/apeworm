@@ -4,9 +4,17 @@
 	<script src="pixi.dev.js"></script>
 	<script src="vowelworm.js"></script>
 	<script src="wormGraph.js"></script>
-  <audio controls id=thing src="http://ia601903.us.archive.org/20/items/aliceinwonderland_drama_1310_librivox/aliceinwonderland_01_gerstenberg_128kb.mp3"></audio>
+  <audio style='display:none' controls id=media src="http://ia601903.us.archive.org/20/items/aliceinwonderland_drama_1310_librivox/aliceinwonderland_01_gerstenberg_128kb.mp3"></audio>
 
+  <button onclick=usemedia()>Use Media File</button>
+  <button onclick=usemic()>Use Microphone</button>
+  <br>
   <script>
+    function getUserMedia() {
+      (navigator.getUserMedia || navigator.webkitGetUserMedia || function(){alert('getUserMedia missing')})
+                            .apply(navigator, arguments);
+    }
+
     var width = 500;                                                        
     var height = 400;                                                       
                                                                             
@@ -14,8 +22,8 @@
     var renderer = PIXI.autoDetectRenderer(width+40, height+40);            
                                                                             
     makeGraph(stage, renderer, width, height);
-
-    var worm = new VowelWorm.instance(document.getElementById('thing'));
+    var worm = new VowelWorm.instance();
+    var audio = document.getElementById('media');
 
     function run() {
       var position = worm.normalize(worm.getFormants());
@@ -25,7 +33,27 @@
       window.requestAnimationFrame(run);
     };
 
-    run();
+    function usemedia() {
+      audio.style.display = 'block';
+      worm.setStream(audio);
+      run();
+    };
+
+    function micSuccess(stream) {
+      worm.setStream(stream);
+      run(worm);
+    };
+
+    function micFailure() {
+      alert("Could not capture microphone input");
+    };
+
+    function usemic() {
+      audio.pause();
+      audio.style.display = 'none';
+      getUserMedia({audio: true}, micSuccess, micFailure);
+    };
+
   </script>
 </body>
 </html>
