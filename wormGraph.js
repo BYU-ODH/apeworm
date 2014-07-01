@@ -1,7 +1,7 @@
 var xStart = 0;
-var xEnd = 24;
+var xEnd = 9;
 var yStart = 0;
-var yEnd = 24;
+var yEnd = 14;
 
 function makeGraph(stage, renderer, width, height) {
 	//var stage = new PIXI.Stage(0xFFFFFF, true);
@@ -62,7 +62,7 @@ var makeWorm = (function(){
 		var adjustedY = height-y*yDist;
 		graphics = new PIXI.Graphics();
 		graphics.beginFill(0x99000,1);
-		graphics.drawCircle(adjustedX,adjustedY ,width/20);
+		graphics.drawCircle(adjustedX,adjustedY ,10);
 		stage.addChild(graphics);
 		renderer.render(stage);
 	}

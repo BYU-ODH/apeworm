@@ -1,28 +1,3 @@
-/*!
- * (See also licenses in the resources subdirectory.)
- *
- * Numeric Javascript
- * Copyright (C) 2011 by Sébastien Loisel
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-
 "use strict";
 
 var numeric = (typeof exports === "undefined")?(function numeric() {}):(exports);
@@ -351,16 +326,6 @@ numeric.dim = function dim(x) {
         return [x.length];
     }
     return [];
-}
-
-
-numeric.pinv = function pinv(A) {
-  var z = numeric.svd(A), foo = z.S[0];
-  var U = z.U, S = z.S, V = z.V;
-  var m = A.length, n = A[0].length, tol = Math.max(m,n)*numeric.epsilon*foo,M = S.length;
-  var i,Sinv = new Array(M);
-  for(i=M-1;i!==-1;i--) { if(S[i]>tol) Sinv[i] = 1/S[i]; else Sinv[i] = 0; }
-  return numeric.dot(numeric.dot(V,numeric.diag(Sinv)),numeric.transpose(U))
 }
 
 numeric.mapreduce = function mapreduce(body,init) {
@@ -4101,8 +4066,6 @@ function qpgen2(dmat, dvec, fddmat, n, sol, crval, amat,
 
 }
 
-
-
 function solveQP(Dmat, dvec, Amat, bvec, meq, factorized) {
     Dmat = base0to1(Dmat);
     dvec = base0to1(dvec);
@@ -4458,8 +4421,4 @@ numeric.svd= function svd(A) {
 	
 	return {U:u,S:q,V:v}
 };
-
-
-
-
 
