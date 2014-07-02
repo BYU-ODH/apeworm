@@ -482,6 +482,10 @@ VowelWorm.instance = function VowelWorm(stream) {
 
   var that  = this;
 
+  this.plugins.forEach(function attachWorm(plugin) {
+    plugin.worm = that;
+  });
+
   if(stream) {
     that.setStream(stream);
   }
@@ -491,6 +495,14 @@ VowelWorm.instance.prototype = Object.create(VowelWorm);
 VowelWorm.instance.constructor = VowelWorm.instance;
 
 var proto = VowelWorm.instance.prototype;
+
+/**
+ * A collection of plugins. This is done so that each plugin object has
+ * reference to the current instance
+ * TODO: could probably work more easily.
+ * @type {Array.<Object>}
+ */
+proto.plugins = [];
 
 /**
  * The current mode the vowel worm is in (e.g., stream, audio element, etc.)

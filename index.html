@@ -15,14 +15,11 @@
                             .apply(navigator, arguments);
     }
 
-    var width = 500;                                                        
-    var height = 400;                                                       
-                                                                            
     var worm = new VowelWorm.instance();
     var audio = document.getElementById('media');
 
     function drawit() {
-      var canvas = worm.draw.create(1024, 500);
+      var canvas = worm.draw.create(window.outerWidth-50, 500);
       worm.draw.drawAxes();
 
       document.body.appendChild(canvas);

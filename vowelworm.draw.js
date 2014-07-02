@@ -49,8 +49,7 @@
 
   var proto = VowelWorm.instance.prototype;
   var v = proto.draw = {};
-
-  v.worm = proto;
+  proto.plugins.push(v);
 
   /**
    * Creates a new instance of a PIXI js stage and returns a canvas element.
@@ -95,7 +94,7 @@
     var stage    = this._stage,
         renderer = this._renderer;
 
-    var scale = renderer.width/this.worm.getFFTSize()/2;
+    var scale = this.worm.getFFTSize()/renderer.width;
 
     if(color === undefined || color === null) {
       color = AXES_COLOR;
@@ -103,7 +102,7 @@
 
     var axes = this._axes = [];
 
-    var xLabel = new PIXI.Text("kHz");
+    var xLabel = new PIXI.Text("kHz", {font: '10px'});
     xLabel.position.x = 0;
     xLabel.position.y = Y_POS_OF_X;
     stage.addChild(xLabel);
@@ -119,13 +118,17 @@
       axes.push(tick);
 
       var freq = this.worm._toFrequency(x*scale, this.worm.getSampleRate(), this.worm.getFFTSize());
-      freq = Math.floor(freq*100)/100;
-      var label = new PIXI.Text(freq);
-      label.position.x = x;
+      freq /= 1000; // convert to kHz
+      freq = parseFloat(freq.toFixed(1),10);
+
+      var label = new PIXI.Text(freq, {font: '10px'});
+      label.position.x = x - (label.width/2); // center it
       label.position.y = TICK_SIZE;
       stage.addChild(label);
       axes.push(label);
     }
+
+    renderer.render(stage);
   }
 
 }(window.VowelWorm));
