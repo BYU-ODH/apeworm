@@ -3,7 +3,7 @@
 <body>
 	<script src="pixi.dev.js"></script>
 	<script src="vowelworm.js"></script>
-	<script src="wormGraph.js"></script>
+	<script src="vowelworm.draw.js"></script>
   <audio style='display:none' controls id=media src="http://ia601903.us.archive.org/20/items/aliceinwonderland_drama_1310_librivox/aliceinwonderland_01_gerstenberg_128kb.mp3"></audio>
 
   <button onclick=usemedia()>Use Media File</button>
@@ -18,29 +18,30 @@
     var width = 500;                                                        
     var height = 400;                                                       
                                                                             
-    var stage = new PIXI.Stage(0xFFFFFF);                                   
-    var renderer = PIXI.autoDetectRenderer(width+40, height+40);            
-                                                                            
-    makeGraph(stage, renderer, width, height);
     var worm = new VowelWorm.instance();
     var audio = document.getElementById('media');
 
+    function drawit() {
+      var canvas = worm.draw.create(1024, 500);
+      worm.draw.drawAxes();
+
+      document.body.appendChild(canvas);
+    }
+
     function run() {
-      var position = worm.normalize(worm.getFormants());
-      if(position.length) {
-        makeWorm(position[0],position[1], stage, renderer, width, height);
-      }
       window.requestAnimationFrame(run);
     };
 
     function usemedia() {
       audio.style.display = 'block';
       worm.setStream(audio);
+      drawit();
       run();
     };
 
     function micSuccess(stream) {
       worm.setStream(stream);
+      drawit();
       run(worm);
     };
 

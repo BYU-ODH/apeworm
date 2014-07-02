@@ -578,6 +578,39 @@ proto._getPeaks = function getPeaks(smoothedArray, sampleRate, fftSize) {
 };
 
 /**
+ * The sample rate of the attached audio source
+ *
+ * @type number
+ * @instance
+ * @memberof VowelWorm.instance
+ * @nosideeffects
+ */
+proto.getSampleRate = function getSampleRate() {
+  switch(this.mode) {
+    case this.REMOTE_URL:
+      return this._sourceNode.buffer.sampleRate;
+      break;
+    case this.AUDIO:
+      return DEFAULT_SAMPLE_RATE; // this cannot be retrieved from the element
+      break;
+    case this.STREAM:
+      return this._context.sampleRate;
+      break;
+    default:
+      throw new Error("Current mode has no method for sample rate");
+  };
+};
+/**
+ * The size of the FFT, in bins
+ * @instance
+ * @memberof VowelWorm.instance
+ * @nosideeffects
+ */
+proto.getFFTSize = function getFFTSize() {
+  return this._analyzer.fftSize;
+};
+
+/**
  * Retrieves formants. Uses the current time of the audio file or stream,
  * unless data is passed in.
  * @param {Array.<number>=} data FFT transformation data. If null, pulls from the analyzer
@@ -606,22 +639,9 @@ proto.getFormants = function getFormants(data, sampleRate) {
   else
   {
     data = this._buffer;
-    fftSize = this._analyzer.fftSize;
+    fftSize = this.getFFTSize();
     this._analyzer.getFloatFrequencyData(data);
-
-    switch(this.mode) {
-      case this.REMOTE_URL:
-        sampleRate = this._sourceNode.buffer.sampleRate;
-        break;
-      case this.AUDIO:
-        sampleRate = DEFAULT_SAMPLE_RATE; // this cannot be retrieved from the element
-        break;
-      case this.STREAM:
-        sampleRate = this._context.sampleRate;
-        break;
-      default:
-        throw new Error("Not implemented yet.");
-    }
+    sampleRate = this.getSampleRate();
   }
 
   for(var i = 0; i<WINDOW_SIZES.length; i++) {
