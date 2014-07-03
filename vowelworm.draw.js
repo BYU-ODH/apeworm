@@ -95,7 +95,7 @@
     var Y_POS_OF_X = renderer.height - 10;
     
     /**
-     * Where the label should sit on the y axis
+     * Where the tick should extend to
      * @type number
      * @const
      */
