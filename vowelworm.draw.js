@@ -32,13 +32,6 @@
    * @const
    */
   var X_AXIS_DISTANCE = 50;
-
-  /**
-   * Where the x axis should sit
-   * @type number
-   * @const
-   */
-  var Y_POS_OF_X = 0; 
   
   /**
    * How large the tick size of the axes should be
@@ -94,6 +87,20 @@
     var stage    = this._stage,
         renderer = this._renderer;
 
+    /**
+     * Where the x axis should sit
+     * @type number
+     * @const
+     */
+    var Y_POS_OF_X = renderer.height - 10;
+    
+    /**
+     * Where the label should sit on the y axis
+     * @type number
+     * @const
+     */
+    var Y_POS_OF_TICK = Y_POS_OF_X - TICK_SIZE;
+
     var scale = this.worm.getFFTSize()/renderer.width;
 
     if(color === undefined || color === null) {
@@ -113,20 +120,23 @@
       var tick = new PIXI.Graphics();
       tick.lineStyle(1, color);
       tick.moveTo(x, Y_POS_OF_X);
-      tick.lineTo(x, TICK_SIZE);
+      tick.lineTo(x, Y_POS_OF_TICK);
       stage.addChild(tick);
       axes.push(tick);
 
       var freq = this.worm._toFrequency(x*scale, this.worm.getSampleRate(), this.worm.getFFTSize());
       freq /= 1000; // convert to kHz
-      freq = parseFloat(freq.toFixed(1),10);
+      freq = parseFloat(freq.toFixed(1),10); // round
 
       var label = new PIXI.Text(freq, {font: '10px'});
       label.position.x = x - (label.width/2); // center it
-      label.position.y = TICK_SIZE;
+      label.position.y = Y_POS_OF_TICK-10;
       stage.addChild(label);
       axes.push(label);
     }
+
+    // y Markers
+
 
     renderer.render(stage);
   }
