@@ -306,7 +306,7 @@ VowelWorm.REMOTE_URL = 3;
 /**
  * Gets the frequency at the given index
  * @param {number} index the position of the data to get the frequency of
- * @param {number} sampleRate the sample rate of the data
+ * @param {number} sampleRate the sample rate of the data, in Hz
  * @param {number} fftSize the FFT size
  * @return {number} the frequency at the given index
  * @nosideeffects
@@ -315,7 +315,23 @@ VowelWorm.REMOTE_URL = 3;
  * @license Help from kr1 at http://stackoverflow.com/questions/14789283/what-does-the-fft-data-in-the-web-audio-api-correspond-to 
  */
 VowelWorm._toFrequency = function toFrequency(position, sampleRate, fftSize) {
-  return position*(sampleRate/fftSize);
+  /**
+   * I am dividing by two because both Praat and WaveSurfer correlate the
+   * final FFT bin with the Hz value of only half of the sample rate.
+   *
+   * This halving creates what is called the Nyquist Frequency (see
+   * http://www.fon.hum.uva.nl/praat/manual/Nyquist_frequency.html and
+   * http://en.wikipedia.org/wiki/Nyquist_frequency).
+   *
+   * For example, an FFT of size 2048 will have 1024 bins. With a sample rate
+   * of 16000 (16kHz), the final position, 1023 (the 1024th bin) should return
+   * 8000 (8kHz). Position 511 (512th bin) should return 4000 (4kHz), and so
+   * on.
+   *
+   * Kudos to Derrick Craven for discovering that we needed to divide this.
+   */
+  var nyquist = sampleRate/2;
+  return position*(nyquist/fftSize);
 };
 
 /**
