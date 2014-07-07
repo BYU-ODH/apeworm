@@ -140,5 +140,58 @@
 
     renderer.render(stage);
   }
+  
+  v.drawDataLines = function(){
+
+    var makeValuesGraphable = function(values){
+        for(var i=0; i<values.length; i++){
+            //Invert the number to graph on the upside grid of the canvas
+            values[i] = values[i]*-1;
+        }
+    }
+
+    var stage    = this._stage;
+    var renderer = this._renderer;     
+
+    var values = new Float32Array(this.worm.getFFTSize()/2);
+    this.worm._analyzer.getFloatFrequencyData(values);
+
+    var smoothed_values = this.worm.hann(values, 75);
+
+    var POINT_DISTANCE = renderer.width/values.length;
+    var COLOR_RED = 16711680;
+    var COLOR_BLACK = 0;
+
+    makeValuesGraphable(values);
+    makeValuesGraphable(smoothed_values);
+   
+    //Raw Line
+    if(this.raw_line){
+        stage.removeChild(this.raw_line);
+    }
+    this.raw_line = this.drawLine(values,POINT_DISTANCE,COLOR_BLACK,stage);
+
+    //Smoothed Line
+    if(this.smoothed_line){
+        stage.removeChild(this.smoothed_line);
+    }
+    this.smoothed_line = this.drawLine(smoothed_values,POINT_DISTANCE,COLOR_RED,stage);
+
+    renderer.render(stage);
+  };
+  
+  v.drawLine = function(values,point_distance,color,stage){
+    var line = new PIXI.Graphics();
+    line.lineStyle(1,color);
+    line.moveTo(0,values[0]);
+    
+    for(var i=0; i<values.length; i++){
+        line.lineTo(i*point_distance,values[i]);
+    }
+    
+    stage.addChild(line);
+    
+    return line;
+  };
 
 }(window.VowelWorm));
