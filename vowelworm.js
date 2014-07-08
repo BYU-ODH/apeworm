@@ -331,7 +331,10 @@ VowelWorm._toFrequency = function toFrequency(position, sampleRate, fftSize) {
    * Kudos to Derrick Craven for discovering that we needed to divide this.
    */
   var nyquist = sampleRate/2;
-  return position*(nyquist/fftSize);
+
+  var totalBins = fftSize/2;
+
+  return position*(nyquist/totalBins);
 };
 
 /**
