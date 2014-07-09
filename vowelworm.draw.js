@@ -148,7 +148,7 @@
             //Invert the number to graph on the upside grid of the canvas
             values[i] = values[i]*-1;
         }
-    }
+    };
 
     var stage    = this._stage;
     var renderer = this._renderer;     
@@ -158,7 +158,6 @@
 
     var smoothed_values = this.worm.hann(values, 75);
 
-    var POINT_DISTANCE = renderer.width/values.length;
     var COLOR_RED = 16711680;
     var COLOR_BLACK = 0;
 
@@ -169,18 +168,30 @@
     if(this.raw_line){
         stage.removeChild(this.raw_line);
     }
-    this.raw_line = this.drawLine(values,POINT_DISTANCE,COLOR_BLACK,stage);
+    this.raw_line = this.drawLine(values,COLOR_BLACK);
 
     //Smoothed Line
     if(this.smoothed_line){
         stage.removeChild(this.smoothed_line);
     }
-    this.smoothed_line = this.drawLine(smoothed_values,POINT_DISTANCE,COLOR_RED,stage);
+    this.smoothed_line = this.drawLine(smoothed_values,COLOR_RED);
+
+    //Peaks
+    if(this.peaks){
+        stage.removeChild(this.peaks);
+    }
+    this.peaks = this.drawPeaks(this.worm.getFormants(),COLOR_BLACK);
+        
 
     renderer.render(stage);
   };
   
-  v.drawLine = function(values,point_distance,color,stage){
+  v.drawLine = function(values,color){
+    var stage = this._stage;
+    var renderer = this._renderer;
+    
+    var point_distance = renderer.width/values.length;
+
     var line = new PIXI.Graphics();
     line.lineStyle(1,color);
     line.moveTo(0,values[0]);
@@ -192,6 +203,27 @@
     stage.addChild(line);
     
     return line;
+  };
+
+  v.hertzToPixels = function(hz){
+      return (this._renderer.width*hz)/(this.worm._context.sampleRate*2);
+  };
+
+  v.drawPeaks = function(values,color){
+      var stage = this._stage;
+      var renderer = this._renderer;
+      
+      var peaks = new PIXI.Graphics();
+      peaks.lineStyle(1,color);
+      
+      for(var i=0; i<values.length; i++){
+          peaks.moveTo(this.hertzToPixels(values[i]),0);
+          peaks.lineTo(this.hertzToPixels(values[i]),renderer.height);
+      }
+
+      stage.addChild(peaks);
+      
+      return peaks;
   };
 
 }(window.VowelWorm));
