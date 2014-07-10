@@ -101,7 +101,8 @@
      */
     var Y_POS_OF_TICK = Y_POS_OF_X - TICK_SIZE;
 
-    var scale = this.worm.getFFTSize()/renderer.width;
+    // only show half the FFT size, because there are only half as many bins
+    var scale = (this.worm.getFFTSize()/2)/renderer.width;
 
     if(color === undefined || color === null) {
       color = AXES_COLOR;
@@ -136,6 +137,7 @@
     }
 
     // y Markers
+    // TODO
 
 
     renderer.render(stage);
