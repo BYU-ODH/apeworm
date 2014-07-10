@@ -67,25 +67,19 @@
   };
 
   /**
-   * Draws a Hz axis as well as a dB axis on the stage for the current set of
-   * data.
-   * @param {number=} color The color to set the axes and labels to. Defaults
-   * to black;
+   * @private
+   * @stub
    */
-  v.drawAxes = function drawAxes(color) {
-    if(!this._stage) {
-      throw new Error("You must call draw.create() before you can draw axes.");
-    }
+  v._drawYAxis = function drawYAxis(color) {};
 
-    if(this._axes) {
-      var that = this;
-      this._axes.forEach(function(o) {
-        that.draw._stage.removeChild(o);
-      });
-    }
-
-    var stage    = this._stage,
-        renderer = this._renderer;
+  /**
+   * Draws an x axis on the stage
+   * @param {number} color The color to draw the axis as
+   * @private
+   */
+  v._drawXAxis = function drawXAxis(color) {
+    var renderer = this._renderer,
+        stage    = this._stage;
 
     /**
      * Where the x axis should sit
@@ -101,20 +95,13 @@
      */
     var Y_POS_OF_TICK = Y_POS_OF_X - TICK_SIZE;
 
-    // only show half the FFT size, because there are only half as many bins
-    var scale = (this.worm.getFFTSize()/2)/renderer.width;
-
-    if(color === undefined || color === null) {
-      color = AXES_COLOR;
-    }
-
-    var axes = this._axes = [];
-
     var xLabel = new PIXI.Text("kHz", {font: '10px'});
     xLabel.position.x = 0;
     xLabel.position.y = Y_POS_OF_X;
     stage.addChild(xLabel);
-    axes.push(xLabel);
+    
+    // only show half the FFT size, because there are only half as many bins
+    var scale = (this.worm.getFFTSize()/2)/renderer.width;
     
     // x Markers
     for(var x = X_AXIS_DISTANCE; x<renderer.width; x+=X_AXIS_DISTANCE) {
@@ -123,7 +110,6 @@
       tick.moveTo(x, Y_POS_OF_X);
       tick.lineTo(x, Y_POS_OF_TICK);
       stage.addChild(tick);
-      axes.push(tick);
 
       var freq = this.worm._toFrequency(x*scale, this.worm.getSampleRate(), this.worm.getFFTSize());
       freq /= 1000; // convert to kHz
@@ -133,15 +119,29 @@
       label.position.x = x - (label.width/2); // center it
       label.position.y = Y_POS_OF_TICK-10;
       stage.addChild(label);
-      axes.push(label);
+    }
+  };
+
+  /**
+   * Draws a Hz axis as well as a dB axis on the stage for the current set of
+   * data.
+   * @param {number=} color The color to set the axes and labels to. Defaults
+   * to black
+   */
+  v.drawAxes = function drawAxes(color) {
+    if(!this._stage) {
+      throw new Error("You must call draw.create() before you can draw axes.");
     }
 
-    // y Markers
-    // TODO
+    if(color === undefined || color === null) {
+      color = AXES_COLOR;
+    }
 
+    this._drawXAxis(color);
+    this._drawYAxis(color);
 
-    renderer.render(stage);
-  }
+    this._renderer.render(this._stage);
+  };
   
   v.drawDataLines = function(){
 
