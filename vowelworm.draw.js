@@ -113,7 +113,7 @@
 
       var freq = this.worm._toFrequency(x*scale, this.worm.getSampleRate(), this.worm.getFFTSize());
       freq /= 1000; // convert to kHz
-      freq = parseFloat(freq.toFixed(1),10); // round
+      freq = parseFloat(freq.toFixed(2),10); // round
 
       var label = new PIXI.Text(freq, {font: '10px'});
       label.position.x = x - (label.width/2); // center it
@@ -158,7 +158,7 @@
     var values = new Float32Array(this.worm.getFFTSize()/2);
     this.worm._analyzer.getFloatFrequencyData(values);
 
-    var smoothed_values = this.worm.hann(values, 75);
+    var smoothed_values = this.worm.hann(values, 75).slice(32);
 
     var COLOR_RED = 16711680;
     var COLOR_BLACK = 0;
@@ -166,17 +166,19 @@
     makeValuesGraphable(values);
     makeValuesGraphable(smoothed_values);
    
+    var point_distance = renderer.width/values.length;
+
     //Raw Line
     if(this.raw_line){
         stage.removeChild(this.raw_line);
     }
-    this.raw_line = this.drawLine(values,COLOR_BLACK);
+    this.raw_line = this.drawLine(values,COLOR_BLACK,point_distance);
 
     //Smoothed Line
     if(this.smoothed_line){
         stage.removeChild(this.smoothed_line);
     }
-    this.smoothed_line = this.drawLine(smoothed_values,COLOR_RED);
+    this.smoothed_line = this.drawLine(smoothed_values,COLOR_RED,point_distance);
 
     //Peaks
     if(this.peaks){
@@ -184,22 +186,30 @@
     }
     this.peaks = this.drawPeaks(this.worm.getFormants(),COLOR_BLACK);
         
+    console.log(this.worm.getFormants());
 
     renderer.render(stage);
   };
   
-  v.drawLine = function(values,color){
+  v.drawLine = function(values,color,point_distance){
     var stage = this._stage;
     var renderer = this._renderer;
     
-    var point_distance = renderer.width/values.length;
-
     var line = new PIXI.Graphics();
     line.lineStyle(1,color);
     line.moveTo(0,values[0]);
     
     for(var i=0; i<values.length; i++){
         line.lineTo(i*point_distance,values[i]);
+        if(i==512){
+            line.moveTo(i*point_distance,0);
+            line.lineTo(i*point_distance,renderer.height);
+            line.moveTo(i*point_distance,values[i]);
+        }else if(i==256){
+                        line.moveTo(i*point_distance,0);
+            line.lineTo(i*point_distance,renderer.height);
+            line.moveTo(i*point_distance,values[i]);
+        }
     }
     
     stage.addChild(line);
@@ -208,7 +218,7 @@
   };
 
   v.hertzToPixels = function(hz){
-      return (this._renderer.width*hz)/(this.worm._context.sampleRate*2);
+      return (this._renderer.width*hz)/(this.worm.getSampleRate()/2);
   };
 
   v.drawPeaks = function(values,color){

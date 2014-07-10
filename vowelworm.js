@@ -569,12 +569,12 @@ proto._loadFromStream = function loadFromStream(stream) {
  * @nosideeffects
  */
 proto._getPeaks = function getPeaks(smoothedArray, sampleRate, fftSize) {
-	var peaks = new Array();
-	var previousNum;
-	var currentNum;
-	var nextNum;
+  var peaks = new Array();
+  var previousNum;
+  var currentNum;
+  var nextNum;
 
-	for(var i = 0; i < smoothedArray.length; i++) {
+  for(var i = 0; i < smoothedArray.length; i++) {
     var hz = this._toFrequency(i, sampleRate, fftSize);
     var formant = peaks.length+1;
 
@@ -604,8 +604,8 @@ proto._getPeaks = function getPeaks(smoothedArray, sampleRate, fftSize) {
         }
       }
     }
-	}
-	return peaks;
+  }
+  return peaks;
 };
 
 /**
