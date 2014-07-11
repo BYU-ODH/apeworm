@@ -34,11 +34,26 @@
   var X_AXIS_DISTANCE = 50;
   
   /**
+   * Indicates how far away each marker on the Y axis must be 
+   * from the previous one.
+   * @type number (in pixels)
+   * @const
+   */
+  var Y_AXIS_DISTANCE = 50;
+  
+  /**
    * How large the tick size of the axes should be
    * @type number (in pixels)
    * @const
    */
   var TICK_SIZE = 5;
+
+  /**
+   * The font size for the labels
+   * @type number (in pixels)
+   * @const
+   */
+  var LABEL_FONT_SIZE = 10;
 
   var proto = VowelWorm.instance.prototype;
   var v = proto.draw = {};
@@ -67,10 +82,43 @@
   };
 
   /**
+   * Draws a y axis on the stage
    * @private
    * @stub
    */
-  v._drawYAxis = function drawYAxis(color) {};
+  v._drawYAxis = function drawYAxis(color) {
+    var max      = this.worm._analyzer.maxDecibels,
+        min      = this.worm._analyzer.minDecibels,
+        renderer = this._renderer,
+        stage    = this._stage;
+
+    var yLabel = new PIXI.Text("db", {
+      font: LABEL_FONT_SIZE + 'px',
+      color: color
+    });
+    yLabel.position.x = 0;
+    yLabel.position.y = 0;
+    
+    var scale = (min-max)/renderer.height; // becomes increasingly negative
+    var db_offset = max;
+
+    var x_offset = 5;
+
+    for(var y = Y_AXIS_DISTANCE; y<=renderer.height; y+=Y_AXIS_DISTANCE) {
+      var db = y*scale + db_offset;
+      var db_rounded = Math.round(db*10)/10; // nearest 0.1
+
+      var label = new PIXI.Text(db_rounded, {
+        font: LABEL_FONT_SIZE + 'px',
+        color: color
+      });
+      label.position.x = x_offset;
+      label.position.y = y - label.height/2; // center it
+      stage.addChild(label);
+    }
+    
+    stage.addChild(yLabel);
+  };
 
   /**
    * Draws an x axis on the stage
@@ -95,8 +143,11 @@
      */
     var Y_POS_OF_TICK = Y_POS_OF_X - TICK_SIZE;
 
-    var xLabel = new PIXI.Text("kHz", {font: '10px'});
-    xLabel.position.x = 0;
+    var xLabel = new PIXI.Text("kHz", {
+      font: LABEL_FONT_SIZE + 'px',
+      color: color
+    });
+    xLabel.position.x = X_AXIS_DISTANCE - xLabel.width/2;
     xLabel.position.y = Y_POS_OF_X;
     stage.addChild(xLabel);
     
@@ -115,7 +166,10 @@
       freq /= 1000; // convert to kHz
       freq = parseFloat(freq.toFixed(2),10); // round
 
-      var label = new PIXI.Text(freq, {font: '10px'});
+      var label = new PIXI.Text(freq, {
+        font: LABEL_FONT_SIZE + 'px',
+        color: color
+      });
       label.position.x = x - (label.width/2); // center it
       label.position.y = Y_POS_OF_TICK-10;
       stage.addChild(label);
@@ -186,8 +240,6 @@
     }
     this.peaks = this.drawPeaks(this.worm.getFormants(),COLOR_BLACK);
         
-    console.log(this.worm.getFormants());
-
     renderer.render(stage);
   };
   
