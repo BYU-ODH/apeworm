@@ -245,7 +245,6 @@
   
   v.drawLine = function(values,color,point_distance){
     var stage = this._stage;
-    var renderer = this._renderer;
     
     var line = new PIXI.Graphics();
     line.lineStyle(1,color);
@@ -253,15 +252,6 @@
     
     for(var i=0; i<values.length; i++){
         line.lineTo(i*point_distance,values[i]);
-        if(i==512){
-            line.moveTo(i*point_distance,0);
-            line.lineTo(i*point_distance,renderer.height);
-            line.moveTo(i*point_distance,values[i]);
-        }else if(i==256){
-                        line.moveTo(i*point_distance,0);
-            line.lineTo(i*point_distance,renderer.height);
-            line.moveTo(i*point_distance,values[i]);
-        }
     }
     
     stage.addChild(line);
