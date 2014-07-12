@@ -510,10 +510,48 @@ VowelWorm.instance = function VowelWorm(stream) {
   }
 };
 
+/**
+ * The maximum formant expected to be found for a male speaker
+ * @see VowelWorm.instance.prototype.maxFormantHz
+ * @see {@link http://www.fon.hum.uva.nl/praat/manual/Sound__To_Formant__burg____.html}
+ * @see {@link http://www.sfu.ca/sonic-studio/handbook/Formant.html}
+ * @const
+ * @type number
+ */
+VowelWorm.DEFAULT_MAX_FORMANT_MALE = 5000;
+/**
+ * The maximum formant expected to be found for a female speaker
+ * @see VowelWorm.instance.prototype.maxFormantHz
+ * @see {@link http://www.fon.hum.uva.nl/praat/manual/Sound__To_Formant__burg____.html}
+ * @see {@link http://www.sfu.ca/sonic-studio/handbook/Formant.html}
+ * @const
+ * @type number
+ */
+VowelWorm.DEFAULT_MAX_FORMANT_FEMALE = 5500;
+/**
+ * The maximum formant expected to be found for a female speaker
+ * @see VowelWorm.instance.prototype.maxFormantHz
+ * @see {@link http://www.fon.hum.uva.nl/praat/manual/Sound__To_Formant__burg____.html}
+ * @see {@link http://www.sfu.ca/sonic-studio/handbook/Formant.html}
+ * @const
+ * @type number
+ */
+VowelWorm.DEFAULT_MAX_FORMANT_CHILD = 8000;
+
 VowelWorm.instance.prototype = Object.create(VowelWorm);
 VowelWorm.instance.constructor = VowelWorm.instance;
 
 var proto = VowelWorm.instance.prototype;
+
+/**
+ * The maximum formant value that can be expected to be found.
+ * @see VowelWorm.DEFAULT_MAX_FORMANT_CHILD
+ * @see VowelWorm.DEFAULT_MAX_FORMANT_FEMALE
+ * @see VowelWorm.DEFAULT_MAX_FORMANT_MALE
+ * @see VowelWorm.instance.prototype.getFormants
+ * @type number
+ */
+proto.maxFormantHz = VowelWorm.DEFAULT_MAX_FORMANT_MALE; // easier to test since we are male programmers
 
 /**
  * A collection of plugins. This is done so that each plugin object has
@@ -526,8 +564,56 @@ proto.plugins = [];
 /**
  * The current mode the vowel worm is in (e.g., stream, audio element, etc.)
  * @type {?number}
+ *
+ * @see VowelWorm.AUDIO
+ * @see VowelWorm.STREAM
+ * @see VowelWorm.REMOTE_URL
  */
 proto.mode = null;
+
+/**
+ * Enables a sort of poor man's resampling to fix the issue where the peaks
+ * we find at various array indices do not necessarily correspond with known
+ * formant ranges (e.g., formant 1 may be found well outside the ranges of 
+ * values like {@link F1_MIN} and {@link F1_MAX}). Normally (?) we would do a
+ * real downsampling of the media stream to to attenuate values beyond that of
+ * a reasonable vocal range, like a range from 0 to 5000-8000 Hz, depending on
+ * the speaker's age, sex, and [helium content]{@link http://www.phys.unsw.edu.au/jw/speechmodel.html}.
+ *
+ * [Praat downsamples.]{@link http://www.fon.hum.uva.nl/praat/manual/Sound__To_Formant__burg____.html}.
+ * Quoting Praat's "To Formant" section under "Algorithm":
+ *
+ *    "The sound will be resampled to a sampling frequency of twice the value
+ *    of 'Maximum formant'…
+ *
+ *    The algorithm will initially find 'Maximum number of formants' formants
+ *    in the whole range between 0 Hz and Maximum formant."
+ *
+ * So while the LPC (or FFT, or Hann, or…) graph of a recording sampled at both
+ * 16kHz and 44.1kHz may appear similar in size and position of peaks, and
+ * while the initial FFT array contains the same number of bins (fftSize/2),
+ * identical positions in each graph represent different frequency values.
+ * I do not totally understand why this works the way it does. Furthermore,
+ * I may be completely incorrect in this.
+ *
+ * Regardless, this is necessary for 
+ * {@link VowelWorm.instance.prototype.getFormants} to work correctly.
+ *
+ * @see {@link VowelWorm.instance.prototype.maxFormantHz} for more info
+ *
+ * @param number value The original value in Hz whose location you want in the
+ * new sample rate
+ * @param number origRate The original sample rate
+ * @param number newRate The new sample rate to convert to
+ * @return number the Hz value as it would be found in the new sample rate
+ *
+ * @private
+ * @nosideeffects
+ * 
+ */
+proto._resample = function resample(value, origRate, newRate) {
+  return value*newRate/origRate;
+};
 
 /**
  * @param {MediaStream|string|Audio} stream The audio stream to analyze OR a string representing the URL for an audio file OR an Audio file
@@ -578,6 +664,7 @@ proto._getPeaks = function getPeaks(smoothedArray, sampleRate, fftSize) {
     var hz = this._toFrequency(i, sampleRate, fftSize);
     var formant = peaks.length+1;
 
+    // MASSIVE TODO - these F values are NOT normalized through _resample but MUST be for accuracy
     switch(formant) {
       case 1:
         if(hz < F1_MIN) { continue; }
@@ -658,6 +745,8 @@ proto.getFormants = function getFormants(data, sampleRate) {
    */
   var HANNING_SHIFT = 32; 
 
+  var that = this;
+
   if(arguments.length !== 2 && arguments.length !== 0) {
     throw new Error("Invalid arguments. Function must be called either as "+
                     " getFormants(data, sampleRate) or getFormants()");
@@ -675,9 +764,15 @@ proto.getFormants = function getFormants(data, sampleRate) {
     sampleRate = this.getSampleRate();
   }
 
+  var resample = function resample(value) {
+    var newSampleRate = that.maxFormantHz*2;
+    return that._resample(value, sampleRate, newSampleRate);
+  };
+
   for(var i = 0; i<WINDOW_SIZES.length; i++) {
     var smooth = this.hann(data, WINDOW_SIZES[i]).slice(HANNING_SHIFT);
     var formants = this._getPeaks(smooth, sampleRate, fftSize);
+    formants = formants.map(resample);
 
     if( formants[0]<F1_MIN || formants[0]>F1_MAX || formants[0]>=formants[1] ||
         formants[1]<F2_MIN || formants[1]>F2_MAX || formants[1]>=formants[2] ||
