@@ -87,7 +87,7 @@ module( "vs. Wavesurfer's LPC" );
 function testGetFormants(data, sampleRate, expected) {
   var LEEWAY = 100; // amount to forgive, in Hz
   var worm = new VowelWorm.instance();
-  worm.maxFormantHz = sampleRate; // trick it into resampling into the same value
+  worm.maxFormantHz = sampleRate/2; // trick it into resampling into the same value
 
   var formants = worm.getFormants(data, sampleRate);
   close(formants[0], expected[0], LEEWAY, "F1");
