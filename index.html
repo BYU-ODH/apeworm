@@ -4,18 +4,28 @@
 	<script src="pixi.dev.js"></script>
 	<script src="vowelworm.js"></script>
 	<script src="vowelworm.draw.js"></script>
+	<script src="wormGraph.js"></script>
   <audio style='display:none' controls id=media src="avowellong.wav"></audio>
 
   <button onclick=usemedia()>Use Media File</button>
   <button onclick=usemic()>Use Microphone</button>
   <br>
   <script>
+    // for the IPA representation
+    var width = 500;
+    var height = 400;
+    var stage = new PIXI.Stage(0xFFFFFF);
+    var renderer = PIXI.autoDetectRenderer(width+40, height+40);
+    document.body.appendChild(renderer.view);
+    // end IPA code
+                                                                              
     function getUserMedia() {
       (navigator.getUserMedia || navigator.webkitGetUserMedia || function(){alert('getUserMedia missing')})
                             .apply(navigator, arguments);
     }
 
     var worm = new VowelWorm.instance();
+    worm.maxFormantHz = 10000;
     var audio = document.getElementById('media');
 
     function drawit() {
@@ -26,6 +36,10 @@
     }
 
     function run() {
+      var position = worm.normalize(worm.getFormants());
+      if(position.length) {
+        makeWorm(position[0],position[1], stage, renderer, width, height);
+      }
       worm.draw.drawDataLines();
       window.requestAnimationFrame(run);
     };
@@ -38,6 +52,8 @@
     };
 
     function micSuccess(stream) {
+      makeGraph(stage, renderer, width, height);
+
       worm.setStream(stream);
       drawit();
       run(worm);
@@ -52,7 +68,6 @@
       audio.style.display = 'none';
       getUserMedia({audio: true}, micSuccess, micFailure);
     };
-
   </script>
 </body>
 </html>
