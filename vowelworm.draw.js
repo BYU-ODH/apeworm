@@ -162,7 +162,7 @@
       tick.lineTo(x, Y_POS_OF_TICK);
       stage.addChild(tick);
 
-      var freq = this.worm._toFrequency(x*scale, this.worm.getScaledSampleRate(), this.worm.getFFTSize());
+      var freq = this.worm._toFrequency(x*scale, this.worm.getResampledRate(), this.worm.getFFTSize());
       freq /= 1000; // convert to kHz
       freq = parseFloat(freq.toFixed(2),10); // round
 
@@ -261,7 +261,7 @@
   };
 
   v.hertzToPixels = function(hz){
-      return (this._renderer.width*hz)/(this.worm.getScaledSampleRate()/2);
+      return (this._renderer.width*hz)/(this.worm.getResampledRate()/2);
   };
 
   v.drawPeaks = function(values,color){
