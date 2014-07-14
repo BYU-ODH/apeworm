@@ -639,6 +639,15 @@ proto.setStream = function setStream(stream) {
   }
 };
 
+/**
+ * Returns the sample rate as scaled by {@link maxFormantHz}
+ * @return number
+ * @nosideeffects
+ */
+proto.getResampledRate = function getResampledRate() {
+  return this.maxFormantHz*2;
+};
+
 proto._loadFromStream = function loadFromStream(stream) {
   this.mode = this.STREAM;
   var streamSource = this._context.createMediaStreamSource(stream);
@@ -718,6 +727,7 @@ proto.getSampleRate = function getSampleRate() {
       throw new Error("Current mode has no method for sample rate");
   };
 };
+
 /**
  * The size of the FFT, in bins
  * @instance
