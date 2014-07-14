@@ -197,12 +197,23 @@
     this._renderer.render(this._stage);
   };
   
-  v.makeValuesGraphable = function(values){
-    var min = this.worm._analyzer.minDecibels;
-        
+  v.makeValuesGraphable = function(values){        
     for(var i=0; i<values.length; i++){         
-      values[i] = (this._renderer.height * values[i])/min;             
+        values[i] = this.decibelsToPixels(values[i]);
     }
+  };
+  
+  v.decibelsToPixels = function(db){
+      var height = this._renderer.height;
+      var min = this.worm._analyzer.minDecibels;
+      var max = this.worm._analyzer.maxDecibels;
+      
+      
+      var b = (height/(min-max))*max;            
+      var y = ((height/(min-max))*db)-b;
+      
+      return y;      
+  
   };
   
   v.drawDataLines = function(){
