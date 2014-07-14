@@ -16,6 +16,8 @@
     var height = 400;
     var stage = new PIXI.Stage(0xFFFFFF);
     var renderer = PIXI.autoDetectRenderer(width+40, height+40);
+    makeGraph(stage, renderer, width, height);
+
     document.body.appendChild(renderer.view);
     // end IPA code
                                                                               
