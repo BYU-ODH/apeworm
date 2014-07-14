@@ -12,11 +12,18 @@
   <br>
   <script>
     // for the IPA representation
-    var width = 500;
-    var height = 400;
+    var width = 300;
+    var height = 600;
+//x1 = xStart, x2 = xEnd and the same for y
+    var x1=5;
+    var x2=15;
+    var y1=0;
+    var y2=20;
+
     var stage = new PIXI.Stage(0xFFFFFF);
     var renderer = PIXI.autoDetectRenderer(width+40, height+40);
-    makeGraph(stage, renderer, width, height);
+    makeGraph(stage, renderer, width, height, x1, x2, y1, y2);
+    makeWorm(11,10, stage, renderer, width, height, x1, x2, y1, y2);
 
     document.body.appendChild(renderer.view);
     // end IPA code

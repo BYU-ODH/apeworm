@@ -1,17 +1,24 @@
-var xStart = 0;
-var xEnd = 9;
-var yStart = 0;
-var yEnd = 14;
+//var xStart = 5;
+//var xEnd = 15;
+//var yStart = 0;
+//var yEnd = 20;
 
-function makeGraph(stage, renderer, width, height) {
+function makeGraph(stage, renderer, width, height, x1, x2, y1, y2) {
 	//var stage = new PIXI.Stage(0xFFFFFF, true);
 	//var renderer = new PIXI.autoDetectRenderer(width+40, height+40);
 	document.body.appendChild(renderer.view);
 
-	var xDist = width/8;
-	xDist = xDist.toFixed(2);
-	var yDist = height/8;
-	yDist = yDist.toFixed(2);
+	//var xDist = width/9;
+	//xDist = xDist.toFixed(2);
+	//var yDist = height/14;
+	//yDist = yDist.toFixed(2);
+
+	
+	var xStart = x1;
+	var xEnd = x2;
+	var yStart = y1;
+	var yEnd = y2;
+
 
 	var graphics = new PIXI.Graphics();
 	graphics.lineStyle(1,0x000000,1);
@@ -49,7 +56,13 @@ function makeGraph(stage, renderer, width, height) {
 
 var makeWorm = (function(){
 	var graphics = null;
-	return function make(x, y, stage, renderer, width, height) {
+
+	return function make(x, y, stage, renderer, width, height, x1, x2, y1, y2) {
+		
+		var xStart = x1;
+		var xEnd = x2;
+		var yStart = y1;
+		var yEnd = y2;
 		//deletes previous worm
 		if(graphics) {
 			stage.removeChild(graphics);
@@ -57,9 +70,11 @@ var makeWorm = (function(){
 
 		var xDist = width/(xEnd-xStart);
 		var yDist = height/(yEnd-yStart);
+		
+				
 
-		var adjustedX = x*xDist;
-		var adjustedY = height-y*yDist;
+		var adjustedX = (x-xStart)*xDist + 20;
+		var adjustedY = height-(y-yStart)*yDist+20;
 		graphics = new PIXI.Graphics();
 		graphics.beginFill(0x99000,1);
 		graphics.drawCircle(adjustedX,adjustedY ,10);
