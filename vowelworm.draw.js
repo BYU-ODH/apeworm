@@ -162,7 +162,7 @@
       tick.lineTo(x, Y_POS_OF_TICK);
       stage.addChild(tick);
 
-      var freq = this.worm._toFrequency(x*scale, this.worm.getSampleRate(), this.worm.getFFTSize());
+      var freq = this.worm._toFrequency(x*scale, this.worm.getScaledSampleRate(), this.worm.getFFTSize());
       freq /= 1000; // convert to kHz
       freq = parseFloat(freq.toFixed(2),10); // round
 
@@ -197,14 +197,15 @@
     this._renderer.render(this._stage);
   };
   
+  v.makeValuesGraphable = function(values){
+    var min = this.worm._analyzer.minDecibels;
+        
+    for(var i=0; i<values.length; i++){         
+      values[i] = (this._renderer.height * values[i])/min;             
+    }
+  };
+  
   v.drawDataLines = function(){
-
-    var makeValuesGraphable = function(values){
-        for(var i=0; i<values.length; i++){
-            //Invert the number to graph on the upside grid of the canvas
-            values[i] = values[i]*-1;
-        }
-    };
 
     var stage    = this._stage;
     var renderer = this._renderer;     
@@ -217,8 +218,8 @@
     var COLOR_RED = 16711680;
     var COLOR_BLACK = 0;
 
-    makeValuesGraphable(values);
-    makeValuesGraphable(smoothed_values);
+    this.makeValuesGraphable(values);
+    this.makeValuesGraphable(smoothed_values);
    
     var point_distance = renderer.width/values.length;
 
@@ -260,7 +261,7 @@
   };
 
   v.hertzToPixels = function(hz){
-      return (this._renderer.width*hz)/(this.worm.getSampleRate()/2);
+      return (this._renderer.width*hz)/(this.worm.getScaledSampleRate()/2);
   };
 
   v.drawPeaks = function(values,color){
