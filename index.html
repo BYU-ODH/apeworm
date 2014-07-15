@@ -1,5 +1,7 @@
 <html>
-<head></head>
+<head>
+<meta charset=utf-8 />
+</head>
 <body>
 	<script src="pixi.dev.js"></script>
 	<script src="vowelworm.js"></script>
@@ -10,6 +12,18 @@
   <button onclick=usemedia()>Use Media File</button>
   <button onclick=usemic()>Use Microphone</button>
 
+  <pre>
+expected values, in kHz, for test/audio/vowels.mp3
+
+       f1       f2       f3
+  i    0.25     2.25     3.05
+  e    0.45     2.1      2.55
+  a    0.55     1.1      2.6
+  o    0.4      0.9      2.25
+  u    0.3      0.8      2.25
+
+±0.1 kHz
+  </pre>
   <div id='graphs'></div>
   
   <form>
@@ -43,7 +57,7 @@
     }
 
     var worm = new VowelWorm.instance();
-    worm.maxFormantHz = 10000;
+    worm.maxFormantHz = 44100;
     var audio = document.getElementById('media');
     audio.loop = true;
 
