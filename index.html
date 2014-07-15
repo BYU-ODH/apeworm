@@ -28,7 +28,7 @@ expected values, in kHz, for test/audio/vowels.mp3
   
   <form>
     <div>
-      <label>maxFormantHz: <input type='number' step=100 min=1000 max=44100 id='maxFormantHz'></label>
+      <label>maxFormantHz: <input type='number' step=50 min=1000 max=22050 id='maxFormantHz'></label>
     </div>
   </form>
 
@@ -39,10 +39,10 @@ expected values, in kHz, for test/audio/vowels.mp3
     var width = 200;
     var height = 200;
 //x1 = xStart, x2 = xEnd and the same for y
-    var x1=200;
-    var x2=1000;
-    var y1=3000;
-    var y2=500;
+    var x1=0;
+    var x2=21;
+    var y1=21;
+    var y2=0;
 
     var stage = new PIXI.Stage(0xFFFFFF);
     var renderer = PIXI.autoDetectRenderer(width+40, height+40);
@@ -57,7 +57,7 @@ expected values, in kHz, for test/audio/vowels.mp3
     }
 
     var worm = new VowelWorm.instance();
-    worm.maxFormantHz = 44100;
+    worm.maxFormantHz = 22050;
     var audio = document.getElementById('media');
     audio.loop = true;
 
@@ -69,8 +69,7 @@ expected values, in kHz, for test/audio/vowels.mp3
     }
 
     function run() {
-      //var position = worm.normalize(worm.getFormants());
-      var position = worm.getFormants();
+      var position = worm.normalize(worm.getFormants());
       if(position.length) {
         makeWorm(position[0],position[1], stage, renderer, width, height, x1, x2, y1, y2);
       }
