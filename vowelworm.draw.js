@@ -87,6 +87,9 @@
    * @stub
    */
   v._drawYAxis = function drawYAxis(color) {
+    var axis = new PIXI.DisplayObjectContainer();
+    this._axes.push(axis);
+
     var max      = this.worm._analyzer.maxDecibels,
         min      = this.worm._analyzer.minDecibels,
         renderer = this._renderer,
@@ -114,10 +117,11 @@
       });
       label.position.x = x_offset;
       label.position.y = y - label.height/2; // center it
-      stage.addChild(label);
+      axis.addChild(label);
     }
     
-    stage.addChild(yLabel);
+    axis.addChild(yLabel);
+    stage.addChild(axis);
   };
 
   /**
@@ -126,6 +130,9 @@
    * @private
    */
   v._drawXAxis = function drawXAxis(color) {
+    var axis = new PIXI.DisplayObjectContainer();
+    this._axes.push(axis);
+
     var renderer = this._renderer,
         stage    = this._stage;
 
@@ -149,7 +156,7 @@
     });
     xLabel.position.x = X_AXIS_DISTANCE - xLabel.width/2;
     xLabel.position.y = Y_POS_OF_X;
-    stage.addChild(xLabel);
+    axis.addChild(xLabel);
     
     // only show half the FFT size, because there are only half as many bins
     var scale = (this.worm.getFFTSize()/2)/renderer.width;
@@ -160,7 +167,7 @@
       tick.lineStyle(1, color);
       tick.moveTo(x, Y_POS_OF_X);
       tick.lineTo(x, Y_POS_OF_TICK);
-      stage.addChild(tick);
+      axis.addChild(tick);
 
       var freq = this.worm._toFrequency(x*scale, this.worm.getResampledRate(), this.worm.getFFTSize());
       freq /= 1000; // convert to kHz
@@ -172,7 +179,8 @@
       });
       label.position.x = x - (label.width/2); // center it
       label.position.y = Y_POS_OF_TICK-10;
-      stage.addChild(label);
+      axis.addChild(label);
+      stage.addChild(axis);
     }
   };
 
@@ -189,6 +197,13 @@
 
     if(color === undefined || color === null) {
       color = AXES_COLOR;
+    }
+
+    this._axes = this._axes || [];
+    var axis = null;
+
+    while(axis = this._axes.pop()) {
+      this._stage.removeChild(axis);
     }
 
     this._drawXAxis(color);

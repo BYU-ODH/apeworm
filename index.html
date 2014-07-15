@@ -9,23 +9,32 @@
 
   <button onclick=usemedia()>Use Media File</button>
   <button onclick=usemic()>Use Microphone</button>
-  <br>
+
+  <div id='graphs'></div>
+  
+  <form>
+    <div>
+      <label>maxFormantHz: <input type='number' step=100 min=1000 max=44100 id='maxFormantHz'></label>
+    </div>
+  </form>
+
   <script>
+    var graphs = document.getElementById('graphs');
+
     // for the IPA representation
-    var width = 300;
-    var height = 600;
+    var width = 200;
+    var height = 200;
 //x1 = xStart, x2 = xEnd and the same for y
-    var x1=5;
-    var x2=15;
-    var y1=0;
-    var y2=20;
+    var x1=200;
+    var x2=1000;
+    var y1=3000;
+    var y2=500;
 
     var stage = new PIXI.Stage(0xFFFFFF);
     var renderer = PIXI.autoDetectRenderer(width+40, height+40);
     makeGraph(stage, renderer, width, height, x1, x2, y1, y2);
-    makeWorm(11,10, stage, renderer, width, height, x1, x2, y1, y2);
 
-    document.body.appendChild(renderer.view);
+    graphs.appendChild(renderer.view);
     // end IPA code
                                                                               
     function getUserMedia() {
@@ -36,18 +45,20 @@
     var worm = new VowelWorm.instance();
     worm.maxFormantHz = 10000;
     var audio = document.getElementById('media');
+    audio.loop = true;
 
     function drawit() {
-      var canvas = worm.draw.create(window.outerWidth-50, 500);
+      var canvas = worm.draw.create(window.outerWidth-width-100, height);
       worm.draw.drawAxes();
 
-      document.body.appendChild(canvas);
+      graphs.appendChild(canvas);
     }
 
     function run() {
-      var position = worm.normalize(worm.getFormants());
+      //var position = worm.normalize(worm.getFormants());
+      var position = worm.getFormants();
       if(position.length) {
-        makeWorm(position[0],position[1], stage, renderer, width, height);
+        makeWorm(position[0],position[1], stage, renderer, width, height, x1, x2, y1, y2);
       }
       worm.draw.drawDataLines();
       window.requestAnimationFrame(run);
@@ -77,6 +88,21 @@
       audio.style.display = 'none';
       getUserMedia({audio: true}, micSuccess, micFailure);
     };
+
+    (function(){
+     var mfh = document.getElementById('maxFormantHz');
+     var timeout = null;
+     mfh.value = worm.maxFormantHz;
+     mfh.addEventListener('change', function(){
+       worm.maxFormantHz = mfh.value;
+       if(timeout) { cancelAnimationFrame(timeout); }
+       
+       timeout = requestAnimationFrame(function(){
+         cancelAnimationFrame(timeout);
+         worm.draw.drawAxes();
+       });
+     });
+    })();
   </script>
 </body>
 </html>
