@@ -242,7 +242,7 @@
     var values = new Float32Array(this.worm.getFFTSize()/2);
     this.worm._analyzer.getFloatFrequencyData(values);
 
-    var smoothed_values = this.worm.hann(values, 75).slice(32);
+    var smoothed_values = this.worm.hann(values, 75);
 
     var COLOR_RED = 16711680;
     var COLOR_BLACK = 0;

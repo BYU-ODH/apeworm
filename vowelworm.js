@@ -165,7 +165,7 @@ VowelWorm.normalize = function normalize(formants, method) {
  * Applies a hanning window to the given dataset, returning a new array
  * @param {Array.<number>} vals The values to change
  * @param {number} window_size the size of the window
- * @return {Array.<number>} the new values
+ * @return {Array.<number>} the new values, shifted to {@link HANNING_SHIFT}
  */
 /**
  * @license
@@ -200,7 +200,7 @@ VowelWorm.hann = function hann(vals, window_size) {
   for(var i = 0; i<w.length; i++) {
     wMorph[i] = w[i]/sum;
   }
-  return VowelWorm.convolve(wMorph, s);
+  return VowelWorm.convolve(wMorph, s).slice(this.HANNING_SHIFT);
 };
 
 /**
@@ -530,6 +530,17 @@ VowelWorm.instance = function VowelWorm(stream) {
 };
 
 /**
+ * The amount the Hanning window needs to be shifted to line up correctly.
+ * TODO This should be proportional to the window size.
+ *
+ * @see {@link VowelWorm.hann}
+ * @type number
+ * @const number
+ */
+VowelWorm.HANNING_SHIFT = 32;
+
+
+/**
  * The maximum formant expected to be found for a male speaker
  * @see VowelWorm.instance.prototype.maxFormantHz
  * @see {@link http://www.fon.hum.uva.nl/praat/manual/Sound__To_Formant__burg____.html}
@@ -767,13 +778,6 @@ proto.getFFTSize = function getFFTSize() {
  * @nosideeffects
  */
 proto.getFormants = function getFormants(data, sampleRate) {
-  /**
-   * The amount the Hanning window needs to be shifted to line up correctly.
-   * TODO is this the same for all sample rates and FFT sizes?
-   * TODO This should be proportional to the window size
-   */
-  var HANNING_SHIFT = 32; 
-
   var that = this;
 
   if(arguments.length !== 2 && arguments.length !== 0) {
@@ -799,7 +803,7 @@ proto.getFormants = function getFormants(data, sampleRate) {
   };
 
   for(var i = 0; i<WINDOW_SIZES.length; i++) {
-    var smooth = this.hann(data, WINDOW_SIZES[i]).slice(HANNING_SHIFT);
+    var smooth = this.hann(data, WINDOW_SIZES[i]);
     var formants = this._getPeaks(smooth, sampleRate, fftSize);
     formants = formants.map(resample);
 
