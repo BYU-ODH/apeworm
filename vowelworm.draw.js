@@ -59,6 +59,10 @@
   var v = proto.draw = {};
   proto.plugins.push(v);
 
+  //Set the default min and max for y-axis scaling
+  v.minDecibels = -250;
+  v.maxDecibels = -30;
+
   /**
    * Creates a new instance of a PIXI js stage and returns a canvas element.
    * @param {number} width The desired width of the stage
@@ -90,8 +94,8 @@
     var axis = new PIXI.DisplayObjectContainer();
     this._axes.push(axis);
 
-    var max      = this.worm._analyzer.maxDecibels,
-        min      = this.worm._analyzer.minDecibels,
+    var max      = this.maxDecibels,
+        min      = this.minDecibels,
         renderer = this._renderer,
         stage    = this._stage;
 
@@ -220,9 +224,8 @@
   
   v.decibelsToPixels = function(db){
       var height = this._renderer.height;
-      var min = this.worm._analyzer.minDecibels;
-      var max = this.worm._analyzer.maxDecibels;
-      
+      var min = this.minDecibels;
+      var max = this.maxDecibels;
       
       var b = (height/(min-max))*max;            
       var y = ((height/(min-max))*db)-b;
