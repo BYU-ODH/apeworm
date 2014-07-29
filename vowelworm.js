@@ -308,7 +308,7 @@ VowelWorm.AUDIO = 1;
  * In this case, a video element
  * @const
  */
-VowelWorm.AUDIO = 2;
+VowelWorm.VIDEO = 2;
 
 /**
  * Representative of the current mode VowelWorm is in.
