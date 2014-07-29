@@ -58,6 +58,7 @@ var WINDOW_SIZES = [
   61
 ];
 
+
 /***
  * Contains precomputed values for the Hanning function at specific window
  * lengths.
@@ -116,6 +117,46 @@ VowelWorm.Normalization = {
     }
     return 26.81/(1+(1960/formant)) - 0.53;
   }
+};
+
+/**
+ * Returns the linear magnitude of the given decibels value.
+ * @param {number} dB the value in dB to convert
+ * @nosideeffects
+ * @return {number} the linear magnitude
+ * 
+ * TODO — If we can find a generic representation somewhere of this algorithm,
+ * we can remove this license
+ */
+/**
+ * @license
+ *
+ * decibelsToLinear
+ * 
+ * Copyright (C) 2010, Google Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1.  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2.  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+VowelWorm.decibelsToLinear = function decibelsToLinear(dB) {
+  return Math.pow(10, 0.05 * dB);
 };
 
 /**
@@ -487,6 +528,7 @@ function flipArray(y) {
  */
 /**
  * Finds the pseudo-inverse of the given array
+ * Requires NumericJS to be loaded
  * @param {Array.<number>} A The array to apply the psuedo-inverse to
  * @return {Array.<number>} The psuedo-inverse applied to the array
  */
@@ -766,6 +808,136 @@ proto.getSampleRate = function getSampleRate() {
  */
 proto.getFFTSize = function getFFTSize() {
   return this._analyzer.fftSize;
+};
+
+/**
+ * @license MFCC code Derived from https://github.com/Maxwell79/mfccExtractor
+ * under Version 2 (1991) of the GNU General Public License
+ */
+
+/**
+ * Retrieves Mel Frequency Cepstrum Coefficients (MFCCs). For best results,
+ * if using preexisting webaudio FFT data (from getFloatFrequencyData), pass
+ * your values through {@link VowelWorm.decibelsToLinear} first. If you do not
+ * pass in specific FFT data, the default data will be converted to a linear 
+ * magnitude scale anyway.
+ *
+ * Pass in an object with options as such:
+ *
+ * {
+ *   minFreq: {number} The minimum frequency to expect (TODO: create default val)
+ *   maxFreq: {number} The maximum frequency to expect (TODO: create default val)
+ *   filterBanks: {number} The number of filter banks to retrieve (TODO: create default val)
+ *   fft: {Array.<number>=} - FFT transformation data. If null, pulls from the analyzer
+ *   sampleRate: {number=} sampleRate the sample rate of the data. Required if data is not null
+ * }
+ *
+ * @param {Object} options
+ * 
+ * @return {Array.<number>} The MFFCs. Probably relevant are the second and
+ * third values (i.e., a[1] and a[2])
+ * @nosideeffects
+ */
+proto.getMFCCs = function(options) {
+  /**
+   * @TODO: get rid of all the leading underscores in this function.
+   */
+  var _fft = null;
+
+  if(!options.fft) {
+    _fft = new Float32Array(this.getFFTSize()/2);
+    this._analyzer.getFloatFrequencyData(_fft);
+    for(var j = 0; j<_fft.length; j++) {
+      _fft[j] = VowelWorm.decibelsToLinear(_fft[j]);
+    }
+  }
+  else
+  {
+    // we need to ensure that these are all positive values
+    var tmpFFT = [];
+    for(var i = 0; i<options.fft.length; i++) {
+      tmpFFT[i] = Math.abs(options.fft[i]);
+    }
+    _fft = tmpFFT;
+  }
+
+  var filterBanks = [],
+      _noFilterBanks = options.filterBanks,
+      _NFFT = _fft.length*2,
+      _minFreq = options.minFreq,
+      _maxFreq = options.maxFreq,
+      _sampleRate = options.sampleRate || this.getSampleRate();
+
+  function toFrequency(position) {
+    return (position*_sampleRate)/_NFFT;
+  };
+
+  function initFilterBanks() {
+    var maxMel = 1125 * Math.log(1.0 + _maxFreq/700);
+    var minMel = 1125 * Math.log(1.0 + _minFreq/700);
+	  var dMel = (maxMel - minMel) / (_noFilterBanks+1);
+   
+    var bins = []; 
+    for (var n = 0; n < _noFilterBanks + 2; n++) {
+      var mel = minMel + n * dMel;
+      var Hz = 700  * (Math.exp(mel / 1125) - 1);
+      var bin = Math.floor( (_NFFT)*Hz / _sampleRate);	
+      bins.push(bin);
+    }
+
+    for(var i = 1; i<bins.length-1; i++) {
+      var fBank = [];
+
+      var fBelow = toFrequency(bins[i-1]);
+      var fCentre = toFrequency(bins[i]);
+      var fAbove = toFrequency(bins[i+1]);
+
+      for(var n = 0; n < 1 + _NFFT / 2; n++) {
+        var freq = toFrequency(n);
+        var val = null;
+
+        if ((freq <= fCentre) && (freq >= fBelow)) {
+          val = ((freq - fBelow) / (fCentre - fBelow));
+        } else if ((freq > fCentre) && (freq <= fAbove)) {
+          val = ((fAbove - freq) / (fAbove - fCentre));
+        } else {
+          val = 0.0;
+        }
+        fBank.push(val);
+      }
+
+      filterBanks.push(fBank);
+    }
+  };
+  
+  function getLogCoefficents() {
+    var preDCT = []; // Initialise pre-discrete cosine transformation vetor array
+    var postDCT = [];// Initialise post-discrete cosine transformation vetor array / MFCC Coefficents
+
+    for(var i = 0; i<filterBanks.length; i++) {
+      var cel = 0;
+      var n = 0; 
+      for(var j = 0; j < filterBanks[i].length-1; j++) {
+        cel += (filterBanks[i][j]) * _fft[n++];
+      }
+      preDCT.push(Math.log(cel)); // Compute the log of the spectrum
+    }
+
+    // Perform the Discrete Cosine Transformation
+    for (var i = 0; i < filterBanks.length; i++) {
+      var val = 0;
+      var n = 0;
+      for (var j = 0; j<preDCT.length; j++) {
+        val += (preDCT[j]) * Math.cos(i * (n++ - 0.5) *  Math.PI / filterBanks.length);
+      }
+      val /= filterBanks.length;
+      postDCT.push(val); 
+    }
+    return postDCT;
+  };
+
+  initFilterBanks();
+  return getLogCoefficents();
 };
 
 /**
