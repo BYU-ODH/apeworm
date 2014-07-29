@@ -45,13 +45,13 @@ expected values, in kHz, for test/audio/vowels.wav
     var graphs = document.getElementById('graphs');
 
     // for the IPA representation
-    var width = 200;
-    var height = 200;
+    var width = 700;
+    var height = 500;
 //x1 = xStart, x2 = xEnd and the same for y
     var x1=0;
-    var x2=21;
-    var y1=21;
-    var y2=0;
+    var x2=10;
+    var y1=0;
+    var y2=5;
 
     var stage = new PIXI.Stage(0xFFFFFF);
     var renderer = PIXI.autoDetectRenderer(width+40, height+40);
@@ -78,9 +78,15 @@ expected values, in kHz, for test/audio/vowels.wav
     }
 
     function run() {
-      var position = worm.normalize(worm.getFormants());
+      var position = worm.getMFCCs({
+          minFreq: 300,
+          maxFreq: 8000,
+          filterBanks: 10
+      });
       if(position.length) {
-        makeWorm(position[0],position[1], stage, renderer, width, height, x1, x2, y1, y2);
+        position[1] = Math.abs(position[1])*4;
+        position[2] = Math.abs(position[2])*4;
+        makeWorm(position[1],position[2], stage, renderer, width, height, x1, x2, y1, y2);
       }
       worm.draw.drawDataLines();
       window.requestAnimationFrame(run);
