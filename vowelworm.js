@@ -346,17 +346,24 @@ VowelWorm.AUDIO = 1;
 
 /**
  * Representative of the current mode VowelWorm is in.
+ * In this case, a video element
+ * @const
+ */
+VowelWorm.VIDEO = 2;
+
+/**
+ * Representative of the current mode VowelWorm is in.
  * In this case, a media stream
  * @const
  */
-VowelWorm.STREAM = 2;
+VowelWorm.STREAM = 3;
 
 /**
  * Representative of the current mode VowelWorm is in.
  * In this case, a remote URL turned into a source node
  * @const
  */
-VowelWorm.REMOTE_URL = 3;
+VowelWorm.REMOTE_URL = 4;
 
 /*******************
  * HELPER FUNCTIONS
@@ -638,6 +645,7 @@ proto.plugins = [];
  * @type {?number}
  *
  * @see VowelWorm.AUDIO
+ * @see VowelWorm.VIDEO
  * @see VowelWorm.STREAM
  * @see VowelWorm.REMOTE_URL
  */
@@ -702,6 +710,10 @@ proto.setStream = function setStream(stream) {
   else if(stream && (stream instanceof window.Audio || stream.tagName === 'AUDIO'))
   {
     this._loadFromAudio(stream);
+  }
+  else if(stream && stream.tagName === 'VIDEO')
+  {
+    this._loadFromVideo(stream);
   }
   else
   {
@@ -790,6 +802,7 @@ proto.getSampleRate = function getSampleRate() {
       return this._sourceNode.buffer.sampleRate;
       break;
     case this.AUDIO:
+    case this.VIDEO:
       return DEFAULT_SAMPLE_RATE; // this cannot be retrieved from the element
       break;
     case this.STREAM:
@@ -1047,6 +1060,19 @@ proto._loadFromAudio = function loadFromAudio(audio) {
 
   this.mode = this.AUDIO;
   this._sourceNode = this._context.createMediaElementSource(audio);
+  this._sourceNode.connect(this._analyzer);
+  this._analyzer.connect(this._context.destination);
+};
+
+/**
+ * Loads a video element as the data to be processed
+ * @param {Video} audio
+ */
+proto._loadFromVideo = function loadFromVideo(video) {
+  console.warn( "Cannot determine sample rate. Setting as " + DEFAULT_SAMPLE_RATE );
+
+  this.mode = this.VIDEO;
+  this._sourceNode = this._context.createMediaElementSource(video);
   this._sourceNode.connect(this._analyzer);
   this._analyzer.connect(this._context.destination);
 };
