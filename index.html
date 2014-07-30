@@ -50,10 +50,10 @@ expected values, in kHz, for test/audio/vowels.wav
     var width = 700;
     var height = 500;
 //x1 = xStart, x2 = xEnd and the same for y
-    var x1=0;
-    var x2=10;
-    var y1=0;
-    var y2=5;
+    var x1=-1;
+    var x2=2;
+    var y1=-1;
+    var y2=3;
 
     var stage = new PIXI.Stage(0xFFFFFF);
     var renderer = PIXI.autoDetectRenderer(width+40, height+40);
@@ -88,9 +88,16 @@ expected values, in kHz, for test/audio/vowels.wav
           filterBanks: 10
       });
       if(position.length) {
-        position[1] = Math.abs(position[1])*4;
-        position[2] = Math.abs(position[2])*4;
-        makeWorm(position[1],position[2], stage, renderer, width, height, x1, x2, y1, y2);
+        x = position[1];
+        y = position[2];
+
+        // rotate 90 degrees
+        var tmpY = y;
+        var tmpX = x;
+        x = tmpY;
+        y = -tmpX;
+
+        makeWorm(x,y, stage, renderer, width, height, x1, x2, y1, y2);
       }
       worm.draw.drawDataLines();
       window.requestAnimationFrame(run);
