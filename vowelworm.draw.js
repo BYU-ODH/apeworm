@@ -282,7 +282,7 @@ window.VowelWorm.module('draw', function createDrawModule(worm) {
   };
 
   this.hertzToPixels = function(hz){
-      return (this._renderer.width*hz)/(worm.getResampledRate()/2);
+      return (this._renderer.width*hz)/(worm.getSampleRate()/2);
   };
 
   this.drawPeaks = function(values,color){
