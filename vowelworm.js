@@ -6,6 +6,11 @@ window.VowelWorm = window.VowelWorm || {};
 "use strict";
 
 /**
+ * @const
+ */
+var CONTEXT = new AudioContext();
+
+/**
  * A collection of all vowel worm instances. Used for attaching modules.
  * @see {@link VowelWorm.module}
  * @type {Array.<VowelWorm.instance>}
@@ -575,7 +580,7 @@ VowelWorm.instance = function VowelWorm(stream) {
   });
   instances.push(this);
 
-  this._context    = new AudioContext();
+  this._context    = CONTEXT;
   this._analyzer   = this._context.createAnalyser();
   this._sourceNode = null; // for analysis with files rather than mic input
   this._analyzer.fftSize = 2048;
