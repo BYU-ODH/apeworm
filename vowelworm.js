@@ -859,13 +859,13 @@ proto.getMFCCs = function(options) {
   /**
    * @TODO: get rid of all the leading underscores in this function.
    */
-  var _fft = null;
+  var fft = null;
 
   if(!options.fft) {
-    _fft = new Float32Array(this.getFFTSize()/2);
-    this._analyzer.getFloatFrequencyData(_fft);
-    for(var j = 0; j<_fft.length; j++) {
-      _fft[j] = VowelWorm.decibelsToLinear(_fft[j]);
+    fft = new Float32Array(this.getFFTSize()/2);
+    this._analyzer.getFloatFrequencyData(fft);
+    for(var j = 0; j<fft.length; j++) {
+      fft[j] = VowelWorm.decibelsToLinear(fft[j]);
     }
   }
   else
@@ -875,30 +875,30 @@ proto.getMFCCs = function(options) {
     for(var i = 0; i<options.fft.length; i++) {
       tmpFFT[i] = Math.abs(options.fft[i]);
     }
-    _fft = tmpFFT;
+    fft = tmpFFT;
   }
 
   var filterBanks = [],
-      _noFilterBanks = options.filterBanks,
-      _NFFT = _fft.length*2,
-      _minFreq = options.minFreq,
-      _maxFreq = options.maxFreq,
-      _sampleRate = options.sampleRate || this.getSampleRate();
+      noFilterBanks = options.filterBanks,
+      NFFT = fft.length*2,
+      minFreq = options.minFreq,
+      maxFreq = options.maxFreq,
+      sampleRate = options.sampleRate || this.getSampleRate();
 
   function toFrequency(position) {
-    return (position*_sampleRate)/_NFFT;
+    return (position*sampleRate)/NFFT;
   };
 
   function initFilterBanks() {
-    var maxMel = 1125 * Math.log(1.0 + _maxFreq/700);
-    var minMel = 1125 * Math.log(1.0 + _minFreq/700);
-    var dMel = (maxMel - minMel) / (_noFilterBanks+1);
+    var maxMel = 1125 * Math.log(1.0 + maxFreq/700);
+    var minMel = 1125 * Math.log(1.0 + minFreq/700);
+    var dMel = (maxMel - minMel) / (noFilterBanks+1);
  
     var bins = []; 
-    for (var n = 0; n < _noFilterBanks + 2; n++) {
+    for (var n = 0; n < noFilterBanks + 2; n++) {
       var mel = minMel + n * dMel;
       var Hz = 700  * (Math.exp(mel / 1125) - 1);
-      var bin = Math.floor( (_NFFT)*Hz / _sampleRate);
+      var bin = Math.floor( (NFFT)*Hz / sampleRate);
       bins.push(bin);
     }
 
@@ -909,7 +909,7 @@ proto.getMFCCs = function(options) {
       var fCentre = toFrequency(bins[i]);
       var fAbove = toFrequency(bins[i+1]);
 
-      for(var n = 0; n < 1 + _NFFT / 2; n++) {
+      for(var n = 0; n < 1 + NFFT / 2; n++) {
         var freq = toFrequency(n);
         var val = null;
 
@@ -935,7 +935,7 @@ proto.getMFCCs = function(options) {
       var cel = 0;
       var n = 0; 
       for(var j = 0; j < filterBanks[i].length-1; j++) {
-        cel += (filterBanks[i][j]) * _fft[n++];
+        cel += (filterBanks[i][j]) * fft[n++];
       }
       preDCT.push(Math.log(cel)); // Compute the log of the spectrum
     }
