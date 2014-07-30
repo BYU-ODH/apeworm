@@ -41,6 +41,15 @@ expected values, in kHz, for test/audio/vowels.wav
     <div>
       <label>HANNING_SHIFT: <input type='number' step=1 min=0 max=50 id='hs'></label>
     </div>
+    <div>
+      <label>Min MFCC Hz: <input type='number' step=500 min=0 max=5000 id='min_hz' value=300></label>
+    </div>
+    <div>
+      <label>Max MFCC Hz: <input type='number' step=500 min=0 max=9000 id='max_hz' value=8000></label>
+    </div>
+    <div>
+      <label>Number of MFCC Filter Banks: <input type='number' step=1 min=0 max=30 value=10 id='fb'></label>
+    </div>
   </form>
 
   <script>
@@ -54,6 +63,10 @@ expected values, in kHz, for test/audio/vowels.wav
     var x2=2;
     var y1=-1;
     var y2=3;
+
+    var minHz = 300;
+    var maxHz = 8000;
+    var fb = 10;
 
     var stage = new PIXI.Stage(0xFFFFFF);
     var renderer = PIXI.autoDetectRenderer(width+40, height+40);
@@ -83,9 +96,9 @@ expected values, in kHz, for test/audio/vowels.wav
 
     function run() {
       var position = worm.getMFCCs({
-          minFreq: 300,
-          maxFreq: 8000,
-          filterBanks: 10
+          minFreq: minHz,
+          maxFreq: maxHz,
+          filterBanks: fb
       });
       if(position.length) {
         x = position[1];
@@ -143,6 +156,10 @@ expected values, in kHz, for test/audio/vowels.wav
 
      var hanningShift = document.getElementById('hs');
 
+     var minHz_el = document.getElementById('min_hz');
+     var maxHz_el = document.getElementById('max_hz');
+     var fb_el = document.getElementById('fb');
+
      var timeout = null;
 
      var redraw =  function(){
@@ -170,6 +187,15 @@ expected values, in kHz, for test/audio/vowels.wav
        VowelWorm.HANNING_SHIFT = hs.value;
      });
 
+     minHz_el.addEventListener('change', function() {
+        minHz = parseFloat(minHz_el.value);
+     });
+     maxHz_el.addEventListener('change', function() {
+        maxHz = parseFloat(maxHz_el.value);
+     });
+     fb_el.addEventListener('change', function() {
+         fb = parseInt(fb_el.value,10);
+     });
     })();
   </script>
 </body>
