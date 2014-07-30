@@ -62,6 +62,7 @@ test("MFCC", function() {
   });
   var expected = [ 7.835884051228317, 1.1605377428549413, -0.174171119713941, 1.3509315849239385, -0.1991916156746527, 1.1153378031810444, -0.12527438596350143, 0.7039658412425222, -0.06616022000494146, 0.24848612991692026 ];
   deepEqual(response.map(_round), expected.map(_round));
+  worm.destroy();
 });
 
 module( "peak height determination" );
@@ -108,6 +109,7 @@ function testGetFormants(data, sampleRate, expected) {
   close(formants[0], expected[0], LEEWAY, "F1");
   close(formants[1], expected[1], LEEWAY, "F2");
   close(formants[2], expected[2], LEEWAY, "F3");
+  worm.destroy();
 }
 
 test( "ae", function() {
@@ -136,6 +138,39 @@ test( "u", function() {
   var sampleRate = 16000;
   var expected = [300, 753, 2326];
   testGetFormants( u, sampleRate, expected );
+});
+
+module( "modules" );
+
+test( "Create module, then add worm", function() {
+  var COST = 3.09;
+  VowelWorm.module('test', function(worm) {
+    this.test = function() {
+      return worm.arbysRoastBeefCost;
+    };
+  });
+  var worm = new VowelWorm.instance();
+  worm.arbysRoastBeefCost = COST;
+
+  equal(worm.test.test(), COST);
+  VowelWorm.removeModule('test');
+  worm.destroy();
+});
+
+test( "Add worm, then create module", function() {
+  var COST = 3.09;
+  var worm = new VowelWorm.instance();
+  worm.arbysRoastBeefCost = COST;
+
+  VowelWorm.module('test', function(worm) {
+    this.test = function() {
+      return worm.arbysRoastBeefCost;
+    };
+  });
+
+  equal(worm.test.test(), COST);
+  VowelWorm.removeModule('test');
+  worm.destroy();
 });
 
 module( "miscellaneous" );

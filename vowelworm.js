@@ -6,6 +6,19 @@ window.VowelWorm = window.VowelWorm || {};
 "use strict";
 
 /**
+ * A collection of all vowel worm instances. Used for attaching modules.
+ * @see {@link VowelWorm.module}
+ * @type {Array.<VowelWorm.instance>}
+ */
+var instances = [];
+
+/**
+ * A collection of modules to add to instances, whenever they are created
+ * @type {Object.<string, function>}
+ */
+var modules = {};
+
+/**
  * The sample rate used when one cannot be found.
  */
 var DEFAULT_SAMPLE_RATE = 44100;
@@ -556,10 +569,12 @@ function pinv(A) {
  * @final
  */
 VowelWorm.instance = function VowelWorm(stream) {
-  /**
-   * @license Borrows heavily from Chris Wilson's pitch detector, under the MIT
-   * license. See https://github.com/cwilso/pitchdetect
-   */
+  var that = this;
+  Object.keys(modules).forEach(function(name) {
+    attachModuleToInstance(name, that);
+  });
+  instances.push(this);
+
   this._context    = new AudioContext();
   this._analyzer   = this._context.createAnalyser();
   this._sourceNode = null; // for analysis with files rather than mic input
@@ -567,14 +582,8 @@ VowelWorm.instance = function VowelWorm(stream) {
   this._buffer = new Float32Array(this._analyzer.fftSize);
   this._audioBuffer = null; // comes from downloading an audio file
 
-  var that  = this;
-
-  this.plugins.forEach(function attachWorm(plugin) {
-    plugin.worm = that;
-  });
-
   if(stream) {
-    that.setStream(stream);
+    this.setStream(stream);
   }
 };
 
@@ -623,6 +632,68 @@ VowelWorm.instance.constructor = VowelWorm.instance;
 var proto = VowelWorm.instance.prototype;
 
 /**
+ * Attaches a module to the given instance, with the given name
+ * @param {string} name The name of the module to attach. Should be present in
+ * {@link modules} to work
+ * @param {VowelWorm.instance} instance The instance to affix a module to
+ */
+function attachModuleToInstance(name, instance) {
+  instance[name] = {};
+  modules[name].call(instance[name], instance);
+};
+
+/**
+ * Adds a module to instances of {@link VowelWorm.instance}, as called by
+ * `new VowelWorm.instance(...);`
+ * @param {string} name the name of module to add
+ * @param {VowelWorm~createModule} callback - Called if successful.
+ * `this` references the module, so you can add properties to it. The
+ * instance itself is passed as the only argument, for easy access to core
+ * functions.
+ * @throws An Error when trying to create a module with a pre-existing
+ * property name
+ *
+ * @see {@link attachModuleToInstance}
+ * @see {@link modules}
+ * @see {@link instances}
+ */
+VowelWorm.module = function(name, callback) {
+  if(proto[name] !== undefined || modules[name] !== undefined) {
+    throw new Error("Cannot define a VowelWorm module with the name \"" +name+
+        "\": a property with that name already exists. May I suggest \"" +name+
+        "_kewl_sk8brdr_98\" instead?");
+  }
+  if(typeof callback !== 'function') {
+    throw new Error("No callback function submitted.");
+  }
+  modules[name] = callback;
+  instances.forEach(function(instance) {
+    attachModuleToInstance(name, instance);
+  });
+};
+
+/**
+ * Removes a module from all current and future VowelWorm instances. Used
+ * primarily for testing purposes.
+ * @param {string} name - The name of the module to remove
+ */
+VowelWorm.removeModule = function(name) {
+  if(modules[name] === undefined) {
+    return;
+  }
+  delete modules[name];
+  instances.forEach(function(instance) {
+    delete instance[name];
+  });
+};
+
+/**
+ * Callback used by {@link VowelWorm.module}
+ * @callback VowelWorm~createModule
+ * @param {VowelWorm.instance.prototype} prototype
+ */
+
+/**
  * The maximum formant value that can be expected to be found.
  * @see VowelWorm.DEFAULT_MAX_FORMANT_CHILD
  * @see VowelWorm.DEFAULT_MAX_FORMANT_FEMALE
@@ -631,14 +702,6 @@ var proto = VowelWorm.instance.prototype;
  * @type number
  */
 proto.maxFormantHz = VowelWorm.DEFAULT_MAX_FORMANT_MALE; // easier to test since we are male programmers
-
-/**
- * A collection of plugins. This is done so that each plugin object has
- * reference to the current instance
- * TODO: could probably work more easily.
- * @type {Array.<Object>}
- */
-proto.plugins = [];
 
 /**
  * The current mode the vowel worm is in (e.g., stream, audio element, etc.)
@@ -695,6 +758,10 @@ proto._resample = function resample(value, origRate, newRate) {
   return value*newRate/origRate;
 };
 
+/**
+ * @license setStream helper functions borrow heavily from Chris Wilson's pitch
+ * detector, under the MIT license. See https://github.com/cwilso/pitchdetect
+ */
 /**
  * @param {MediaStream|string|Audio} stream The audio stream to analyze OR a string representing the URL for an audio file OR an Audio file
  * @throws An error if stream is neither a Mediastream or a string
@@ -1004,6 +1071,22 @@ proto.getFormants = function getFormants(data, sampleRate) {
     }
   }
   return [];  // no good formants found
+};
+
+/**
+ * Removes reference to this particular worm instance as well as
+ * all properties of it.
+ */
+proto.destroy = function() {
+  var index = instances.indexOf(this);
+  if(index !== -1) {
+    instances.splice(index, 1);
+  }
+  for(var i in this) {
+    if(this.hasOwnProperty(i)) {
+      delete this[i];
+    }
+  }
 };
 
 /**

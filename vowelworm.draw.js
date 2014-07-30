@@ -3,13 +3,9 @@
  * Data is attached to VowelWorm.instance.prototype.draw.
  * Requires PIXI.js
  */
-(function(VowelWorm){
+window.VowelWorm.module('draw', function createDrawModule(worm) {
   "use strict";
 
-  if(VowelWorm === undefined) {
-    throw new Error("No instance of Vowel Worm found. Please include " +
-      "'vowelworm.js' before the visualization script.");
-  }
 
   /**
    * The default background color
@@ -55,13 +51,9 @@
    */
   var LABEL_FONT_SIZE = 10;
 
-  var proto = VowelWorm.instance.prototype;
-  var v = proto.draw = {};
-  proto.plugins.push(v);
-
   //Set the default min and max for y-axis scaling
-  v.minDecibels = -250;
-  v.maxDecibels = -30;
+  this.minDecibels = -250;
+  this.maxDecibels = -30;
 
   /**
    * Creates a new instance of a PIXI js stage and returns a canvas element.
@@ -72,7 +64,7 @@
    *
    * @return {Object} the canvas element to attach to the HTML
    */
-  v.create = function create(width, height, bgcolor) {
+  this.create = function create(width, height, bgcolor) {
     if(this._stage) {
       throw new Error("Only one view per VowelWorm.instance allowed.");
     }
@@ -90,7 +82,7 @@
    * @private
    * @stub
    */
-  v._drawYAxis = function drawYAxis(color) {
+  this._drawYAxis = function drawYAxis(color) {
     var axis = new PIXI.DisplayObjectContainer();
     this._axes.push(axis);
 
@@ -133,7 +125,7 @@
    * @param {number} color The color to draw the axis as
    * @private
    */
-  v._drawXAxis = function drawXAxis(color) {
+  this._drawXAxis = function drawXAxis(color) {
     var axis = new PIXI.DisplayObjectContainer();
     this._axes.push(axis);
 
@@ -163,7 +155,7 @@
     axis.addChild(xLabel);
     
     // only show half the FFT size, because there are only half as many bins
-    var scale = (this.worm.getFFTSize()/2)/renderer.width;
+    var scale = (worm.getFFTSize()/2)/renderer.width;
     
     // x Markers
     for(var x = X_AXIS_DISTANCE; x<renderer.width; x+=X_AXIS_DISTANCE) {
@@ -173,7 +165,7 @@
       tick.lineTo(x, Y_POS_OF_TICK);
       axis.addChild(tick);
 
-      var freq = this.worm._toFrequency(x*scale, this.worm.getResampledRate(), this.worm.getFFTSize());
+      var freq = worm._toFrequency(x*scale, worm.getResampledRate(), worm.getFFTSize());
       freq /= 1000; // convert to kHz
       freq = parseFloat(freq.toFixed(2),10); // round
 
@@ -194,7 +186,7 @@
    * @param {number=} color The color to set the axes and labels to. Defaults
    * to black
    */
-  v.drawAxes = function drawAxes(color) {
+  this.drawAxes = function drawAxes(color) {
     if(!this._stage) {
       throw new Error("You must call draw.create() before you can draw axes.");
     }
@@ -216,13 +208,13 @@
     this._renderer.render(this._stage);
   };
   
-  v.makeValuesGraphable = function(values){        
+  this.makeValuesGraphable = function(values){
     for(var i=0; i<values.length; i++){         
         values[i] = this.decibelsToPixels(values[i]);
     }
   };
   
-  v.decibelsToPixels = function(db){
+  this.decibelsToPixels = function(db){
       var height = this._renderer.height;
       var min = this.minDecibels;
       var max = this.maxDecibels;
@@ -234,15 +226,15 @@
   
   };
   
-  v.drawDataLines = function(){
+  this.drawDataLines = function(){
 
     var stage    = this._stage;
     var renderer = this._renderer;     
 
-    var values = new Float32Array(this.worm.getFFTSize()/2);
-    this.worm._analyzer.getFloatFrequencyData(values);
+    var values = new Float32Array(worm.getFFTSize()/2);
+    worm._analyzer.getFloatFrequencyData(values);
 
-    var smoothed_values = this.worm.hann(values, 75);
+    var smoothed_values = worm.hann(values, 75);
 
     var COLOR_RED = 16711680;
     var COLOR_BLACK = 0;
@@ -268,12 +260,12 @@
     if(this.peaks){
         stage.removeChild(this.peaks);
     }
-    this.peaks = this.drawPeaks(this.worm.getFormants(),COLOR_BLACK);
+    this.peaks = this.drawPeaks(worm.getFormants(),COLOR_BLACK);
         
     renderer.render(stage);
   };
   
-  v.drawLine = function(values,color,point_distance){
+  this.drawLine = function(values,color,point_distance){
     var stage = this._stage;
     
     var line = new PIXI.Graphics();
@@ -289,11 +281,11 @@
     return line;
   };
 
-  v.hertzToPixels = function(hz){
-      return (this._renderer.width*hz)/(this.worm.getResampledRate()/2);
+  this.hertzToPixels = function(hz){
+      return (this._renderer.width*hz)/(worm.getResampledRate()/2);
   };
 
-  v.drawPeaks = function(values,color){
+  this.drawPeaks = function(values,color){
       var stage = this._stage;
       var renderer = this._renderer;
       
@@ -310,4 +302,4 @@
       return peaks;
   };
 
-}(window.VowelWorm));
+});
