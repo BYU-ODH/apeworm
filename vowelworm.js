@@ -218,7 +218,7 @@ VowelWorm.hann = function hann(vals, window_size) {
     throw new Error('No precomputed Hanning Window values found for ' +
         window_size);
   }
-  
+
   var s = [];
 
   for(var i = window_size-1; i > 0; i--) {
@@ -259,48 +259,48 @@ VowelWorm.hann = function hann(vals, window_size) {
  * @nosideeffects
  */
 VowelWorm.savitzkyGolay = function savitzkyGolay(y, window_size, order) {
-	//probably we don't need to parseInt anything or take the absolute value if we always make sure that our windown size and order are positive.  "golay.py" gave a window size of 55 and said that anything higuer will make a flatter graph
+  //probably we don't need to parseInt anything or take the absolute value if we always make sure that our windown size and order are positive.  "golay.py" gave a window size of 55 and said that anything higuer will make a flatter graph
   //window size must be positive and an odd number for this to work better
-	var windowSize = Math.abs(parseInt(window_size));
-	var order = Math.abs(parseInt(order));
-	var order_range = order + 1;
+  var windowSize = Math.abs(parseInt(window_size));
+  var order = Math.abs(parseInt(order));
+  var order_range = order + 1;
 
-	var half_window = (windowSize - 1)/2;
-	var b = new Array();
-	
-	for(var k = -half_window; k < half_window+1; k++) {
-		var row = new Array();
-		for(var i = 0; i < order_range; i++) {
-			row.push(Math.pow(k,i));	
-		}
-		b.push(row);	
-	}
-	//This line needs to be changed if you use something other than 0 for derivative
-	var temp = pinv(b);
-	var m = temp[0];
-	//if you take a look at firstvals in the python code, and then at this code you'll see that I've only broken firstvals down into different parts such as first taking a sub array, flipping it, and so on
-	var yTemp = new Array();
-	yTemp = y.subarray ? y.subarray(1, half_window+1) :  y.slice(1, half_window+1);
-	yTemp = flipArray(yTemp);
-	yTemp = addToArray(yTemp, -y[0]);
-	yTemp = arrayAbs(yTemp);
-	yTemp = negArrayAddValue(yTemp, y[0]);
-	var firstvals = yTemp;
-	
-	//Same thing was done for lastvals
-	var yTemp2 = new Array();
-	yTemp2 = y.subarray ? y.subarray(-half_window -1, -1) : y.slice(-half_window -1, -1);
-	yTemp2 = flipArray(yTemp2);
-	yTemp2 = addToArray(yTemp2, -y[y.length-1]);
-	yTemp2 = arrayAbs(yTemp2);
-	yTemp2 = addToArray(yTemp2, y[y.length-1]);
-	var lastvals = yTemp2;
-	
-	y = concatenate(firstvals, y, lastvals);
-	m = flipArray(m);
-	var result = new Array();
-	result = VowelWorm.convolve(m,y);
-	return result;
+  var half_window = (windowSize - 1)/2;
+  var b = new Array();
+
+  for(var k = -half_window; k < half_window+1; k++) {
+    var row = new Array();
+    for(var i = 0; i < order_range; i++) {
+      row.push(Math.pow(k,i));
+    }
+    b.push(row);
+  }
+  //This line needs to be changed if you use something other than 0 for derivative
+  var temp = pinv(b);
+  var m = temp[0];
+  //if you take a look at firstvals in the python code, and then at this code you'll see that I've only broken firstvals down into different parts such as first taking a sub array, flipping it, and so on
+  var yTemp = new Array();
+  yTemp = y.subarray ? y.subarray(1, half_window+1) :  y.slice(1, half_window+1);
+  yTemp = flipArray(yTemp);
+  yTemp = addToArray(yTemp, -y[0]);
+  yTemp = arrayAbs(yTemp);
+  yTemp = negArrayAddValue(yTemp, y[0]);
+  var firstvals = yTemp;
+
+  //Same thing was done for lastvals
+  var yTemp2 = new Array();
+  yTemp2 = y.subarray ? y.subarray(-half_window -1, -1) : y.slice(-half_window -1, -1);
+  yTemp2 = flipArray(yTemp2);
+  yTemp2 = addToArray(yTemp2, -y[y.length-1]);
+  yTemp2 = arrayAbs(yTemp2);
+  yTemp2 = addToArray(yTemp2, y[y.length-1]);
+  var lastvals = yTemp2;
+
+  y = concatenate(firstvals, y, lastvals);
+  m = flipArray(m);
+  var result = new Array();
+  result = VowelWorm.convolve(m,y);
+  return result;
 };
 
 /**
@@ -311,7 +311,7 @@ VowelWorm.savitzkyGolay = function savitzkyGolay(y, window_size, order) {
  * @nosideeffects
  */
 VowelWorm.convolve = function convolve(m, y) {
-	var result = new Array(),
+  var result = new Array(),
       first  = null,
       second = null;
 
@@ -324,7 +324,7 @@ VowelWorm.convolve = function convolve(m, y) {
     first  = m;
     second = y;
   }
-  var size = second.length - first.length + 1;	
+  var size = second.length - first.length + 1;
   for(var i = 0; i < size; i++) {
     var newNum = 0,
         len = first.length;
@@ -464,10 +464,10 @@ VowelWorm._peakHeight = function peakHeight(index, values) {
  * @return {Array.<number>} the original array, transformed
  */
 function arrayAbs(y) {
-	for(var i = 0; i < y.length; i++) {
-		y[i] = Math.abs(y[i]);
-	}
-	return y;
+  for(var i = 0; i < y.length; i++) {
+    y[i] = Math.abs(y[i]);
+  }
+  return y;
 };
 
 /**
@@ -477,10 +477,10 @@ function arrayAbs(y) {
  * @return {Array.<number>} the original array, transformed
  */
 function negArrayAddValue(y, value) {
-	for(var i =0; i < y.length; i++) {
-		y[i] = -y[i] + value;
-	}
-	return y;
+  for(var i =0; i < y.length; i++) {
+    y[i] = -y[i] + value;
+  }
+  return y;
 };
 
 /**
@@ -490,10 +490,10 @@ function negArrayAddValue(y, value) {
  * @return {Array.<number>} the original array, transformed
  */
 function addToArray(y, value) {
-	for(var i = 0; i < y.length; i++) {
-		y[i] = y[i] + value;
-	}
-	return y;
+  for(var i = 0; i < y.length; i++) {
+    y[i] = y[i] + value;
+  }
+  return y;
 };
 
 /**
@@ -775,7 +775,7 @@ proto._getPeaks = function getPeaks(smoothedArray, sampleRate, fftSize) {
     previousNum = smoothedArray[i-1] || 0;
     currentNum = smoothedArray[i] || 0;
     nextNum = smoothedArray[i+1] || 0;
-		
+
     if(currentNum > previousNum && currentNum > nextNum) {
       if(this._peakHeight(i, smoothedArray) >= MIN_PEAK_HEIGHT) {
         peaks.push(hz);
@@ -888,13 +888,13 @@ proto.getMFCCs = function(options) {
   function initFilterBanks() {
     var maxMel = 1125 * Math.log(1.0 + _maxFreq/700);
     var minMel = 1125 * Math.log(1.0 + _minFreq/700);
-	  var dMel = (maxMel - minMel) / (_noFilterBanks+1);
-   
+    var dMel = (maxMel - minMel) / (_noFilterBanks+1);
+ 
     var bins = []; 
     for (var n = 0; n < _noFilterBanks + 2; n++) {
       var mel = minMel + n * dMel;
       var Hz = 700  * (Math.exp(mel / 1125) - 1);
-      var bin = Math.floor( (_NFFT)*Hz / _sampleRate);	
+      var bin = Math.floor( (_NFFT)*Hz / _sampleRate);
       bins.push(bin);
     }
 
@@ -922,7 +922,7 @@ proto.getMFCCs = function(options) {
       filterBanks.push(fBank);
     }
   };
-  
+
   function getLogCoefficents() {
     var preDCT = []; // Initialise pre-discrete cosine transformation vetor array
     var postDCT = [];// Initialise post-discrete cosine transformation vetor array / MFCC Coefficents
@@ -1022,7 +1022,7 @@ proto._loadFromURL = function loadFromURL(url) {
     throw new Error("Tried to load audio file at '" + url + "', but a " +
                      "netowrk error occurred: " + request.statusText);
   };
-  
+
   function decodeSuccess(buffer) {
     that.mode = this.REMOTE_URL;
     that._audioBuffer = buffer;
