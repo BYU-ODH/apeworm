@@ -3,10 +3,10 @@
 <meta charset=utf-8 />
 </head>
 <body>
-	<script src="pixi.dev.js"></script>
-	<script src="vowelworm.js"></script>
-	<script src="vowelworm.draw.js"></script>
-	<script src="wormGraph.js"></script>
+  <script src="pixi.dev.js"></script>
+  <script src="vowelworm.js"></script>
+  <script src="vowelworm.draw.js"></script>
+  <script src="wormGraph.js"></script>
   <audio style='display:none' controls id=media src="test/audio/vowels.wav"></audio>
   <video style='display:none' width=250 height=200 controls id=vid src="test/video/demo.mp4"></video>
 
@@ -111,6 +111,9 @@ expected values, in kHz, for test/audio/vowels.wav
         y = -tmpX;
 
         makeWorm(x,y, stage, renderer, width, height, x1, x2, y1, y2);
+        
+        //O
+        makeWorm(.6079868969892072,0.7268178057361439, stage, renderer, width, height, x1, x2, y1, y2);
       }
       worm.draw.drawDataLines();
       window.requestAnimationFrame(run);
