@@ -165,7 +165,7 @@ window.VowelWorm.module('draw', function createDrawModule(worm) {
       tick.lineTo(x, Y_POS_OF_TICK);
       axis.addChild(tick);
 
-      var freq = worm._toFrequency(x*scale, worm.getResampledRate(), worm.getFFTSize());
+      var freq = worm._toFrequency(x*scale, worm.getSampleRate(), worm.getFFTSize());
       freq /= 1000; // convert to kHz
       freq = parseFloat(freq.toFixed(2),10); // round
 
