@@ -1,5 +1,3 @@
-// TODO: change x.getFormants() to x.formants ?
-
 window.VowelWorm = window.VowelWorm || {};
 
 (function(VowelWorm, numeric){
@@ -856,9 +854,6 @@ proto.getFFTSize = function getFFTSize() {
  * @nosideeffects
  */
 proto.getMFCCs = function(options) {
-  /**
-   * @TODO: get rid of all the leading underscores in this function.
-   */
   var fft = null;
 
   if(!options.fft) {
