@@ -1,5 +1,3 @@
-// TODO: change x.getFormants() to x.formants ?
-
 window.VowelWorm = window.VowelWorm || {};
 
 (function(VowelWorm, numeric){
@@ -605,7 +603,6 @@ VowelWorm.HANNING_SHIFT = 32;
 
 /**
  * The maximum formant expected to be found for a male speaker
- * @see VowelWorm.instance.prototype.maxFormantHz
  * @see {@link http://www.fon.hum.uva.nl/praat/manual/Sound__To_Formant__burg____.html}
  * @see {@link http://www.sfu.ca/sonic-studio/handbook/Formant.html}
  * @const
@@ -614,7 +611,6 @@ VowelWorm.HANNING_SHIFT = 32;
 VowelWorm.DEFAULT_MAX_FORMANT_MALE = 5000;
 /**
  * The maximum formant expected to be found for a female speaker
- * @see VowelWorm.instance.prototype.maxFormantHz
  * @see {@link http://www.fon.hum.uva.nl/praat/manual/Sound__To_Formant__burg____.html}
  * @see {@link http://www.sfu.ca/sonic-studio/handbook/Formant.html}
  * @const
@@ -623,7 +619,6 @@ VowelWorm.DEFAULT_MAX_FORMANT_MALE = 5000;
 VowelWorm.DEFAULT_MAX_FORMANT_FEMALE = 5500;
 /**
  * The maximum formant expected to be found for a female speaker
- * @see VowelWorm.instance.prototype.maxFormantHz
  * @see {@link http://www.fon.hum.uva.nl/praat/manual/Sound__To_Formant__burg____.html}
  * @see {@link http://www.sfu.ca/sonic-studio/handbook/Formant.html}
  * @const
@@ -691,22 +686,11 @@ VowelWorm.removeModule = function(name) {
     delete instance[name];
   });
 };
-
 /**
  * Callback used by {@link VowelWorm.module}
  * @callback VowelWorm~createModule
  * @param {VowelWorm.instance.prototype} prototype
  */
-
-/**
- * The maximum formant value that can be expected to be found.
- * @see VowelWorm.DEFAULT_MAX_FORMANT_CHILD
- * @see VowelWorm.DEFAULT_MAX_FORMANT_FEMALE
- * @see VowelWorm.DEFAULT_MAX_FORMANT_MALE
- * @see VowelWorm.instance.prototype.getFormants
- * @type number
- */
-proto.maxFormantHz = VowelWorm.DEFAULT_MAX_FORMANT_MALE; // easier to test since we are male programmers
 
 /**
  * The current mode the vowel worm is in (e.g., stream, audio element, etc.)
@@ -718,50 +702,6 @@ proto.maxFormantHz = VowelWorm.DEFAULT_MAX_FORMANT_MALE; // easier to test since
  * @see VowelWorm.REMOTE_URL
  */
 proto.mode = null;
-
-/**
- * Enables a sort of poor man's resampling to fix the issue where the peaks
- * we find at various array indices do not necessarily correspond with known
- * formant ranges (e.g., formant 1 may be found well outside the ranges of 
- * values like {@link F1_MIN} and {@link F1_MAX}). Normally (?) we would do a
- * real downsampling of the media stream to to attenuate values beyond that of
- * a reasonable vocal range, like a range from 0 to 5000-8000 Hz, depending on
- * the speaker's age, sex, and [helium content]{@link http://www.phys.unsw.edu.au/jw/speechmodel.html}.
- *
- * [Praat downsamples.]{@link http://www.fon.hum.uva.nl/praat/manual/Sound__To_Formant__burg____.html}.
- * Quoting Praat's "To Formant" section under "Algorithm":
- *
- *    "The sound will be resampled to a sampling frequency of twice the value
- *    of 'Maximum formant'…
- *
- *    The algorithm will initially find 'Maximum number of formants' formants
- *    in the whole range between 0 Hz and Maximum formant."
- *
- * So while the LPC (or FFT, or Hann, or…) graph of a recording sampled at both
- * 16kHz and 44.1kHz may appear similar in size and position of peaks, and
- * while the initial FFT array contains the same number of bins (fftSize/2),
- * identical positions in each graph represent different frequency values.
- * I do not totally understand why this works the way it does. Furthermore,
- * I may be completely incorrect in this.
- *
- * Regardless, this is necessary for 
- * {@link VowelWorm.instance.prototype.getFormants} to work correctly.
- *
- * @see {@link VowelWorm.instance.prototype.maxFormantHz} for more info
- *
- * @param number value The original value in Hz whose location you want in the
- * new sample rate
- * @param number origRate The original sample rate
- * @param number newRate The new sample rate to convert to
- * @return number the Hz value as it would be found in the new sample rate
- *
- * @private
- * @nosideeffects
- * 
- */
-proto._resample = function resample(value, origRate, newRate) {
-  return value*newRate/origRate;
-};
 
 /**
  * @license setStream helper functions borrow heavily from Chris Wilson's pitch
@@ -795,15 +735,6 @@ proto.setStream = function setStream(stream) {
   }
 };
 
-/**
- * Returns the sample rate as scaled by {@link maxFormantHz}
- * @return number
- * @nosideeffects
- */
-proto.getResampledRate = function getResampledRate() {
-  return this.maxFormantHz*2;
-};
-
 proto._loadFromStream = function loadFromStream(stream) {
   this.mode = this.STREAM;
   var streamSource = this._context.createMediaStreamSource(stream);
@@ -829,7 +760,6 @@ proto._getPeaks = function getPeaks(smoothedArray, sampleRate, fftSize) {
     var hz = this._toFrequency(i, sampleRate, fftSize);
     var formant = peaks.length+1;
 
-    // MASSIVE TODO - these F values are NOT normalized through _resample but MUST be for accuracy
     switch(formant) {
       case 1:
         if(hz < F1_MIN) { continue; }
@@ -924,16 +854,13 @@ proto.getFFTSize = function getFFTSize() {
  * @nosideeffects
  */
 proto.getMFCCs = function(options) {
-  /**
-   * @TODO: get rid of all the leading underscores in this function.
-   */
-  var _fft = null;
+  var fft = null;
 
   if(!options.fft) {
-    _fft = new Float32Array(this.getFFTSize()/2);
-    this._analyzer.getFloatFrequencyData(_fft);
-    for(var j = 0; j<_fft.length; j++) {
-      _fft[j] = VowelWorm.decibelsToLinear(_fft[j]);
+    fft = new Float32Array(this.getFFTSize()/2);
+    this._analyzer.getFloatFrequencyData(fft);
+    for(var j = 0; j<fft.length; j++) {
+      fft[j] = VowelWorm.decibelsToLinear(fft[j]);
     }
   }
   else
@@ -943,30 +870,30 @@ proto.getMFCCs = function(options) {
     for(var i = 0; i<options.fft.length; i++) {
       tmpFFT[i] = Math.abs(options.fft[i]);
     }
-    _fft = tmpFFT;
+    fft = tmpFFT;
   }
 
   var filterBanks = [],
-      _noFilterBanks = options.filterBanks,
-      _NFFT = _fft.length*2,
-      _minFreq = options.minFreq,
-      _maxFreq = options.maxFreq,
-      _sampleRate = options.sampleRate || this.getSampleRate();
+      noFilterBanks = options.filterBanks,
+      NFFT = fft.length*2,
+      minFreq = options.minFreq,
+      maxFreq = options.maxFreq,
+      sampleRate = options.sampleRate || this.getSampleRate();
 
   function toFrequency(position) {
-    return (position*_sampleRate)/_NFFT;
+    return (position*sampleRate)/NFFT;
   };
 
   function initFilterBanks() {
-    var maxMel = 1125 * Math.log(1.0 + _maxFreq/700);
-    var minMel = 1125 * Math.log(1.0 + _minFreq/700);
-    var dMel = (maxMel - minMel) / (_noFilterBanks+1);
+    var maxMel = 1125 * Math.log(1.0 + maxFreq/700);
+    var minMel = 1125 * Math.log(1.0 + minFreq/700);
+    var dMel = (maxMel - minMel) / (noFilterBanks+1);
  
     var bins = []; 
-    for (var n = 0; n < _noFilterBanks + 2; n++) {
+    for (var n = 0; n < noFilterBanks + 2; n++) {
       var mel = minMel + n * dMel;
       var Hz = 700  * (Math.exp(mel / 1125) - 1);
-      var bin = Math.floor( (_NFFT)*Hz / _sampleRate);
+      var bin = Math.floor( (NFFT)*Hz / sampleRate);
       bins.push(bin);
     }
 
@@ -977,7 +904,7 @@ proto.getMFCCs = function(options) {
       var fCentre = toFrequency(bins[i]);
       var fAbove = toFrequency(bins[i+1]);
 
-      for(var n = 0; n < 1 + _NFFT / 2; n++) {
+      for(var n = 0; n < 1 + NFFT / 2; n++) {
         var freq = toFrequency(n);
         var val = null;
 
@@ -1003,7 +930,7 @@ proto.getMFCCs = function(options) {
       var cel = 0;
       var n = 0; 
       for(var j = 0; j < filterBanks[i].length-1; j++) {
-        cel += (filterBanks[i][j]) * _fft[n++];
+        cel += (filterBanks[i][j]) * fft[n++];
       }
       preDCT.push(Math.log(cel)); // Compute the log of the spectrum
     }
@@ -1054,15 +981,9 @@ proto.getFormants = function getFormants(data, sampleRate) {
     sampleRate = this.getSampleRate();
   }
 
-  var resample = function resample(value) {
-    var newSampleRate = that.maxFormantHz*2;
-    return that._resample(value, sampleRate, newSampleRate);
-  };
-
   for(var i = 0; i<WINDOW_SIZES.length; i++) {
     var smooth = this.hann(data, WINDOW_SIZES[i]);
     var formants = this._getPeaks(smooth, sampleRate, fftSize);
-    formants = formants.map(resample);
 
     if( formants[0]<F1_MIN || formants[0]>F1_MAX || formants[0]>=formants[1] ||
         formants[1]<F2_MIN || formants[1]>F2_MAX || formants[1]>=formants[2] ||

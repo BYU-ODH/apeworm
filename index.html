@@ -30,9 +30,6 @@ expected values, in kHz, for test/audio/vowels.wav
   
   <form>
     <div>
-      <label>maxFormantHz: <input type='number' step=50 min=1000 max=22050 id='maxFormantHz'></label>
-    </div>
-    <div>
       <label>maxDB: <input type='number' step=5 min=-400 max=0 id='maxDB'></label>
     </div>
     <div>
@@ -81,7 +78,6 @@ expected values, in kHz, for test/audio/vowels.wav
     }
 
     var worm = new VowelWorm.instance();
-    worm.maxFormantHz = 22050;
     var audio = document.getElementById('media');
     audio.loop = true;
     var video = document.getElementById('vid');
@@ -149,7 +145,6 @@ expected values, in kHz, for test/audio/vowels.wav
     };
 
     (function(){
-     var mfh = document.getElementById('maxFormantHz');
 
      var maxDB = document.getElementById('maxDB'),
          minDB = document.getElementById('minDB');
@@ -163,7 +158,6 @@ expected values, in kHz, for test/audio/vowels.wav
      var timeout = null;
 
      var redraw =  function(){
-       worm.maxFormantHz = mfh.value;
        worm.draw.maxDecibels = parseInt(maxDB.value, 10);
        worm.draw.minDecibels = parseInt(minDB.value, 10);
        if(timeout) { cancelAnimationFrame(timeout); }
@@ -174,12 +168,10 @@ expected values, in kHz, for test/audio/vowels.wav
        });
      };
 
-     mfh.value = worm.maxFormantHz;
      maxDB.value = worm.draw.maxDecibels;
      minDB.value = worm.draw.minDecibels;
      hanningShift.value = VowelWorm.HANNING_SHIFT;
 
-     mfh.addEventListener('change', redraw);
      maxDB.addEventListener('change', redraw);
      minDB.addEventListener('change', redraw);
 
