@@ -1,43 +1,47 @@
-window.VowelWorm.module('game', function(worm) {
+window.VowelWorm.module('game', function(worm) {  
   var game = this;
-  this.width = 700;
-  this.height = 500;
-  this.x1 = -1;
-  this.x2 = 2;
-  this.y1 = -1;
-  this.y2 = 3;
+  game.width = 700;
+  game.height = 500;
+  game.x1 = -1;
+  game.x2 = 2;
+  game.y1 = -1;
+  game.y2 = 3;
+  
+  game.minHz = 300;
+  game.maxHz = 8000;
+  game.fb = 10;
   
   /**
    * Represents the threshold in dB that VowelWorm's audio should be at in
    * order to to plot anything.
    * @see {@link isSilent}
    */
-  this.silence = -70;
+  game.silence = -70;
 
-  this.create = function(width, height, bgcolor){
-    this._stage = new PIXI.Stage(bgcolor);
-    this._renderer = PIXI.autoDetectRenderer(width, height);
-    this._renderer.render(this._stage);
-    
-    game.drawVowels();
-    
+  game.create = function(width, height, bgcolor){
+    game._stage = new PIXI.Stage(bgcolor);
+    game._renderer = PIXI.autoDetectRenderer(width, height);
+    game._renderer.render(game._stage);
+        
     //TODO - Replace a given HTML element instead of just appending the view to the page
-    document.body.appendChild(this._renderer.view);
-
+    document.body.appendChild(game._renderer.view);
+      
+    game.drawVowels();
   };
 
-  this.play = function(){
+  game.play = function(){
     if(!game._stage){
-      game.create(this.width, this.height, 0xFFFFFF);
+      game.create(game.width, game.height, 0xFFFFFF);
     }
 
     game.drawWorm();
     
-    window.requestAnimationFrame(this.play.bind(this));    
+    window.requestAnimationFrame(game.play.bind(game));    
   };
   
-  this.drawVowels = function(){
-        
+  game.drawVowels = function(){
+    
+    //TODO - Since these are hard-coded we probably can use the pixels and skip adjustXAndY()
     var letters = [
       ["e",-0.05161977605869161,0.9811584778249319],
       ["i",-0.2756356942870174,1.6241787997411496],
@@ -53,23 +57,23 @@ window.VowelWorm.module('game', function(worm) {
       letter.position.x = coords.x;
       letter.position.y = coords.y;
       
-      this._stage.addChild(letter);
+      game._stage.addChild(letter);
     }
 
-    this._renderer.render(this._stage);
+    game._renderer.render(game._stage);
     
   };
   
-  this.drawWorm = function(){
+  game.drawWorm = function(){
     var coords = getCoords(worm);
     if(coords!==null){
 
-      if(this.graphics){
-        this._stage.removeChild(this.graphics);
+      if(game.graphics){
+        game._stage.removeChild(game.graphics);
       }
 
-      x = coords.x;
-      y = coords.y;
+      var x = coords.x;
+      var y = coords.y;
       
       //The target here is arbitrarily set around 'e'
       var percent = getPercentDistanceFromTwoPoints(x,y,241,272);
@@ -81,17 +85,17 @@ window.VowelWorm.module('game', function(worm) {
       graphics.beginFill(color,1);
       graphics.drawCircle(x,y,10);
 
-      this.graphics = graphics;
+      game.graphics = graphics;
       
-      this._stage.addChild(graphics);
-      this._renderer.render(this._stage);
+      game._stage.addChild(graphics);
+      game._renderer.render(game._stage);
     }  
   };
   
   var getPercentDistanceFromTwoPoints = function(x,y,goal_x,goal_y){
     
     var distance = Math.sqrt(Math.pow((x-goal_x),2) + Math.pow((y-goal_y),2));
-    var max_distance = Math.sqrt(Math.pow((0-width),2) + Math.pow((0-height),2));
+    var max_distance = Math.sqrt(Math.pow((0-game.width),2) + Math.pow((0-game.height),2));
     var percent = distance/max_distance;
     
     return percent;
@@ -125,14 +129,14 @@ window.VowelWorm.module('game', function(worm) {
     }
 
     var position = worm.getMFCCs({
-      minFreq: minHz,
-      maxFreq: maxHz,
-      filterBanks: fb
+      minFreq: game.minHz,
+      maxFreq: game.maxHz,
+      filterBanks: game.fb
     });
     
     if(position.length) {
-      x = position[1];
-      y = position[2];
+      var x = position[1];
+      var y = position[2];
 
       // rotate 90 degrees
       var tmpY = y;
@@ -140,7 +144,7 @@ window.VowelWorm.module('game', function(worm) {
       x = tmpY;
       y = -tmpX;
 
-      coords = adjustXAndY(x,y);
+      var coords = adjustXAndY(x,y);
       return coords;
     }else{
       return null;
@@ -148,28 +152,28 @@ window.VowelWorm.module('game', function(worm) {
   };
   
   var adjustXAndY = function(x,y){
-    var x1 = this.x1;
-    var x2 = this.x2;
-    var y1 = this.y1;
-    var y2 = this.y2;
+    var x1 = game.x1;
+    var x2 = game.x2;
+    var y1 = game.y1;
+    var y2 = game.y2;
     
     var xStart = x1;
     var xEnd = x2;
     var yStart = y1;
     var yEnd = y2;
 
-    var xDist = this.width/(xEnd-xStart);
-    var yDist = this.height/(yEnd-yStart);
+    var xDist = game.width/(xEnd-xStart);
+    var yDist = game.height/(yEnd-yStart);
 
     var adjustedX = (x-xStart)*xDist + 20;
-    var adjustedY = this.height-(y-yStart)*yDist+20;
+    var adjustedY = game.height-(y-yStart)*yDist+20;
     
     return {x:adjustedX,y:adjustedY};
   };
 
   /**
    * Determines whether, for plotting purposes, the audio data is silent or not
-   * Compares against the threshold given for {@link this.silence}.
+   * Compares against the threshold given for {@link game.silence}.
    * @param {Array.<number>} data - An array containing dB values
    * @return {boolean} Whether or not the data is essentially 'silent'
    */
