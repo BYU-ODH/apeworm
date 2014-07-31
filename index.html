@@ -3,10 +3,11 @@
 <meta charset=utf-8 />
 </head>
 <body>
-  <script src="pixi.dev.js"></script>
-  <script src="vowelworm.js"></script>
-  <script src="vowelworm.draw.js"></script>
-  <script src="wormGraph.js"></script>
+	<script src="pixi.dev.js"></script>
+	<script src="vowelworm.js"></script>
+	<script src="vowelworm.draw.js"></script>
+	<script src="wormGraph.js"></script>
+
   <audio style='display:none' controls id=media src="test/audio/vowels.wav"></audio>
   <video style='display:none' width=250 height=200 controls id=vid src="test/video/demo.mp4"></video>
 
@@ -91,6 +92,8 @@ expected values, in kHz, for test/audio/vowels.wav
     }
 
     function run() {
+      worm.game.play(worm);
+
       var position = worm.getMFCCs({
           minFreq: minHz,
           maxFreq: maxHz,
