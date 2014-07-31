@@ -1,4 +1,5 @@
 window.VowelWorm.module('game', function(worm) {
+  var game = this;
   this.width = 700;
   this.height = 500;
   this.x1 = -1;
@@ -16,18 +17,18 @@ window.VowelWorm.module('game', function(worm) {
 
   };
 
-  //TODO - Access the worm object without passing it around
-  this.play = function(worm){
-    if(!this._stage){
-      this.create(this.width, this.height, 0xFFFFFF);
+  this.play = function(){
+    if(!game._stage){
+      game.create(this.width, this.height, 0xFFFFFF);
     }
 
-    this.drawWorm(worm);
-    this.drawVowels(worm);
+    game.drawWorm();
+    game.drawVowels();
     
+    window.requestAnimationFrame(this.play.bind(this));    
   };
   
-  this.drawVowels = function(worm){
+  this.drawVowels = function(){
         
     var letters = [
       ["e",-0.05161977605869161,0.9811584778249319],
@@ -51,7 +52,7 @@ window.VowelWorm.module('game', function(worm) {
     
   };
   
-  this.drawWorm = function(worm){
+  this.drawWorm = function(){
     var coords = getCoords(worm);
     if(coords!==null){
 
@@ -62,12 +63,16 @@ window.VowelWorm.module('game', function(worm) {
       x = coords.x;
       y = coords.y;
       
-      var percent = getPercentDistanceFromTwoPoints(x,y,241,272);      
-      var color = getColorFromPercent(percent);
-            
+      //The target here is arbitrarily set around 'e'
+      var percent = getPercentDistanceFromTwoPoints(x,y,241,272);
+      //Make the color difference more extreme
+      percent = percent*3;
+      var color = getColorFromPercent(percent);      
+      
       var graphics = new PIXI.Graphics();
       graphics.beginFill(color,1);
       graphics.drawCircle(x,y,10);
+
       this.graphics = graphics;
       
       this._stage.addChild(graphics);
@@ -80,37 +85,30 @@ window.VowelWorm.module('game', function(worm) {
     var distance = Math.sqrt(Math.pow((x-goal_x),2) + Math.pow((y-goal_y),2));
     var max_distance = Math.sqrt(Math.pow((0-width),2) + Math.pow((0-height),2));
     var percent = distance/max_distance;
-        
+    
     return percent;
   };
   
   var getColorFromPercent = function(percent){
-    var green = percent*0xFF;
-    var red = 0xFF-green;
+    percent = Math.round(percent*100)/100;
+    
+    if(percent<0){percent=0;}
+    if(percent>1){percent=1;}
+    
+    var red = percent*0xFF;
+    var green = 0xFF-red;
     
     green = Math.round(green);
     red = Math.round(red);
     
-    var color_string = "";
-    if(red==0){
-      color_string = color_string + "00";
-    }else{
-      color_string = color_string + red.toString(16);
-    }
-    
-    if(green==0){
-      color_string = color_string + "00";
-    }else{
-      color_string = color_string + green.toString(16);
-    }
-    
-    var color_string = color_string + "00";
-    
-    
-    return parseInt(color_string, 16);
+    red = red << 16;
+    green = green << 8;
+        
+    return red | green;
+
   };
   
-  var getCoords = function(worm){
+  var getCoords = function(){
     var position = worm.getMFCCs({
       minFreq: minHz,
       maxFreq: maxHz,

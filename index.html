@@ -94,25 +94,25 @@ expected values, in kHz, for test/audio/vowels.wav
     function run() {
       worm.game.play(worm);
 
-      var position = worm.getMFCCs({
-          minFreq: minHz,
-          maxFreq: maxHz,
-          filterBanks: fb
-      });
-      if(position.length) {
-        x = position[1];
-        y = position[2];
-
-        // rotate 90 degrees
-        var tmpY = y;
-        var tmpX = x;
-        x = tmpY;
-        y = -tmpX;
-
-        makeWorm(x,y, stage, renderer, width, height, x1, x2, y1, y2);
-      }
-      worm.draw.drawDataLines();
-      window.requestAnimationFrame(run);
+//      var position = worm.getMFCCs({
+//          minFreq: minHz,
+//          maxFreq: maxHz,
+//          filterBanks: fb
+//      });
+//      if(position.length) {
+//        x = position[1];
+//        y = position[2];
+//
+//        // rotate 90 degrees
+//        var tmpY = y;
+//        var tmpX = x;
+//        x = tmpY;
+//        y = -tmpX;
+//
+//        makeWorm(x,y, stage, renderer, width, height, x1, x2, y1, y2);
+//      }
+//      worm.draw.drawDataLines();
+//      window.requestAnimationFrame(run);
     };
 
     function usemedia() {
