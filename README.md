@@ -1,6 +1,8 @@
 VowelWorm
 =============
 
+[![Travis Builds][build-status-image]][build-status-url]
+
 VowelWorm is based off the work done at the [Department of Computational Perception at Johannes Kepler Universität Linz](http://www.cp.jku.at/projects/realtime/vowelworm.html), and uses the same name. The goal is to produce real-time vocal analysis in the browser.
 
 Development
@@ -16,3 +18,6 @@ $ python windowing.py --fft=./path/to/fft-spectrum.txt --lpc=./path/to/lpc-spect
 ```
 
 Sample data is used if `python windowing.py` is called without both the FFT and LPC arguments.
+
+[build-status-image]: https://travis-ci.org/BYU-ODH/apeworm.svg
+[build-status-url]: https://travis-ci.org/BYU-ODH/apeworm
