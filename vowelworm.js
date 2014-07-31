@@ -219,10 +219,14 @@ VowelWorm.normalize = function normalize(formants, method) {
 };
 
 /**
- * Applies a hanning window to the given dataset, returning a new array
+ * Applies a hanning window to the given dataset, returning a new array.
+ * You  may want to shift the values to get them to line up with the FFT.
+ * @example
+ *  VowelWorm.hann([...], 75).shift(VowelWorm.HANNING_SHIFT);
+ * @see {@link VowelWorm.HANNING_SHIFT}
  * @param {Array.<number>} vals The values to change
  * @param {number} window_size the size of the window
- * @return {Array.<number>} the new values, shifted to {@link HANNING_SHIFT}
+ * @return {Array.<number>} the new values 
  */
 /**
  * @license
@@ -257,7 +261,7 @@ VowelWorm.hann = function hann(vals, window_size) {
   for(var i = 0; i<w.length; i++) {
     wMorph[i] = w[i]/sum;
   }
-  return VowelWorm.convolve(wMorph, s).slice(this.HANNING_SHIFT);
+  return VowelWorm.convolve(wMorph, s);
 };
 
 /**
@@ -982,7 +986,7 @@ proto.getFormants = function getFormants(data, sampleRate) {
   }
 
   for(var i = 0; i<WINDOW_SIZES.length; i++) {
-    var smooth = this.hann(data, WINDOW_SIZES[i]);
+    var smooth = this.hann(data, WINDOW_SIZES[i]).slice(this.HANNING_SHIFT);
     var formants = this._getPeaks(smooth, sampleRate, fftSize);
 
     if( formants[0]<F1_MIN || formants[0]>F1_MAX || formants[0]>=formants[1] ||
