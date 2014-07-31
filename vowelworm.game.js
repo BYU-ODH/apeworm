@@ -6,6 +6,13 @@ window.VowelWorm.module('game', function(worm) {
   this.x2 = 2;
   this.y1 = -1;
   this.y2 = 3;
+  
+  /**
+   * Represents the threshold in dB that VowelWorm's audio should be at in
+   * order to to plot anything.
+   * @see {@link isSilent}
+   */
+  this.silence = -70;
 
   this.create = function(width, height, bgcolor){
     this._stage = new PIXI.Stage(bgcolor);
@@ -110,6 +117,13 @@ window.VowelWorm.module('game', function(worm) {
   };
   
   var getCoords = function(){
+    var data = new Float32Array(worm.getFFTSize()/2);
+    worm._analyzer.getFloatFrequencyData(data);
+
+    if(isSilent(data)) {
+      return null;
+    }
+
     var position = worm.getMFCCs({
       minFreq: minHz,
       maxFreq: maxHz,
@@ -151,6 +165,21 @@ window.VowelWorm.module('game', function(worm) {
     var adjustedY = this.height-(y-yStart)*yDist+20;
     
     return {x:adjustedX,y:adjustedY};
+  };
+
+  /**
+   * Determines whether, for plotting purposes, the audio data is silent or not
+   * Compares against the threshold given for {@link this.silence}.
+   * @param {Array.<number>} data - An array containing dB values
+   * @return {boolean} Whether or not the data is essentially 'silent'
+   */
+  var isSilent = function(data) {
+    for(var i = 0; i<data.length; i++) {
+      if(data[i] > game.silence) {
+        return false;
+      }
+    }
+    return true;
   };
 
 });
