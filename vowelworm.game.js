@@ -26,7 +26,6 @@ window.VowelWorm.module('game', function(worm) {
     this.drawVowels(worm);
     
   };
-    //this.ipa
   
   this.drawVowels = function(worm){
         
@@ -37,7 +36,7 @@ window.VowelWorm.module('game', function(worm) {
       ["o",0.6481633160832724,0.7202686566354586],
       ["u",0.7664563181635743,1.1444273789939676]
     ];   
-    
+        
     for(var i=0; i<letters.length; i++){
       var coords = adjustXAndY(letters[i][1],letters[i][2]);
       
@@ -63,14 +62,52 @@ window.VowelWorm.module('game', function(worm) {
       x = coords.x;
       y = coords.y;
       
+      var percent = getPercentDistanceFromTwoPoints(x,y,241,272);      
+      var color = getColorFromPercent(percent);
+            
       var graphics = new PIXI.Graphics();
-      graphics.beginFill(0x99000,1);
+      graphics.beginFill(color,1);
       graphics.drawCircle(x,y,10);
       this.graphics = graphics;
       
       this._stage.addChild(graphics);
       this._renderer.render(this._stage);
     }  
+  };
+  
+  var getPercentDistanceFromTwoPoints = function(x,y,goal_x,goal_y){
+    
+    var distance = Math.sqrt(Math.pow((x-goal_x),2) + Math.pow((y-goal_y),2));
+    var max_distance = Math.sqrt(Math.pow((0-width),2) + Math.pow((0-height),2));
+    var percent = distance/max_distance;
+        
+    return percent;
+  };
+  
+  var getColorFromPercent = function(percent){
+    var green = percent*0xFF;
+    var red = 0xFF-green;
+    
+    green = Math.round(green);
+    red = Math.round(red);
+    
+    var color_string = "";
+    if(red==0){
+      color_string = color_string + "00";
+    }else{
+      color_string = color_string + red.toString(16);
+    }
+    
+    if(green==0){
+      color_string = color_string + "00";
+    }else{
+      color_string = color_string + green.toString(16);
+    }
+    
+    var color_string = color_string + "00";
+    
+    
+    return parseInt(color_string, 16);
   };
   
   var getCoords = function(worm){
