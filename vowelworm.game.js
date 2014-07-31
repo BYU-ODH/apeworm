@@ -12,6 +12,8 @@ window.VowelWorm.module('game', function(worm) {
     this._renderer = PIXI.autoDetectRenderer(width, height);
     this._renderer.render(this._stage);
     
+    game.drawVowels();
+    
     //TODO - Replace a given HTML element instead of just appending the view to the page
     document.body.appendChild(this._renderer.view);
 
@@ -23,7 +25,6 @@ window.VowelWorm.module('game', function(worm) {
     }
 
     game.drawWorm();
-    game.drawVowels();
     
     window.requestAnimationFrame(this.play.bind(this));    
   };
