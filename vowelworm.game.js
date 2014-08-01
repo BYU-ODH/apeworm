@@ -40,28 +40,22 @@ window.VowelWorm.module('game', function(worm) {
   };
   
   game.drawVowels = function(){
-    
-    //TODO - Since these are hard-coded we probably can use the pixels and skip adjustXAndY()
     var letters = [
-      ["e",-0.05161977605869161,0.9811584778249319],
-      ["i",-0.2756356942870174,1.6241787997411496],
-      ["a",0.3612368918217143,0.30392828704932756],
-      ["o",0.6481633160832724,0.7202686566354586],
-      ["u",0.7664563181635743,1.1444273789939676]
+      ["e",241.28871891963863,272.35519027188354],
+      ["i",189.01833799969594,191.97765003235634],
+      ["a",337.6219414250667,357.00896411883406],
+      ["o",404.5714404194302,304.96641792056766],
+      ["u",432.17314090483404,251.94657762575406]
     ];   
         
-    for(var i=0; i<letters.length; i++){
-      var coords = adjustXAndY(letters[i][1],letters[i][2]);
-      
+    for(var i=0; i<letters.length; i++){      
       var letter = new PIXI.Text(letters[i][0],{font: "35px sans-serif", fill: "black", align: "center"});
-      letter.position.x = coords.x;
-      letter.position.y = coords.y;
+      letter.position.x = letters[i][1];
+      letter.position.y = letters[i][2];
       
       game._stage.addChild(letter);
     }
-
     game._renderer.render(game._stage);
-    
   };
   
   game.drawWorm = function(){
