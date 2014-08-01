@@ -4,6 +4,8 @@ audio.loop = true;
 var video = document.getElementById('vid');
 video.loop = true;
 
+var graphs_element = document.getElementById("graphs");
+
 function getUserMedia() {
   (navigator.getUserMedia || navigator.mozGetUserMedia || navigator.webkitGetUserMedia || function(){alert('getUserMedia missing')})
                         .apply(navigator, arguments);
@@ -12,18 +14,18 @@ function getUserMedia() {
 function usemedia() {
   audio.style.display = 'block';
   worm.setStream(audio);
-  worm.game.play();
+  worm.game.play(graphs_element);
 };
 
 function usevideo() {
   video.style.display = 'block';
   worm.setStream(video);
-  worm.game.play();
+  worm.game.play(graphs_element);
 };
 
 function micSuccess(stream) {
   worm.setStream(stream);
-  worm.game.play();
+  worm.game.play(graphs_element);
 };
 
 function micFailure() {

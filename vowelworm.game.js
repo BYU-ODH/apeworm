@@ -18,20 +18,23 @@ window.VowelWorm.module('game', function(worm) {
    */
   game.silence = -70;
 
-  game.create = function(width, height, bgcolor){
+  game.create = function(width, height, bgcolor, element){
     game._stage = new PIXI.Stage(bgcolor);
     game._renderer = PIXI.autoDetectRenderer(width, height);
     game._renderer.render(game._stage);
         
-    //TODO - Replace a given HTML element instead of just appending the view to the page
-    document.body.appendChild(game._renderer.view);
+    try{
+      element.appendChild(game._renderer.view);
+    }catch(e){
+      document.body.appendChild(game._renderer.view);
+    }
       
     game.drawVowels();
   };
 
-  game.play = function(){
+  game.play = function(element){
     if(!game._stage){
-      game.create(game.width, game.height, 0xFFFFFF);
+      game.create(game.width, game.height, 0xFFFFFF,element);
     }
 
     game.drawWorm();
