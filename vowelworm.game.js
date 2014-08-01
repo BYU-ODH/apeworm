@@ -11,6 +11,8 @@ window.VowelWorm.module('game', function(worm) {
   game.maxHz = 8000;
   game.fb = 10;
   
+  game.congrats_visible = false;
+  
   /**
    * Represents the threshold in dB that VowelWorm's audio should be at in
    * order to to plot anything.
@@ -22,6 +24,19 @@ window.VowelWorm.module('game', function(worm) {
     game._stage = new PIXI.Stage(bgcolor);
     game._renderer = PIXI.autoDetectRenderer(width, height);
     game._renderer.render(game._stage);
+
+    var thing = new PIXI.Text("Good job!",{font: "35px sans-serif", fill: "black", align: "center"});
+    thing.position.x = 100;
+    thing.position.y = 100;
+    
+    game.congrats = new PIXI.Text("Good job!",{font: "35px sans-serif", fill: "black", align: "center"});
+    game.congrats.position.x = 100;
+    game.congrats.position.y = 100;
+    
+   // game._stage.addChild(game.congrats);
+    //game._renderer.render(game._stage);
+    
+
         
     try{
       element.appendChild(game._renderer.view);
@@ -61,6 +76,18 @@ window.VowelWorm.module('game', function(worm) {
     game._renderer.render(game._stage);
   };
   
+  game.showCongrats = function(){
+    game._stage.addChild(game.congrats);
+    game._renderer.render(game._stage);
+    game.congrats_visible = true;
+  };
+  
+  game.hideCongrats = function(){
+    game._stage.removeChild(game.congrats);
+    game._renderer.render(game._stage);
+    game.congrats_visible = false;
+  };
+  
   game.drawWorm = function(){
     var coords = getCoords(worm);
     if(coords!==null){
@@ -71,12 +98,22 @@ window.VowelWorm.module('game', function(worm) {
 
       var x = coords.x;
       var y = coords.y;
-      
+            
       //The target here is arbitrarily set around 'e'
       var percent = getPercentDistanceFromTwoPoints(x,y,241,272);
       //Make the color difference more extreme
       percent = percent*3;
       var color = getColorFromPercent(percent);      
+                        
+      if(percent<.25){
+        if(!game.congrats_visible){
+          game.showCongrats();
+        }
+      }else{
+        if(game.congrats_visible){
+          game.hideCongrats();
+        }
+      }
       
       var graphics = new PIXI.Graphics();
       graphics.beginFill(color,1);
@@ -135,13 +172,8 @@ window.VowelWorm.module('game', function(worm) {
       var x = position[1];
       var y = position[2];
 
-      // rotate 90 degrees
-      var tmpY = y;
-      var tmpX = x;
-      x = tmpY;
-      y = -tmpX;
-
-      var coords = adjustXAndY(x,y);
+      //Pass in coords flipped 90 degrees
+      var coords = adjustXAndY(y,-x);
       return coords;
     }else{
       return null;
