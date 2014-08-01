@@ -10,9 +10,7 @@ window.VowelWorm.module('game', function(worm) {
   game.minHz = 300;
   game.maxHz = 8000;
   game.fb = 10;
-  
-  game.congrats_visible = false;
-  
+    
   game.old_circles = [];
   
   /**
@@ -26,20 +24,7 @@ window.VowelWorm.module('game', function(worm) {
     game._stage = new PIXI.Stage(bgcolor);
     game._renderer = PIXI.autoDetectRenderer(width, height);
     game._renderer.render(game._stage);
-
-    var thing = new PIXI.Text("Good job!",{font: "35px sans-serif", fill: "black", align: "center"});
-    thing.position.x = 100;
-    thing.position.y = 100;
-    
-    game.congrats = new PIXI.Text("Good job!",{font: "35px sans-serif", fill: "black", align: "center"});
-    game.congrats.position.x = 100;
-    game.congrats.position.y = 100;
-    
-   // game._stage.addChild(game.congrats);
-    //game._renderer.render(game._stage);
-    
-
-        
+            
     try{
       element.appendChild(game._renderer.view);
     }catch(e){
@@ -77,19 +62,7 @@ window.VowelWorm.module('game', function(worm) {
     }
     game._renderer.render(game._stage);
   };
-  
-  game.showCongrats = function(){
-    game._stage.addChild(game.congrats);
-    game._renderer.render(game._stage);
-    game.congrats_visible = true;
-  };
-  
-  game.hideCongrats = function(){
-    game._stage.removeChild(game.congrats);
-    game._renderer.render(game._stage);
-    game.congrats_visible = false;
-  };
-  
+
   game.drawWorm = function(){
     var coords = getCoords(worm);
     if(coords!==null){
@@ -105,23 +78,14 @@ window.VowelWorm.module('game', function(worm) {
       percent = percent*3;
       var color = getColorFromPercent(percent);      
                         
-      if(percent<.25){
-        if(!game.congrats_visible){
-          game.showCongrats();
-        }
-      }else{
-        if(game.congrats_visible){
-          game.hideCongrats();
-        }
-      }
-      
-      var graphics = new PIXI.Graphics();
-      graphics.beginFill(color,1);
-      graphics.drawCircle(x,y,10);
+      var circle = new PIXI.Sprite.fromImage("circle.png");
+      circle.position.x = x;
+      circle.position.y = y;
+      circle.tint = color;
 
-      game.old_circles.push({object:graphics,color:color,x:x,y:y});
+      game.old_circles.push({object:circle,color:color,x:x,y:y});
       
-      game._stage.addChild(graphics);
+      game._stage.addChild(circle);
       game._renderer.render(game._stage);
     }  
   };
@@ -230,13 +194,11 @@ window.VowelWorm.module('game', function(worm) {
       color = (red << 16) | (green << 8) | (blue);
       
       if(color===0xFFFFFF){
-        obj.endFill();
         game._stage.removeChild(obj);
         game.old_circles.splice(i, 1);
         i--;
       }else{
-        obj.beginFill(color,1);
-        obj.drawCircle(x,y,10);
+        obj.tint = color;
         game.old_circles[i].color = color;
       }
     }
@@ -244,7 +206,7 @@ window.VowelWorm.module('game', function(worm) {
 
   var updateColor = function(color){
     if(color<0xFF){
-      color = color + 0x55;
+      color = color + 0x22;
       if(color>0xFF){
         color = 0xFF;
       }
