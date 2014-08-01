@@ -148,16 +148,11 @@ window.VowelWorm.module('game', function(worm) {
     }
   };
   
-  var adjustXAndY = function(x,y){
-    var x1 = game.x1;
-    var x2 = game.x2;
-    var y1 = game.y1;
-    var y2 = game.y2;
-    
-    var xStart = x1;
-    var xEnd = x2;
-    var yStart = y1;
-    var yEnd = y2;
+  var adjustXAndY = function(x,y){    
+    var xStart = game.x1;
+    var xEnd = game.x2;
+    var yStart = game.y1;
+    var yEnd = game.y2;
 
     var xDist = game.width/(xEnd-xStart);
     var yDist = game.height/(yEnd-yStart);
