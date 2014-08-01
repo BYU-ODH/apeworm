@@ -13,6 +13,8 @@ window.VowelWorm.module('game', function(worm) {
   
   game.congrats_visible = false;
   
+  game.old_circles = [];
+  
   /**
    * Represents the threshold in dB that VowelWorm's audio should be at in
    * order to to plot anything.
@@ -92,9 +94,7 @@ window.VowelWorm.module('game', function(worm) {
     var coords = getCoords(worm);
     if(coords!==null){
 
-      if(game.graphics){
-        game._stage.removeChild(game.graphics);
-      }
+      fadeOldCircles();
 
       var x = coords.x;
       var y = coords.y;
@@ -119,7 +119,7 @@ window.VowelWorm.module('game', function(worm) {
       graphics.beginFill(color,1);
       graphics.drawCircle(x,y,10);
 
-      game.graphics = graphics;
+      game.old_circles.push({object:graphics,color:color,x:x,y:y});
       
       game._stage.addChild(graphics);
       game._renderer.render(game._stage);
@@ -208,6 +208,48 @@ window.VowelWorm.module('game', function(worm) {
       }
     }
     return true;
+  };
+
+  var fadeOldCircles = function(){
+
+    for(var i=0; i<game.old_circles.length; i++){
+      var obj = game.old_circles[i].object;
+      var color = game.old_circles[i].color;
+      var x = game.old_circles[i].x;
+      var y = game.old_circles[i].y;
+      
+      var red = color >> 16;
+      var green = (color >> 8) & 0x00FF;
+      var blue = color & 0x0000FF;
+      
+      
+      red = updateColor(red);
+      green = updateColor(green);
+      blue = updateColor(blue);
+      
+      color = (red << 16) | (green << 8) | (blue);
+      
+      if(color===0xFFFFFF){
+        obj.endFill();
+        game._stage.removeChild(obj);
+        game.old_circles.splice(i, 1);
+        i--;
+      }else{
+        obj.beginFill(color,1);
+        obj.drawCircle(x,y,10);
+        game.old_circles[i].color = color;
+      }
+    }
+  };
+
+  var updateColor = function(color){
+    if(color<0xFF){
+      color = color + 0x55;
+      if(color>0xFF){
+        color = 0xFF;
+      }
+    }
+    return color;
   };
 
 });
