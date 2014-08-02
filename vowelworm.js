@@ -577,21 +577,22 @@ function pinv(A) {
  */
 VowelWorm.instance = function VowelWorm(stream) {
   var that = this;
-  Object.keys(modules).forEach(function(name) {
-    attachModuleToInstance(name, that);
-  });
-  instances.push(this);
 
   this._context    = CONTEXT;
   this._analyzer   = this._context.createAnalyser();
   this._sourceNode = null; // for analysis with files rather than mic input
   this._analyzer.fftSize = 2048;
-  this._buffer = new Float32Array(this._analyzer.fftSize);
+  this._buffer = new Float32Array(this._analyzer.fftSize/2);
   this._audioBuffer = null; // comes from downloading an audio file
 
   if(stream) {
     this.setStream(stream);
   }
+  
+  Object.keys(modules).forEach(function(name) {
+    attachModuleToInstance(name, that);
+  });
+  instances.push(this);
 };
 
 /**
@@ -861,7 +862,7 @@ proto.getMFCCs = function(options) {
   var fft = null;
 
   if(!options.fft) {
-    fft = new Float32Array(this.getFFTSize()/2);
+    fft = this._buffer;
     this._analyzer.getFloatFrequencyData(fft);
     for(var j = 0; j<fft.length; j++) {
       fft[j] = VowelWorm.decibelsToLinear(fft[j]);
@@ -884,76 +885,68 @@ proto.getMFCCs = function(options) {
       maxFreq = options.maxFreq,
       sampleRate = options.sampleRate || this.getSampleRate();
 
-  function toFrequency(position) {
-    return (position*sampleRate)/NFFT;
-  };
+  // initialize filter banks
+  var maxMel = 1125 * Math.log(1.0 + maxFreq/700);
+  var minMel = 1125 * Math.log(1.0 + minFreq/700);
+  var dMel = (maxMel - minMel) / (noFilterBanks+1);
 
-  function initFilterBanks() {
-    var maxMel = 1125 * Math.log(1.0 + maxFreq/700);
-    var minMel = 1125 * Math.log(1.0 + minFreq/700);
-    var dMel = (maxMel - minMel) / (noFilterBanks+1);
- 
-    var bins = []; 
-    for (var n = 0; n < noFilterBanks + 2; n++) {
-      var mel = minMel + n * dMel;
-      var Hz = 700  * (Math.exp(mel / 1125) - 1);
-      var bin = Math.floor( (NFFT)*Hz / sampleRate);
-      bins.push(bin);
-    }
+  var bins = [];
+  for (var n = 0; n < noFilterBanks + 2; n++) {
+    var mel = minMel + n * dMel;
+    var Hz = 700  * (Math.exp(mel / 1125) - 1);
+    var bin = Math.floor( (NFFT)*Hz / sampleRate);
+    bins.push(bin);
+  }
 
-    for(var i = 1; i<bins.length-1; i++) {
-      var fBank = [];
+  for(var i = 1; i<bins.length-1; i++) {
+    var fBank = [];
 
-      var fBelow = toFrequency(bins[i-1]);
-      var fCentre = toFrequency(bins[i]);
-      var fAbove = toFrequency(bins[i+1]);
+    var fBelow = VowelWorm._toFrequency(bins[i-1], sampleRate, NFFT);
+    var fCentre = VowelWorm._toFrequency(bins[i], sampleRate, NFFT);
+    var fAbove = VowelWorm._toFrequency(bins[i+1], sampleRate, NFFT);
 
-      for(var n = 0; n < 1 + NFFT / 2; n++) {
-        var freq = toFrequency(n);
-        var val = null;
+    for(var n = 0; n < 1 + NFFT / 2; n++) {
+      var freq = VowelWorm._toFrequency(n, sampleRate, NFFT);
+      var val = null;
 
-        if ((freq <= fCentre) && (freq >= fBelow)) {
-          val = ((freq - fBelow) / (fCentre - fBelow));
-        } else if ((freq > fCentre) && (freq <= fAbove)) {
-          val = ((fAbove - freq) / (fAbove - fCentre));
-        } else {
-          val = 0.0;
-        }
-        fBank.push(val);
+      if ((freq <= fCentre) && (freq >= fBelow)) {
+        val = ((freq - fBelow) / (fCentre - fBelow));
+      } else if ((freq > fCentre) && (freq <= fAbove)) {
+        val = ((fAbove - freq) / (fAbove - fCentre));
+      } else {
+        val = 0.0;
       }
-
-      filterBanks.push(fBank);
-    }
-  };
-
-  function getLogCoefficents() {
-    var preDCT = []; // Initialise pre-discrete cosine transformation vetor array
-    var postDCT = [];// Initialise post-discrete cosine transformation vetor array / MFCC Coefficents
-
-    for(var i = 0; i<filterBanks.length; i++) {
-      var cel = 0;
-      var n = 0; 
-      for(var j = 0; j < filterBanks[i].length-1; j++) {
-        cel += (filterBanks[i][j]) * fft[n++];
-      }
-      preDCT.push(Math.log(cel)); // Compute the log of the spectrum
+      fBank.push(val);
     }
 
-    // Perform the Discrete Cosine Transformation
-    for (var i = 0; i < filterBanks.length; i++) {
-      var val = 0;
-      var n = 0;
-      for (var j = 0; j<preDCT.length; j++) {
-        val += (preDCT[j]) * Math.cos(i * (n++ - 0.5) *  Math.PI / filterBanks.length);
-      }
-      val /= filterBanks.length;
-      postDCT.push(val); 
-    }
-    return postDCT;
-  };
+    filterBanks.push(fBank);
+  }
+  // end initialize filterBanks
 
-  initFilterBanks();
-  return getLogCoefficents();
+  // get log coefficients
+  var preDCT = []; // Initialise pre-discrete cosine transformation vetor array
+  var postDCT = [];// Initialise post-discrete cosine transformation vetor array / MFCC Coefficents
+
+  for(var i = 0; i<filterBanks.length; i++) {
+    var cel = 0;
+    var n = 0;
+    for(var j = 0; j < filterBanks[i].length-1; j++) {
+      cel += (filterBanks[i][j]) * fft[n++];
+    }
+    preDCT.push(Math.log(cel)); // Compute the log of the spectrum
+  }
+
+  // Perform the Discrete Cosine Transformation
+  for (var i = 0; i < filterBanks.length; i++) {
+    var val = 0;
+    var n = 0;
+    for (var j = 0; j<preDCT.length; j++) {
+      val += (preDCT[j]) * Math.cos(i * (n++ - 0.5) *  Math.PI / filterBanks.length);
+    }
+    val /= filterBanks.length;
+    postDCT.push(val);
+  }
+  return postDCT;
 };
 
 /**
