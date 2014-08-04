@@ -19,6 +19,16 @@ window.VowelWorm.module('game', function(worm) {
    * @see {@link isSilent}
    */
   game.silence = -70;
+ 
+  /**
+   * Used for storing frequency data.
+   * Chrome does not adequately garbage collect typed arrays, so this shouldn't
+   * be created in a repeatedly-called function--otherwise we'll run up memory
+   * pretty fast.
+   *
+   * TODO - the VowelWorm core code needs to handle this, not this game module
+   */ 
+  var buffer = new Float32Array(worm.getFFTSize()/2);
 
   game.create = function(width, height, bgcolor, element){
     game._stage = new PIXI.Stage(bgcolor);
@@ -119,10 +129,9 @@ window.VowelWorm.module('game', function(worm) {
   };
   
   var getCoords = function(){
-    var data = new Float32Array(worm.getFFTSize()/2);
-    worm._analyzer.getFloatFrequencyData(data);
+    worm._analyzer.getFloatFrequencyData(buffer);
 
-    if(isSilent(data)) {
+    if(isSilent(buffer)) {
       return null;
     }
 
