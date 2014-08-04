@@ -93,7 +93,7 @@ window.VowelWorm.module('game', function(worm) {
       circle.position.y = y;
       circle.tint = color;
 
-      game.old_circles.push({object:circle,color:color,x:x,y:y});
+      game.old_circles.push(circle);
       
       game._stage.addChild(circle);
       game._renderer.render(game._stage);
@@ -186,41 +186,15 @@ window.VowelWorm.module('game', function(worm) {
   var fadeOldCircles = function(){
 
     for(var i=0; i<game.old_circles.length; i++){
-      var obj = game.old_circles[i].object;
-      var color = game.old_circles[i].color;
-      var x = game.old_circles[i].x;
-      var y = game.old_circles[i].y;
+      var obj = game.old_circles[i];
       
-      var red = color >> 16;
-      var green = (color >> 8) & 0x00FF;
-      var blue = color & 0x0000FF;
+      obj.alpha = obj.alpha - .2;
       
-      
-      red = updateColor(red);
-      green = updateColor(green);
-      blue = updateColor(blue);
-      
-      color = (red << 16) | (green << 8) | (blue);
-      
-      if(color===0xFFFFFF){
+      if(obj.alpha === 0){
         game._stage.removeChild(obj);
         game.old_circles.splice(i, 1);
         i--;
-      }else{
-        obj.tint = color;
-        game.old_circles[i].color = color;
       }
     }
   };
-
-  var updateColor = function(color){
-    if(color<0xFF){
-      color = color + 0x22;
-      if(color>0xFF){
-        color = 0xFF;
-      }
-    }
-    return color;
-  };
-
 });
