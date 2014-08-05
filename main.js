@@ -1,8 +1,3 @@
-var worm = new VowelWorm.instance();
-
-var audio = document.getElementById('media');
-audio.loop = true;
-
 var video = document.getElementById('vid');
 video.loop = true;
 
@@ -12,16 +7,26 @@ document.getElementById("media_button").addEventListener("click",usemedia);
 document.getElementById("video_button").addEventListener("click",usevideo);
 document.getElementById("mic_button").addEventListener("click",usemic);
 
+var game = new VowelWorm.Game({element: graphs_element});
+
 function usemedia() {
-  audio.style.display = 'block';
-  worm.setStream(audio);
-  worm.game.play(graphs_element);
-};
+  var worms = [];
+  var audio_els = document.getElementsByClassName('media');
+
+  for(var i = 0; i<audio_els.length; i++) {
+    var audio = audio_els[i];
+    audio.style.display = 'block';
+    audio.loop = true;
+    audio.play();
+    var worm = new VowelWorm.instance(audio);
+    worms.push(worm);
+    game.addWorm(worm);
+  }
+}
 
 function usevideo() {
   video.style.display = 'block';
-  worm.setStream(video);
-  worm.game.play(graphs_element);
+  var worm = new VowelWorm.instance(video);
 };
 
 function usemic() {
@@ -36,8 +41,7 @@ function getUserMedia() {
 }
 
 function micSuccess(stream) {
-  worm.setStream(stream);
-  worm.game.play(graphs_element);
+  var worm = new VowelWorm.instance(stream);
 };
 
 function micFailure() {
