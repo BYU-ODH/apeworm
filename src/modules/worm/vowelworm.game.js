@@ -88,7 +88,7 @@ window.VowelWorm.module('game', function(worm) {
       percent = percent*3;
       var color = getColorFromPercent(percent);      
                         
-      var circle = new PIXI.Sprite.fromImage("circle.png");
+      var circle = new PIXI.Sprite.fromImage("src/modules/worm/circle.png");
       circle.position.x = x;
       circle.position.y = y;
       circle.tint = color;
