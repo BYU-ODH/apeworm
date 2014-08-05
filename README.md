@@ -7,7 +7,15 @@ VowelWorm is based off the work done at the [Department of Computational Percept
 
 Development
 -----------
-* JavaScript files should be annotated using JSDoc and Google Closure Compiler's standards for improved compilation
+### Code Organization ###
+
+* VowelWorm base code: `src/vowelworm.js`
+* Library Files: `src/lib/`
+* Modules attached to individual `VowelWorm.instance` objects: `src/modules/worm`
+* Additions to VowelWorm object: `src/modules/core`
+* Test assets: `test/assets`
+
+JavaScript files should be annotated using JSDoc and Google Closure Compiler's standards for improved compilation
 
 ### Tools ###
 
