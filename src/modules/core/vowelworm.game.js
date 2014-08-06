@@ -10,6 +10,8 @@
  * @constructor
  */
 VowelWorm.Game = function( options ) {
+  "use strict";
+
   var game = this;
   game.width = options.width || 700;
   game.height = options.height || 500;
@@ -21,7 +23,7 @@ VowelWorm.Game = function( options ) {
   game.minHz = 300;
   game.maxHz = 8000;
   game.fb = 10;
-  
+
   /**
    * Represents the threshold in dB that VowelWorm's audio should be at in
    * order to to plot anything.
@@ -45,6 +47,14 @@ VowelWorm.Game = function( options ) {
    */
   var worms = [];
 
+  /**
+   * You can change this with game.ipa = true/false
+   * @type boolean
+   */
+  var ipaEnabled = true;
+ 
+  var ipaChart = new PIXI.DisplayObjectContainer();  
+
   game.play = function(){
     game.drawWorm();
     window.requestAnimationFrame(game.play);
@@ -60,25 +70,6 @@ VowelWorm.Game = function( options ) {
    container.circles = [];
    worms.push(container);
   };
-  
-  game.drawVowels = function(){
-    var letters = [
-      ["e",241.28871891963863,272.35519027188354],
-      ["i",189.01833799969594,191.97765003235634],
-      ["a",337.6219414250667,357.00896411883406],
-      ["o",404.5714404194302,304.96641792056766],
-      ["u",432.17314090483404,251.94657762575406]
-    ];   
-        
-    for(var i=0; i<letters.length; i++){      
-      var letter = new PIXI.Text(letters[i][0],{font: "35px sans-serif", fill: "black", align: "center"});
-      letter.position.x = letters[i][1];
-      letter.position.y = letters[i][2];
-      
-      game._stage.addChild(letter);
-    }
-    game._renderer.render(game._stage);
-  };
 
   game.drawWorm = function(){
     var current_color = 0x00FF00;
@@ -89,7 +80,7 @@ VowelWorm.Game = function( options ) {
       var coords = getCoords(worm);
 
       if(coords!==null){
-        doRender = true;
+        var doRender = true;
         
         var x = coords.x;
         var y = coords.y;
@@ -108,6 +99,31 @@ VowelWorm.Game = function( options ) {
     fadeOldCircles();
     game._renderer.render(game._stage);
   };
+
+  Object.defineProperties(game, {
+    ipa: {
+      enumerable: true,
+      get: function() {
+        return ipaEnabled;
+      },
+      set: function(val) {
+        var bool = !!val;
+        if(ipaEnabled === bool) {
+          return;
+        }
+        ipaEnabled = bool;
+        
+        if(ipaEnabled) {
+          game._stage.addChild(ipaChart);
+        }
+        else
+        {
+          game._stage.removeChild(ipaChart);
+        }
+        window.requestAnimationFrame(game._renderer.render);
+      }
+    }
+  });
   
   var getCoords = function(worm){
     worm._analyzer.getFloatFrequencyData(buffer);
@@ -193,22 +209,45 @@ VowelWorm.Game = function( options ) {
     }
 
     old_color = tinycolor(old_color);
-    new_color = old_color.spin(45).toHex();
+    var new_color = old_color.spin(45).toHex();
     new_color = parseInt(new_color,16);
     return new_color;
+  };
+ 
+  /**
+   * Fills the IPA Chart. A constructor helper method.
+   */
+  var drawVowels = function() {
+    if(!ipaChart.children.length) {
+      var letters = [
+        ["e",241.28871891963863,272.35519027188354],
+        ["i",189.01833799969594,191.97765003235634],
+        ["a",337.6219414250667,357.00896411883406],
+        ["o",404.5714404194302,304.96641792056766],
+        ["u",432.17314090483404,251.94657762575406]
+      ];
+      for(var i=0; i<letters.length; i++){
+        var letter = new PIXI.Text(letters[i][0],{font: "35px sans-serif", fill: "black", align: "center"});
+        letter.position.x = letters[i][1];
+        letter.position.y = letters[i][2];
+        ipaChart.addChild(letter);
+      }
+    }
   };
 
   // CREATE GAME
   var bgColor = options.background !== undefined ? options.background : 0xFFFFFF;
   game._stage = new PIXI.Stage(bgColor);
   game._renderer = PIXI.autoDetectRenderer(game.width, game.height);
-  game._renderer.render(game._stage);
   try{
     options.element.appendChild(game._renderer.view);
   }catch(e){
     document.body.appendChild(game._renderer.view);
   }
-  game.drawVowels();
+  drawVowels();
+  if(ipaEnabled) {
+    game._stage.addChild(ipaChart);
+  }
   
   if(options.worms) {
     if(options.worms instanceof Array) {
@@ -221,5 +260,6 @@ VowelWorm.Game = function( options ) {
       game.addWorm(worm);
     }
   }
+  game._renderer.render(game._stage);
   game.play();
 };
