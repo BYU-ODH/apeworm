@@ -40,6 +40,7 @@ function getUserMedia() {
 
 function micSuccess(stream) {
   var worm = new VowelWorm.instance(stream);
+  game.addWorm(worm);
 };
 
 function micFailure() {
