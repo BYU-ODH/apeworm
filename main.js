@@ -30,8 +30,6 @@ function usevideo() {
 };
 
 function usemic() {
-  audio.pause();
-  audio.style.display = 'none';
   getUserMedia({audio: true}, micSuccess, micFailure);
 };
 
