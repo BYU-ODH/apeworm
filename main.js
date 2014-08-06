@@ -1,3 +1,4 @@
+var selected_mic = false;
 var video = document.getElementById('vid');
 video.loop = true;
 
@@ -30,7 +31,10 @@ function usevideo() {
 };
 
 function usemic() {
-  getUserMedia({audio: true}, micSuccess, micFailure);
+  if(!selected_mic){
+    getUserMedia({audio: true}, micSuccess, micFailure);
+    selected_mic = true;
+  }
 };
 
 function getUserMedia() {

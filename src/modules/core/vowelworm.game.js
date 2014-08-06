@@ -81,6 +81,7 @@ VowelWorm.Game = function( options ) {
   };
 
   game.drawWorm = function(){
+    var current_color = 0x00FF00;
     worms.forEach(function(container) {
       var worm = container.worm,
           circles = container.circles;
@@ -92,53 +93,20 @@ VowelWorm.Game = function( options ) {
         
         var x = coords.x;
         var y = coords.y;
-              
-        //The target here is arbitrarily set around 'e'
-        var percent = getPercentDistanceFromTwoPoints(x,y,241,272);
-        //Make the color difference more extreme
-        percent = percent*3;
-        var color = getColorFromPercent(percent);      
-                          
+
         var circle = new PIXI.Sprite.fromImage("src/modules/core/circle.png");
         circle.position.x = x;
         circle.position.y = y;
-        circle.tint = color;
+        circle.tint = current_color;
 
         circles.push(circle);
         
         game._stage.addChild(circle);
-      }  
+      }
+      current_color = getNextColor(current_color);  
     });
     fadeOldCircles();
     game._renderer.render(game._stage);
-  };
-  
-  var getPercentDistanceFromTwoPoints = function(x,y,goal_x,goal_y){
-    
-    var distance = Math.sqrt(Math.pow((x-goal_x),2) + Math.pow((y-goal_y),2));
-    var max_distance = Math.sqrt(Math.pow((0-game.width),2) + Math.pow((0-game.height),2));
-    var percent = distance/max_distance;
-    
-    return percent;
-  };
-  
-  var getColorFromPercent = function(percent){
-    percent = Math.round(percent*100)/100;
-    
-    if(percent<0){percent=0;}
-    if(percent>1){percent=1;}
-    
-    var red = percent*0xFF;
-    var green = 0xFF-red;
-    
-    green = Math.round(green);
-    red = Math.round(red);
-    
-    red = red << 16;
-    green = green << 8;
-        
-    return red | green;
-
   };
   
   var getCoords = function(worm){
