@@ -159,8 +159,8 @@ VowelWorm.Game = function( options ) {
     var xDist = game.width/(xEnd-xStart);
     var yDist = game.height/(yEnd-yStart);
 
-    var adjustedX = (x-xStart)*xDist + 20;
-    var adjustedY = game.height-(y-yStart)*yDist+20;
+    var adjustedX = (x-xStart)*xDist;
+    var adjustedY = game.height-(y-yStart)*yDist;
     
     return {x:adjustedX,y:adjustedY};
   };
@@ -220,11 +220,11 @@ VowelWorm.Game = function( options ) {
   var drawVowels = function() {
     if(!ipaChart.children.length) {
       var letters = [
-        ["e",241.28871891963863,272.35519027188354],
-        ["i",189.01833799969594,191.97765003235634],
-        ["a",337.6219414250667,357.00896411883406],
-        ["o",404.5714404194302,304.96641792056766],
-        ["u",432.17314090483404,251.94657762575406]
+        ["e",221.28871891963863,252.35519027188354],
+        ["i",169.01833799969594,171.97765003235634],
+        ["a",317.6219414250667,337.00896411883406],
+        ["o",384.5714404194302,284.96641792056766],
+        ["u",412.17314090483404,231.94657762575406]
       ];
       for(var i=0; i<letters.length; i++){
         var letter = new PIXI.Text(letters[i][0],{font: "35px sans-serif", fill: "black", align: "center"});
