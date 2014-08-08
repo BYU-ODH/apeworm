@@ -28,6 +28,7 @@ function usemedia() {
 function usevideo() {
   video.style.display = 'block';
   var worm = new VowelWorm.instance(video);
+  game.addWorm(worm);
 };
 
 function usemic() {
