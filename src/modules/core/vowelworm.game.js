@@ -15,14 +15,15 @@ VowelWorm.Game = function( options ) {
   var game = this;
   game.width = options.width || 700;
   game.height = options.height || 500;
-  game.x1 = 0;
-  game.x2 = 4;
-  game.y1 = 0;
-  game.y2 = 3;
+  game.x1 = .2;
+  game.x2 = 2;
+  game.y1 = 0.9;
+  game.y2 = 1.8;
   
-  game.minHz = 300;
+  game.minHz = 0;
   game.maxHz = 8000;
-  game.fb = 25;
+  game.fb = 40;
+  game.coefficients = 25;
 
   /**
    * Represents the threshold in dB that VowelWorm's audio should be at in
@@ -89,7 +90,7 @@ VowelWorm.Game = function( options ) {
         circle.position.x = x;
         circle.position.y = y;
         circle.tint = current_color;
-        circle.scale = new PIXI.Point(.3,.3);
+        circle.scale = new PIXI.Point(.8,.8);
 
         circles.push(circle);
         
@@ -140,9 +141,9 @@ VowelWorm.Game = function( options ) {
     });
     
     if(mfccs.length) {
+      mfccs = mfccs.slice(0,game.coefficients);
       var position = VowelWorm.normalize(mfccs, VowelWorm.Normalization.regression);
       if(position.length) {
-        console.log(position);
         var coords = adjustXAndY(position[0],position[1]);
         return coords;
       }
