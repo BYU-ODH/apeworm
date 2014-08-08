@@ -13,12 +13,37 @@ var game = new VowelWorm.Game({element: graphs_element});
 function usemedia() {
   var worms = [];
   var audio_els = document.getElementsByClassName('media');
+  
+  var audios_loaded = 0;
+  function audioReady() {
+    audios_loaded++;
+    if(audios_loaded == audio_els.length) {
+      for(var i = 0; i<audio_els.length; i++) {
+        audio_els[i].play();
+      }
+    }
+  }
+
+  // hacky loop to make sure audio stays somewhat in sync
+  var audios_finished = 0;
+  function audioFinished() {
+    if(audios_finished >= audio_els.length) {
+      audios_finished = 0;
+    }
+    audios_finished++;
+    if(audios_finished === audio_els.length) {
+      for(var i = 0; i<audio_els.length; i++) {
+        audio_els[i].play();
+      }
+    }
+  };
 
   for(var i = 0; i<audio_els.length; i++) {
     var audio = audio_els[i];
     audio.style.display = 'block';
-    audio.loop = true;
-    audio.play();
+    audio.load();
+    audio.addEventListener('canplaythrough', audioReady);
+    audio.addEventListener('ended', audioFinished);
     var worm = new VowelWorm.instance(audio);
     worms.push(worm);
     game.addWorm(worm);
