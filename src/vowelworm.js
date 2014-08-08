@@ -79,6 +79,8 @@ var F3_MAX = 5000;
  * Represent the minimum differences between formants, to ensure they are
  * properly spaced
  *
+ * @const
+ *
  * TODO ensure accuracy; find official source
  */
 
@@ -115,6 +117,36 @@ var WINDOW_SIZES = [
   61
 ];
 
+/***
+ * Transposed MFCC weight matrices for normalization.
+ * Numeric keys represent the number of filter banks.
+ * These are transposed from the matrices given in the VowelWorm MATLAB code
+ * @constant
+ */
+/**
+ * @license
+ * VowelWorm concept and VowelWorm._MFCC_WEIGHTS from Harald Frostel, Andreas
+ * Arzt, and Gerhard Widmer at the Department of Computational Perception
+ * Johannes Kepler University, Linz, Austria.
+ * http://www.cp.jku.at/projects/realtime/vowelworm.html
+ *
+ */
+VowelWorm._MFCC_WEIGHTS = {
+  25: {
+    height_no_f0: new Float32Array([
+      1.104270,  0.120389,  0.271996,   0.246571, 0.029848, -0.489273, -0.734283,
+      -0.796145, -0.441830, -0.033330,  0.415667, 0.341943, 0.380445, 0.260451,
+      0.092989,  -0.161122, -0.173544, -0.015523, 0.251668, 0.022534, 0.054093,
+      0.005430,  -0.035820, -0.057551,  0.161558,                      
+    ]),
+    backness: new Float32Array([
+      0.995437, 0.540693, 0.121922, -0.585859, -0.443847, 0.170546, 0.188879,
+      -0.306358, -0.308599, -0.212987, 0.012301, 0.574838, 0.681862, 0.229355,
+      -0.222245, -0.222203, -0.129962, 0.329717, 0.142439, -0.132018, 0.103092,
+      0.052337, -0.034299, -0.041558, 0.141547  
+    ])
+  }
+};
 
 /***
  * Contains precomputed values for the Hanning function at specific window
@@ -172,15 +204,44 @@ VowelWorm.Normalization = {
    * Uses the Traunmüller conversion to conver the formant to the Bark Scale
    * @param {number} formant The formant (in Hz) to convert to the Bark Scale
    * @return {number} The formant converted to the Bark Scale
+   * @nosideeffects
    */
   barkScale: function barkScale(formant) {
     if(formant == 0) {
       formant = 1;
     }
     return 26.81/(1+(1960/formant)) - 0.53;
+  },
+  /**
+   * Computes the regression of the given cepstral coefficients and weights.
+   * Tested with Mel Frequency Cepstral Coefficients. May not work with others.
+   * @param {Array.<number>} coefficients
+   * @param {Array.<number>} transposed_weights @see {@link VowelWorm._MFCC_WEIGHTS}
+   */
+  regression: function regression(coefficients, transposed_weights) {
+    if(coefficients.length !== transposed_weights.length) {
+      throw new Error("coefficients and transposed_weights must be equal in " +
+          "length when using the regression normalization method. " +
+          "Coefficient length: " + coefficients.length + ". Weights length: " +
+          transposed_weights.length);
+    };
+    var sum = 0;
+    for(var i = 0; i<coefficients.length; i++) {
+      sum += coefficients[i]*transposed_weights[i];
+    };
+    return sum;
   }
 };
 
+/**
+ * Returns the linear magnitude of the given decibels value.
+ * @param {number} dB the value in dB to convert
+ * @nosideeffects
+ * @return {number} the linear magnitude
+ * 
+ * TODO — If we can find a generic representation somewhere of this algorithm,
+ * we can remove this license
+ */
 /**
  * @license
  *
@@ -221,8 +282,68 @@ VowelWorm.Normalization = {
  * @public
  * @memberof VowelWorm
  */
-VowelWorm.decibelsToLinear = function(dB) {
+
+VowelWorm.decibelsToLinear = function decibelsToLinear(dB) {
   return Math.pow(10, 0.05 * dB);
+};
+
+/**
+ * Given an array of formants (or MFCC values), returns normalized X and Y
+ * coordinates representing advancement and height, respectively.
+ * @param {Array.<number>} formants The formants to normalize
+ * @param {function} [method=VowelWorm.Normalization.barkScale]
+ *  the method to use for Normalization. Must be a property of
+ *  {@see VowelWorm.Normalization}. Defaults to barkScale
+ * 
+ * @return {Array.<number>} an array formatted thusly: [x,y]. May be empty
+ * @nosideeffects
+ *
+ * TODO: check to see if passing a method in as a param seems sane with everyone
+ * else. The reason I'm doing it is for compilation purposes.
+ */
+VowelWorm.normalize = function normalize(formants, method) {
+  if(!formants.length) {
+    return [];
+  }
+  if(method === undefined || method === null) {
+    method = VowelWorm.Normalization.barkScale;
+  }
+  if(typeof method !== 'function') {
+    throw new Error("Expecting a function as a method for VowelWorm.normalize");
+  }
+  if(!(method.name in VowelWorm.Normalization)) {
+    throw new Error("Method '" + method.name + "' is not part of " +
+        "VowelWorm.Normalization and cannot be used for normalization.");
+  }
+
+  var x = null;
+  var y = null;
+
+  switch(method) {
+    case this.Normalization.barkScale:
+      x = method(formants[2]) - method(formants[1]);
+      y = method(formants[2]) - method(formants[0]);
+      break;
+    case this.Normalization.regression:
+      if(this._MFCC_WEIGHTS[formants.length] === undefined) {
+        throw new Error("No weights found for coefficients of length " +
+            formants.length + ". If you are using getMFCCs, make sure the " +
+            "amount of filter banks you are looking for corresponds to one of "+
+            "the keys found in VowelWorm._MFCC_WEIGHTS.");
+      }
+      var coefficients = formants.slice(); // makes a copy
+      coefficients[0] = 1;
+      x = method(coefficients, this._MFCC_WEIGHTS[coefficients.length].backness);
+      y = method(coefficients, this._MFCC_WEIGHTS[coefficients.length].height_no_f0);
+      break;
+    default:
+      throw new Error("No valid normalization method given.");
+  };
+
+  if(x === null || y === null) {
+    return [];
+  }
+  return [x,y];
 };
 
 /**
@@ -242,6 +363,11 @@ VowelWorm.decibelsToLinear = function(dB) {
  * @param {number} window_size the size of the window
  * @return {Array.<number>} the new values 
  * @memberof VowelWorm
+ */
+/**
+ * @license
+ * Hanning window taken from http://wiki.scipy.org/Cookbook/SignalSmooth
+ * both constant values and code preparing data for convolution
  */
 VowelWorm.hann = function hann(vals, window_size) {
   if(typeof VowelWorm._HANNING_WINDOW[window_size] === 'undefined') {
@@ -338,6 +464,7 @@ VowelWorm.savitzkyGolay = function savitzkyGolay(y, window_size, order) {
 
 /**
  * Performs a convolution on two arrays
+ * TODO: documentation; we pulled this algorithm from StackOverflow—but where?
  * @param {Array.<number>} m
  * @param {Array.<number>} y
  * @return {Array.<number>}
@@ -543,6 +670,7 @@ function addToArray(y, value) {
  * Combines numeric arrays together
  * @param {...Array.<number>} args any number of arrays to join together
  * @return {Array.<number>} a new array combining all submitted values
+ * @nosideeffects
  */
 function concatenate(args) {
  var p = new Array();
@@ -732,6 +860,11 @@ VowelWorm.removeModule = function(name) {
     delete instance[name];
   });
 };
+/**
+ * Callback used by {@link VowelWorm.module}
+ * @callback VowelWorm~createModule
+ * @param {VowelWorm.instance.prototype} prototype
+ */
 
 /**
  * The current mode the vowel worm is in (e.g., stream, audio element, etc.)
@@ -876,6 +1009,7 @@ VowelWorm.instance.prototype._getPeaks = function(smoothedArray, sampleRate, fft
  * The sample rate of the attached audio source
  * @return {number}
  * @memberof VowelWorm.instance
+ * @nosideeffects
  */
 VowelWorm.instance.prototype.getSampleRate = function() {
   switch(this.mode) {
@@ -898,6 +1032,7 @@ VowelWorm.instance.prototype.getSampleRate = function() {
  * The size of the FFT, in bins
  * @return {number}
  * @memberof VowelWorm.instance
+ * @nosideeffects
  */
 VowelWorm.instance.prototype.getFFTSize = function() {
   return this._analyzer.fftSize;
@@ -1063,6 +1198,7 @@ VowelWorm.instance.prototype.getFormants = function(data, sampleRate) {
   {
     data = this.getFFT();
     fftSize = this.getFFTSize();
+    this._analyzer.getFloatFrequencyData(data);
     sampleRate = this.getSampleRate();
   }
 

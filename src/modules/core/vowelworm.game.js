@@ -15,14 +15,14 @@ window.VowelWorm.Game = function( options ) {
   var game = this;
   game.width = options.width || 700;
   game.height = options.height || 500;
-  game.x1 = -1;
-  game.x2 = 2;
-  game.y1 = -1;
+  game.x1 = 0;
+  game.x2 = 4;
+  game.y1 = 0;
   game.y2 = 3;
   
   game.minHz = 300;
   game.maxHz = 8000;
-  game.fb = 10;
+  game.fb = 25;
 
   /**
    * Represents the threshold in dB that VowelWorm's audio should be at in
@@ -95,6 +95,7 @@ window.VowelWorm.Game = function( options ) {
         circle.position.x = x;
         circle.position.y = y;
         circle.tint = current_color;
+        circle.scale = new PIXI.Point(.3,.3);
 
         circles.push(circle);
         
@@ -138,23 +139,22 @@ window.VowelWorm.Game = function( options ) {
       return null;
     }
 
-    var position = worm.getMFCCs({
+    var mfccs = worm.getMFCCs({
       minFreq: game.minHz,
       maxFreq: game.maxHz,
       filterBanks: game.fb,
       fft: buffer
     });
     
-    if(position.length) {
-      var x = position[1];
-      var y = position[2];
-
-      //Pass in coords flipped 90 degrees
-      var coords = adjustXAndY(y,-x);
-      return coords;
-    }else{
-      return null;
+    if(mfccs.length) {
+      var position = VowelWorm.normalize(mfccs, VowelWorm.Normalization.regression);
+      if(position.length) {
+        console.log(position);
+        var coords = adjustXAndY(position[0],position[1]);
+        return coords;
+      }
     }
+    return null;
   };
   
   var adjustXAndY = function(x,y){    
@@ -233,12 +233,17 @@ window.VowelWorm.Game = function( options ) {
         ["o",384.5714404194302,284.96641792056766],
         ["u",412.17314090483404,231.94657762575406]
       ];
-      for(var i=0; i<letters.length; i++){
+      var circle = new PIXI.Sprite.fromImage("plot2.png");
+      circle.position.x = 0;
+      circle.position.y = 0;
+      ipaChart.addChild(circle);
+      /*for(var i=0; i<letters.length; i++){
         var letter = new PIXI.Text(letters[i][0],{font: "35px sans-serif", fill: "black", align: "center"});
         letter.position.x = letters[i][1];
         letter.position.y = letters[i][2];
         ipaChart.addChild(letter);
-      }
+      }*/
+
     }
   };
 

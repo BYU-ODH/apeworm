@@ -13,6 +13,20 @@ test( "Bark Scale", function() {
   deepEqual(_round(f2), expected[1]);
 });
 
+test( "Regression", function() {
+  var mfccs = [-8.096073,0.049780,0.445308,-0.539998,0.297224,-0.606007,0.173577,-0.357058,0.310168,-0.344864,0.046812,-0.267189,0.100604,-0.445007,0.096448,-0.353373,0.025801,-0.351567,-0.048782,-0.253812,-0.089156,-0.377310,-0.104855,-0.222116,-0.118072];
+  
+  var expected_backness = 1.0227;
+  var expected_height = 1.3248;
+
+  var result = VowelWorm.normalize(mfccs, VowelWorm.Normalization.regression);
+  var backness = result[0];
+  var height = result[1];
+
+  close(backness, expected_backness, 0.001, 'backness');
+  close(height, expected_height, 0.001, 'height');
+});
+
 module( "smoothing" );
 
 test( "convolve method", function() {
