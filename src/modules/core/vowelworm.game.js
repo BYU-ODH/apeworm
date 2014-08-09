@@ -257,7 +257,7 @@ VowelWorm.Game = function( options ) {
     }
     else
     {
-      game.addWorm(worm);
+      game.addWorm(options.worms);
     }
   }
   game._renderer.render(game._stage);
