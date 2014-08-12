@@ -1,3 +1,6 @@
+/**
+ * @struct
+ */
 window.VowelWorm = window.VowelWorm || {};
 
 (function(VowelWorm, numeric){
@@ -17,7 +20,7 @@ var instances = [];
 
 /**
  * A collection of modules to add to instances, whenever they are created
- * @type {Object.<string, function>}
+ * @type {Object.<string, Function>}
  */
 var modules = {};
 
@@ -31,28 +34,56 @@ var DEFAULT_SAMPLE_RATE = 44100;
  * 2014, 2:52 PM UTC) and Cory Robinson's chart (personal email)
  *
  * These indicate the minimum values in Hz in which we should find our formants
- *
- * @const
- *
- * TODO ensure accuracy; find official source
  */
-var F1_MIN = 100,
-    F1_MAX = 1000,
-    F2_MIN = 600,
-    F2_MAX = 3000,
-    F3_MIN = 1500,
-    F3_MAX = 5000;
+
+/**
+ * @const
+ * @type number
+ */
+var F1_MIN = 100;
+/**
+ * @const
+ * @type number
+ */
+var F1_MAX = 1000;
+/**
+ * @const
+ * @type number
+ */
+var F2_MIN = 600;
+/**
+ * @const
+ * @type number
+ */
+var F2_MAX = 3000;
+/**
+ * @const
+ * @type number
+ */
+var F3_MIN = 1500;
+/**
+ * @const
+ * @type number
+ */
+var F3_MAX = 5000;
 
 /**
  * Represent the minimum differences between formants, to ensure they are
  * properly spaced
  *
- * @const
- *
  * TODO ensure accuracy; find official source
  */
-var MIN_DIFF_F1_F2 = 150,
-    MIN_DIFF_F2_F3 = 500;
+
+/**
+ * @const
+ * @type number
+ */
+var MIN_DIFF_F1_F2 = 150;
+/**
+ * @const
+ * @type number
+ */
+var MIN_DIFF_F2_F3 = 500;
 
 /**
  * Specifies that a peak must be this many decibels higher than the closest
@@ -60,6 +91,7 @@ var MIN_DIFF_F1_F2 = 150,
  *
  * TODO ensure accuracy; find official source
  * @constant
+ * @type number
  */
 var MIN_PEAK_HEIGHT = 0.1;
 
@@ -68,6 +100,7 @@ var MIN_PEAK_HEIGHT = 0.1;
  * be tried
  * @see {@link VowelWorm._HANNING_WINDOW}
  * @constant
+ * @type Array.<number>
  */
 var WINDOW_SIZES = [
   75,
@@ -84,6 +117,7 @@ var WINDOW_SIZES = [
  * @see {@link WINDOW_SIZES}
  *
  * @constant
+ * @type {Object.<number, Array.<number>>}
  */
 VowelWorm._HANNING_WINDOW = {
   61: new Float32Array([ 0.        ,  0.00273905,  0.0109262 ,  0.02447174,  0.04322727,
@@ -177,7 +211,7 @@ VowelWorm.decibelsToLinear = function decibelsToLinear(dB) {
  * Given an array of formants, returns normalized X and Y coordinates
  * representing advancement and height, respectively.
  * @param {Array.<number>} formants The formants to normalize
- * @param {function} [method=VowelWorm.Normalization.barkScale]
+ * @param {Function} [method=VowelWorm.Normalization.barkScale]
  *  the method to use for Normalization. Must be a property of
  *  {@see VowelWorm.Normalization}. Defaults to barkScale
  * 
@@ -277,8 +311,8 @@ VowelWorm.hann = function hann(vals, window_size) {
 VowelWorm.savitzkyGolay = function savitzkyGolay(y, window_size, order) {
   //probably we don't need to parseInt anything or take the absolute value if we always make sure that our windown size and order are positive.  "golay.py" gave a window size of 55 and said that anything higuer will make a flatter graph
   //window size must be positive and an odd number for this to work better
-  var windowSize = Math.abs(parseInt(window_size));
-  var order = Math.abs(parseInt(order));
+  var windowSize = Math.abs(parseInt(window_size, 10));
+  var order = Math.abs(parseInt(order, 10));
   var order_range = order + 1;
 
   var half_window = (windowSize - 1)/2;
@@ -511,19 +545,15 @@ function addToArray(y, value) {
 
 /**
  * Combines numeric arrays together
- * @param {...Array.<number>} any number of arrays to join together
+ * @param {...Array.<number>} args any number of arrays to join together
  * @return {Array.<number>} a new array combining all submitted values
  */
-function concatenate(firstvals, y, lastvals) {
+function concatenate(args) {
  var p = new Array();
- for(var i = 0; i < firstvals.length; i++) {
-   p.push(firstvals[i]);
- }
- for(var i = 0; i < y.length; i++) {
-   p.push(y[i]); 
- }
- for(var i = 0; i < lastvals.length; i++) {
-   p.push(lastvals[i]);
+ for(var i = 0; i<arguments.length; i++) {
+   for(var j = 0; j<arguments[i].length; j++) {
+     p.push(arguments[i][j]);
+   }
  }
  return p;
 };
@@ -547,7 +577,7 @@ function flipArray(y) {
 /**
  * Finds the pseudo-inverse of the given array
  * Requires NumericJS to be loaded
- * @param {Array.<number>} A The array to apply the psuedo-inverse to
+ * @param {Array.<Array.<number>>} A The array to apply the psuedo-inverse to
  * @return {Array.<number>} The psuedo-inverse applied to the array
  */
 function pinv(A) {
@@ -788,7 +818,8 @@ proto._getPeaks = function getPeaks(smoothedArray, sampleRate, fftSize) {
 /**
  * The sample rate of the attached audio source
  *
- * @type number
+ * @type Function
+ * @return number
  * @instance
  * @memberof VowelWorm.instance
  */
@@ -1058,7 +1089,7 @@ proto._loadFromAudio = function loadFromAudio(audio) {
 
 /**
  * Loads a video element as the data to be processed
- * @param {Video} audio
+ * @param {Video} video
  */
 proto._loadFromVideo = function loadFromVideo(video) {
   console.warn( "Cannot determine sample rate. Setting as " + DEFAULT_SAMPLE_RATE );

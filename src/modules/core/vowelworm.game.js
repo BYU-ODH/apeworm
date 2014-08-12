@@ -1,11 +1,11 @@
 /**
  * @param {Object=} options Configuration options
- * @param {(VowelWorm.instance|VowelWorm.instance[])} options.worms Any
+ * @param {VowelWorm.instance|Array.<VowelWorm.instance>} options.worms Any
  * VowelWorm instances to begin with
- * @param {number=700} options.width The width of the game board
- * @param {number=500} options.height The height of the game board
- * @param {number=0xFFFFFF} options.background The background color of the game
- * @param {HTMLElement=document.body} options.element What to append the graph to
+ * @param {number=} [options.width=700] The width of the game board
+ * @param {number=} [options.height=500] The height of the game board
+ * @param {number=} [options.background=0xFFFFFF] The background color of the game
+ * @param {HTMLElement=} [options.element=document.body] What to append the graph to
  * @type VowelWorm.Game
  * @constructor
  */
@@ -168,7 +168,7 @@ window.VowelWorm.Game = function( options ) {
   /**
    * Determines whether, for plotting purposes, the audio data is silent or not
    * Compares against the threshold given for {@link game.silence}.
-   * @param {Array.<number>} data - An array containing dB values
+   * @param {Array.<number>|Float32Array} data - An array containing dB values
    * @return {boolean} Whether or not the data is essentially 'silent'
    */
   var isSilent = function(data) {

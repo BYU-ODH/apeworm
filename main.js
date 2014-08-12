@@ -4,9 +4,9 @@ video.loop = true;
 
 var graphs_element = document.getElementById("graphs");
 
-document.getElementById("media_button").addEventListener("click",usemedia);
-document.getElementById("video_button").addEventListener("click",usevideo);
-document.getElementById("mic_button").addEventListener("click",usemic);
+document.getElementById("media_button").addEventListener("click",usemedia,false);
+document.getElementById("video_button").addEventListener("click",usevideo,false);
+document.getElementById("mic_button").addEventListener("click",usemic,false);
 
 var game = new window.VowelWorm.Game({element: graphs_element});
 
