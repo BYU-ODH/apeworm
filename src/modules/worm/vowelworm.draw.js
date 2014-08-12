@@ -234,7 +234,7 @@ window.VowelWorm.module('draw', function createDrawModule(worm) {
     var values = new Float32Array(worm.getFFTSize()/2);
     worm._analyzer.getFloatFrequencyData(values);
 
-    var smoothed_values = worm.hann(values, 75).slice(VowelWorm.HANNING_SHIFT)
+    var smoothed_values = worm.hann(values, 75).slice(window.VowelWorm.HANNING_SHIFT)
 
     var COLOR_RED = 16711680;
     var COLOR_BLACK = 0;

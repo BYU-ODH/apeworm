@@ -4,11 +4,11 @@ video.loop = true;
 
 var graphs_element = document.getElementById("graphs");
 
-document.getElementById("media_button").addEventListener("click",usemedia);
-document.getElementById("video_button").addEventListener("click",usevideo);
-document.getElementById("mic_button").addEventListener("click",usemic);
+document.getElementById("media_button").addEventListener("click",usemedia,false);
+document.getElementById("video_button").addEventListener("click",usevideo,false);
+document.getElementById("mic_button").addEventListener("click",usemic,false);
 
-var game = new VowelWorm.Game({element: graphs_element});
+var game = new window.VowelWorm.Game({element: graphs_element});
 
 function usemedia() {
   var worms = [];
@@ -44,7 +44,7 @@ function usemedia() {
     audio.load();
     audio.addEventListener('canplaythrough', audioReady);
     audio.addEventListener('ended', audioFinished);
-    var worm = new VowelWorm.instance(audio);
+    var worm = new window.VowelWorm.instance(audio);
     worms.push(worm);
     game.addWorm(worm);
   }
@@ -52,7 +52,7 @@ function usemedia() {
 
 function usevideo() {
   video.style.display = 'block';
-  var worm = new VowelWorm.instance(video);
+  var worm = new window.VowelWorm.instance(video);
   game.addWorm(worm);
 };
 
@@ -69,7 +69,7 @@ function getUserMedia() {
 }
 
 function micSuccess(stream) {
-  var worm = new VowelWorm.instance(stream);
+  var worm = new window.VowelWorm.instance(stream);
   game.addWorm(worm);
 };
 
