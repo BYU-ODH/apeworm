@@ -6,7 +6,7 @@ window.VowelWorm = window.VowelWorm || {};
 /**
  * @const
  */
-var CONTEXT = new AudioContext();
+var CONTEXT = new window.AudioContext();
 
 /**
  * A collection of all vowel worm instances. Used for attaching modules.
@@ -125,7 +125,6 @@ VowelWorm.Normalization = {
    * Uses the Traunmüller conversion to conver the formant to the Bark Scale
    * @param {number} formant The formant (in Hz) to convert to the Bark Scale
    * @return {number} The formant converted to the Bark Scale
-   * @nosideeffects
    */
   barkScale: function barkScale(formant) {
     if(formant == 0) {
@@ -138,7 +137,6 @@ VowelWorm.Normalization = {
 /**
  * Returns the linear magnitude of the given decibels value.
  * @param {number} dB the value in dB to convert
- * @nosideeffects
  * @return {number} the linear magnitude
  * 
  * TODO — If we can find a generic representation somewhere of this algorithm,
@@ -184,7 +182,6 @@ VowelWorm.decibelsToLinear = function decibelsToLinear(dB) {
  *  {@see VowelWorm.Normalization}. Defaults to barkScale
  * 
  * @return {Array.<number>} an array formatted thusly: [x,y]. May be empty
- * @nosideeffects
  *
  * TODO: check to see if passing a method in as a param seems sane with everyone else
  */
@@ -276,7 +273,6 @@ VowelWorm.hann = function hann(vals, window_size) {
  * @param {number} window_size The window size.
  * @param {number} order The...? TODO
  * @return {Array.<number>} if plotted gives you a smooth curve version of an parameter array
- * @nosideeffects
  */
 VowelWorm.savitzkyGolay = function savitzkyGolay(y, window_size, order) {
   //probably we don't need to parseInt anything or take the absolute value if we always make sure that our windown size and order are positive.  "golay.py" gave a window size of 55 and said that anything higuer will make a flatter graph
@@ -325,10 +321,9 @@ VowelWorm.savitzkyGolay = function savitzkyGolay(y, window_size, order) {
 
 /**
  * TODO: documentation; we pulled this algorithm from StackOverflow—but where?
- * @param {Array.number} m
- * @param {Array.number} y
- * @return {Array.number}
- * @nosideeffects
+ * @param {Array.<number>} m
+ * @param {Array.<number>} y
+ * @return {Array.<number>}
  */
 VowelWorm.convolve = function convolve(m, y) {
   var result = new Array(),
@@ -396,7 +391,6 @@ VowelWorm.REMOTE_URL = 4;
  * @param {number} sampleRate the sample rate of the data, in Hz
  * @param {number} fftSize the FFT size
  * @return {number} the frequency at the given index
- * @nosideeffects
  */
 /**
  * @license Help from kr1 at http://stackoverflow.com/questions/14789283/what-does-the-fft-data-in-the-web-audio-api-correspond-to 
@@ -432,7 +426,6 @@ VowelWorm._toFrequency = function toFrequency(position, sampleRate, fftSize) {
  * @param {number} index The index of the array, where the peak can be found
  * @param {Array.<number>} values The values of the array
  * @return {number} The height of the peak, or 0 if it is not a peak
- * @nosideeffects
  */
 VowelWorm._peakHeight = function peakHeight(index, values) {
   var peak = values[index],
@@ -520,7 +513,6 @@ function addToArray(y, value) {
  * Combines numeric arrays together
  * @param {...Array.<number>} any number of arrays to join together
  * @return {Array.<number>} a new array combining all submitted values
- * @nosideeffects
  */
 function concatenate(firstvals, y, lastvals) {
  var p = new Array();
@@ -540,7 +532,6 @@ function concatenate(firstvals, y, lastvals) {
  * Reverses an array
  * @param {Array.<number>} The array to reverse
  * @return {Array.<number>} a copy of the passed-in array, reversed
- * @nosideeffects
  */
 function flipArray(y) {
  var p = new Array();
@@ -753,7 +744,6 @@ proto._loadFromStream = function loadFromStream(stream) {
  * @param {number} sampleRate the sample rate of the data
  * @param {number} fftSize the FFT size
  * @return {Array.<number>} the positions of all the peaks found, in Hz
- * @nosideeffects
  */
 proto._getPeaks = function getPeaks(smoothedArray, sampleRate, fftSize) {
   var peaks = new Array();
@@ -801,7 +791,6 @@ proto._getPeaks = function getPeaks(smoothedArray, sampleRate, fftSize) {
  * @type number
  * @instance
  * @memberof VowelWorm.instance
- * @nosideeffects
  */
 proto.getSampleRate = function getSampleRate() {
   switch(this.mode) {
@@ -824,7 +813,6 @@ proto.getSampleRate = function getSampleRate() {
  * The size of the FFT, in bins
  * @instance
  * @memberof VowelWorm.instance
- * @nosideeffects
  */
 proto.getFFTSize = function getFFTSize() {
   return this._analyzer.fftSize;
@@ -856,7 +844,6 @@ proto.getFFTSize = function getFFTSize() {
  * 
  * @return {Array.<number>} The MFFCs. Probably relevant are the second and
  * third values (i.e., a[1] and a[2])
- * @nosideeffects
  */
 proto.getMFCCs = function(options) {
   var fft = null;
@@ -956,7 +943,6 @@ proto.getMFCCs = function(options) {
  * @param {number=} sampleRate the sample rate of the data. Required if data is not null
  * @return {Array.<number>} The formants found for the audio stream/file. If
  * nothing worthwhile has been found, returns an empty array.
- * @nosideeffects
  */
 proto.getFormants = function getFormants(data, sampleRate) {
   var that = this;

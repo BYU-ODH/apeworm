@@ -9,7 +9,7 @@
  * @type VowelWorm.Game
  * @constructor
  */
-VowelWorm.Game = function( options ) {
+window.VowelWorm.Game = function( options ) {
   "use strict";
 
   var game = this;
@@ -43,7 +43,7 @@ VowelWorm.Game = function( options ) {
 
   /**
    * Contains all instances of worms for this game
-   * @type Array.Object
+   * @type Array.<Object>
    */
   var worms = [];
 
@@ -208,7 +208,7 @@ VowelWorm.Game = function( options ) {
       }
     }
 
-    old_color = tinycolor(old_color);
+    old_color = new tinycolor(old_color);
     var new_color = old_color.spin(45).toHex();
     new_color = parseInt(new_color,16);
     return new_color;
