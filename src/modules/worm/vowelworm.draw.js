@@ -2,6 +2,8 @@
  * Plugin for visualizing Vowel Worm's data.
  * Data is attached to VowelWorm.instance.prototype.draw.
  * Requires PIXI.js
+ * @namespace draw
+ * @memberof VowelWorm.instance.prototype
  */
 window.VowelWorm.module('draw', function createDrawModule(worm) {
   "use strict";
@@ -22,37 +24,47 @@ window.VowelWorm.module('draw', function createDrawModule(worm) {
   var AXES_COLOR = 0x000000;
 
   /**
-   * Indicates how far away each marker on the X axis must be 
+   * Indicates how far away, in pixels, each marker on the X axis must be 
    * from the previous one.
-   * @type number (in pixels)
+   * @type number
    * @const
    */
   var X_AXIS_DISTANCE = 50;
   
   /**
-   * Indicates how far away each marker on the Y axis must be 
+   * Indicates how far away, in pixels, each marker on the Y axis must be 
    * from the previous one.
-   * @type number (in pixels)
+   * @type number
    * @const
    */
   var Y_AXIS_DISTANCE = 50;
   
   /**
-   * How large the tick size of the axes should be
-   * @type number (in pixels)
+   * How large, in pixels, the tick size of the axes should be
+   * @type number
    * @const
    */
   var TICK_SIZE = 5;
 
   /**
-   * The font size for the labels
-   * @type number (in pixels)
+   * The font size, in pixels, for the labels
+   * @type number
    * @const
    */
   var LABEL_FONT_SIZE = 10;
 
-  //Set the default min and max for y-axis scaling
+  /**
+   * Set the default minimum dB value for y-axis scaling
+   * @memberof VowelWorm.instance.draw
+   * @type number
+   */
   this.minDecibels = -250;
+
+  /**
+   * Set the default minimum dB value for y-axis scaling
+   * @memberof VowelWorm.instance.draw
+   * @type number
+   */
   this.maxDecibels = -30;
 
   /**
@@ -63,8 +75,9 @@ window.VowelWorm.module('draw', function createDrawModule(worm) {
    * Defaults to white. Consider using a hex code for this, like 0xFF0000
    *
    * @return {Object} the canvas element to attach to the HTML
+   * @memberof VowelWorm.instance.draw
    */
-  this.create = function create(width, height, bgcolor) {
+  this.create = function(width, height, bgcolor) {
     if(this._stage) {
       throw new Error("Only one view per VowelWorm.instance allowed.");
     }
@@ -80,9 +93,9 @@ window.VowelWorm.module('draw', function createDrawModule(worm) {
   /**
    * Draws a y axis on the stage
    * @private
-   * @stub
+   * @memberof VowelWorm.instance.draw
    */
-  this._drawYAxis = function drawYAxis(color) {
+  this._drawYAxis = function(color) {
     var axis = new PIXI.DisplayObjectContainer();
     this._axes.push(axis);
 
@@ -124,8 +137,9 @@ window.VowelWorm.module('draw', function createDrawModule(worm) {
    * Draws an x axis on the stage
    * @param {number} color The color to draw the axis as
    * @private
+   * @memberof VowelWorm.instance.draw
    */
-  this._drawXAxis = function drawXAxis(color) {
+  this._drawXAxis = function(color) {
     var axis = new PIXI.DisplayObjectContainer();
     this._axes.push(axis);
 
@@ -185,8 +199,9 @@ window.VowelWorm.module('draw', function createDrawModule(worm) {
    * data.
    * @param {number=} color The color to set the axes and labels to. Defaults
    * to black
+   * @memberof VowelWorm.instance.draw
    */
-  this.drawAxes = function drawAxes(color) {
+  this.drawAxes = function(color) {
     if(!this._stage) {
       throw new Error("You must call draw.create() before you can draw axes.");
     }
