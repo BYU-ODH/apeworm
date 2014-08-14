@@ -769,7 +769,7 @@ VowelWorm.instance.prototype.mode = null;
 /**
  * Specifies the audio source for the instance. Can be a video or audio element,
  * a URL, or a MediaStream
- * @param {MediaStream|string|Audio|Video} stream The audio stream to analyze OR a string representing the URL for an audio file OR an Audio file
+ * @param {MediaStream|string|HTMLAudioElement|HTMLVideoElement} stream The audio stream to analyze OR a string representing the URL for an audio file OR an Audio file
  * @throws An error if stream is neither a Mediastream, Audio or Video Element, or a string
  */
 VowelWorm.instance.prototype.setStream = function(stream) {
@@ -1111,7 +1111,7 @@ VowelWorm.instance.prototype._loadFromURL = function loadFromURL(url) {
 
 /**
  * Loads an audio element as the data to be processed
- * @param {Audio} audio
+ * @param {HTMLAudioElement} audio
  * @private
  */
 VowelWorm.instance.prototype._loadFromAudio = function loadFromAudio(audio) {
@@ -1125,7 +1125,7 @@ VowelWorm.instance.prototype._loadFromAudio = function loadFromAudio(audio) {
 
 /**
  * Loads a video element as the data to be processed
- * @param {Video} video
+ * @param {HTMLVideoElement} video
  * @private
  */
 VowelWorm.instance.prototype._loadFromVideo = function loadFromVideo(video) {
