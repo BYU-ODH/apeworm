@@ -14,6 +14,21 @@ module.exports = function(grunt) {
     qunit: {
       all: ['test/index.html']
     },
+    jsdoc: {
+      all: {
+        src: [
+          'README.md',
+          'src/modules/',
+          'src/vowelworm.js'
+        ],
+        dest: 'doc/',
+        options: {
+          'verbose': true,
+          'recurse': true,
+          'private': false
+        }
+      }
+    },
     closureCompiler: {
       options: {
         create_source_map: null,
@@ -84,9 +99,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-closure-tools');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-jsdoc');
 
   grunt.registerTask('test', 'qunit');
+  grunt.registerTask('doc', 'jsdoc');
   grunt.registerTask('compile-demo', ['concat:demo','closureCompiler:demo']);
   grunt.registerTask('compile', ['clean', 'closureCompiler:main', 'concat:main', 'closureCompiler:all']);
-  grunt.registerTask('default', ['test','compile','compile-demo']);
+  grunt.registerTask('default', ['test','compile','compile-demo','doc']);
 };

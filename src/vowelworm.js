@@ -622,7 +622,7 @@ VowelWorm.instance = function VowelWorm(stream) {
  *
  * @see {@link VowelWorm.hann}
  * @type number
- * @const number
+ * @const
  */
 VowelWorm.HANNING_SHIFT = 32;
 
