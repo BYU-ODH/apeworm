@@ -1,5 +1,7 @@
 /**
  * @struct
+ * @namespace
+ * @name VowelWorm
  */
 window.VowelWorm = window.VowelWorm || {};
 
@@ -118,6 +120,7 @@ var WINDOW_SIZES = [
  *
  * @constant
  * @type {Object.<number, Array.<number>>}
+ * @private
  */
 VowelWorm._HANNING_WINDOW = {
   61: new Float32Array([ 0.        ,  0.00273905,  0.0109262 ,  0.02447174,  0.04322727,
@@ -153,6 +156,7 @@ VowelWorm._HANNING_WINDOW = {
 /**
  * Contains methods for normalizing Hz values
  * @const
+ * @namespace
  */
 VowelWorm.Normalization = {
   /**
@@ -169,17 +173,9 @@ VowelWorm.Normalization = {
 };
 
 /**
- * Returns the linear magnitude of the given decibels value.
- * @param {number} dB the value in dB to convert
- * @return {number} the linear magnitude
- * 
- * TODO — If we can find a generic representation somewhere of this algorithm,
- * we can remove this license
- */
-/**
  * @license
  *
- * decibelsToLinear
+ * VowelWorm.decibelsToLinear licensed under the following:
  * 
  * Copyright (C) 2010, Google Inc. All rights reserved.
  *
@@ -202,8 +198,19 @@ VowelWorm.Normalization = {
  * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * END VowelWorm.decibelsToLinear LICENSE
  */
-VowelWorm.decibelsToLinear = function decibelsToLinear(dB) {
+
+/**
+ * Returns the linear magnitude of the given decibels value.
+ * @param {number} dB the value in dB to convert
+ * @return {number} the linear magnitude
+ * 
+ * @TODO — If we can find a generic representation somewhere of this algorithm,
+ * we can remove this license
+ */
+VowelWorm.decibelsToLinear = function(dB) {
   return Math.pow(10, 0.05 * dB);
 };
 
@@ -216,10 +223,11 @@ VowelWorm.decibelsToLinear = function decibelsToLinear(dB) {
  *  {@see VowelWorm.Normalization}. Defaults to barkScale
  * 
  * @return {Array.<number>} an array formatted thusly: [x,y]. May be empty
+ * @static
  *
  * TODO: check to see if passing a method in as a param seems sane with everyone else
  */
-VowelWorm.normalize = function normalize(formants, method) {
+VowelWorm.normalize = function(formants, method) {
   if(!formants.length) {
     return [];
   }
@@ -250,6 +258,13 @@ VowelWorm.normalize = function normalize(formants, method) {
 };
 
 /**
+ * @license
+ *
+ * Hanning window code taken from http://wiki.scipy.org/Cookbook/SignalSmooth
+ * both constant values and code preparing data for convolution
+ *
+ */
+/**
  * Applies a hanning window to the given dataset, returning a new array.
  * You  may want to shift the values to get them to line up with the FFT.
  * @example
@@ -258,11 +273,6 @@ VowelWorm.normalize = function normalize(formants, method) {
  * @param {Array.<number>} vals The values to change
  * @param {number} window_size the size of the window
  * @return {Array.<number>} the new values 
- */
-/**
- * @license
- * Hanning window taken from http://wiki.scipy.org/Cookbook/SignalSmooth
- * both constant values and code preparing data for convolution
  */
 VowelWorm.hann = function hann(vals, window_size) {
   if(typeof VowelWorm._HANNING_WINDOW[window_size] === 'undefined') {
@@ -296,8 +306,11 @@ VowelWorm.hann = function hann(vals, window_size) {
 };
 
 /**
- * @license Savitsky-Golay filter (VowelWorm.smoothCurve)
+ * @license
+ *
+ * Savitsky-Golay filter (VowelWorm.savitzkyGolay)
  * adapted from http://wiki.scipy.org/Cookbook/SavitzkyGolay
+ *
  */
 /**
  * Applies the Savitsky-Golay filter to the given array
@@ -354,10 +367,11 @@ VowelWorm.savitzkyGolay = function savitzkyGolay(y, window_size, order) {
 };
 
 /**
- * TODO: documentation; we pulled this algorithm from StackOverflow—but where?
+ * Performs a convolution on two arrays
  * @param {Array.<number>} m
  * @param {Array.<number>} y
  * @return {Array.<number>}
+ * 
  */
 VowelWorm.convolve = function convolve(m, y) {
   var result = new Array(),
@@ -420,14 +434,18 @@ VowelWorm.REMOTE_URL = 4;
  *******************/
 
 /**
+ * @license
+ * 
+ * VowelWorm._toFrequency method developed with help from kr1 at
+ * {@link http://stackoverflow.com/questions/14789283/what-does-the-fft-data-in-the-web-audio-api-correspond-to}
+ */
+/**
  * Gets the frequency at the given index
  * @param {number} index the position of the data to get the frequency of
  * @param {number} sampleRate the sample rate of the data, in Hz
  * @param {number} fftSize the FFT size
  * @return {number} the frequency at the given index
- */
-/**
- * @license Help from kr1 at http://stackoverflow.com/questions/14789283/what-does-the-fft-data-in-the-web-audio-api-correspond-to 
+ * @private
  */
 VowelWorm._toFrequency = function toFrequency(position, sampleRate, fftSize) {
   /**
@@ -460,6 +478,7 @@ VowelWorm._toFrequency = function toFrequency(position, sampleRate, fftSize) {
  * @param {number} index The index of the array, where the peak can be found
  * @param {Array.<number>} values The values of the array
  * @return {number} The height of the peak, or 0 if it is not a peak
+ * @private
  */
 VowelWorm._peakHeight = function peakHeight(index, values) {
   var peak = values[index],
@@ -572,7 +591,13 @@ function flipArray(y) {
 };
 
 /**
- * @license Psuedo-inverse function from http://www.numericjs.com/workshop.php?link=aacea378e9958c51af91f9eadd5bc7446e0c4616fc7161b384e5ca6d4ec036c7
+ * @license
+ *
+ * Psuedo-inverse function from Sébastien Loisel, found in a Google Groups
+ * discussion {@link https://groups.google.com/d/msg/numericjs/spFVVp1Fy60/6wuN3-vl1IkJ}
+ * Sébastien linked to work he had done in the NumericJS Workshop, found here
+ * {@link http://www.numericjs.com/workshop.php?link=aacea378e9958c51af91f9eadd5bc7446e0c4616fc7161b384e5ca6d4ec036c7}
+ *
  */
 /**
  * Finds the pseudo-inverse of the given array
@@ -595,6 +620,8 @@ function pinv(A) {
  * @constructor
  * @struct
  * @final
+ * @extends VowelWorm
+ * @name VowelWorm.instance
  */
 VowelWorm.instance = function VowelWorm(stream) {
   var that = this;
@@ -618,7 +645,8 @@ VowelWorm.instance = function VowelWorm(stream) {
 
 /**
  * The amount the Hanning window needs to be shifted to line up correctly.
- * TODO This should be proportional to the window size.
+ * 
+ * @TODO This should be proportional to the window size.
  *
  * @see {@link VowelWorm.hann}
  * @type number
@@ -726,18 +754,25 @@ VowelWorm.removeModule = function(name) {
  * @see VowelWorm.VIDEO
  * @see VowelWorm.STREAM
  * @see VowelWorm.REMOTE_URL
+ * @member
  */
-proto.mode = null;
+VowelWorm.instance.prototype.mode = null;
 
 /**
- * @license setStream helper functions borrow heavily from Chris Wilson's pitch
- * detector, under the MIT license. See https://github.com/cwilso/pitchdetect
+ * @license
+ *
+ * VowelWorm.instance.prototype.setStream helper functions borrow heavily from
+ * Chris Wilson's pitch detector, under the MIT license.
+ * See https://github.com/cwilso/pitchdetect
+ *
  */
 /**
- * @param {MediaStream|string|Audio} stream The audio stream to analyze OR a string representing the URL for an audio file OR an Audio file
- * @throws An error if stream is neither a Mediastream or a string
+ * Specifies the audio source for the instance. Can be a video or audio element,
+ * a URL, or a MediaStream
+ * @param {MediaStream|string|Audio|Video} stream The audio stream to analyze OR a string representing the URL for an audio file OR an Audio file
+ * @throws An error if stream is neither a Mediastream, Audio or Video Element, or a string
  */
-proto.setStream = function setStream(stream) {
+VowelWorm.instance.prototype.setStream = function(stream) {
   if(typeof stream === 'string') {
     this._loadFromURL(stream);
   }
@@ -761,7 +796,11 @@ proto.setStream = function setStream(stream) {
   }
 };
 
-proto._loadFromStream = function loadFromStream(stream) {
+/**
+ * @param {MediaStream} stream
+ * @private
+ */
+VowelWorm.instance.prototype._loadFromStream = function(stream) {
   this.mode = this.STREAM;
   var streamSource = this._context.createMediaStreamSource(stream);
   streamSource.connect(this._analyzer);
@@ -774,8 +813,9 @@ proto._loadFromStream = function loadFromStream(stream) {
  * @param {number} sampleRate the sample rate of the data
  * @param {number} fftSize the FFT size
  * @return {Array.<number>} the positions of all the peaks found, in Hz
+ * @private
  */
-proto._getPeaks = function getPeaks(smoothedArray, sampleRate, fftSize) {
+VowelWorm.instance.prototype._getPeaks = function(smoothedArray, sampleRate, fftSize) {
   var peaks = new Array();
   var previousNum;
   var currentNum;
@@ -817,13 +857,9 @@ proto._getPeaks = function getPeaks(smoothedArray, sampleRate, fftSize) {
 
 /**
  * The sample rate of the attached audio source
- *
- * @type Function
- * @return number
- * @instance
- * @memberof VowelWorm.instance
+ * @return {number}
  */
-proto.getSampleRate = function getSampleRate() {
+VowelWorm.instance.prototype.getSampleRate = function() {
   switch(this.mode) {
     case this.REMOTE_URL:
       return this._sourceNode.buffer.sampleRate;
@@ -842,16 +878,19 @@ proto.getSampleRate = function getSampleRate() {
 
 /**
  * The size of the FFT, in bins
- * @instance
- * @memberof VowelWorm.instance
+ * @return {number}
  */
-proto.getFFTSize = function getFFTSize() {
+VowelWorm.instance.prototype.getFFTSize = function() {
   return this._analyzer.fftSize;
 };
 
 /**
- * @license MFCC code Derived from https://github.com/Maxwell79/mfccExtractor
- * under Version 2 (1991) of the GNU General Public License
+ * @license
+ *
+ * VowelWorm.instance.prototype.getMFCCs derived from David Ireland's code at
+ * https://github.com/Maxwell79/mfccExtractor under Version 2 (1991) of the GNU
+ * General Public License.
+ *
  */
 
 /**
@@ -861,22 +900,17 @@ proto.getFFTSize = function getFFTSize() {
  * pass in specific FFT data, the default data will be converted to a linear 
  * magnitude scale anyway.
  *
- * Pass in an object with options as such:
- *
- * {
- *   minFreq: {number} The minimum frequency to expect (TODO: create default val)
- *   maxFreq: {number} The maximum frequency to expect (TODO: create default val)
- *   filterBanks: {number} The number of filter banks to retrieve (TODO: create default val)
- *   fft: {Array.<number>=} - FFT transformation data. If null, pulls from the analyzer
- *   sampleRate: {number=} sampleRate the sample rate of the data. Required if data is not null
- * }
- *
  * @param {Object} options
+ * @param {number} options.minFreq The minimum frequency to expect (TODO: create default val)
+ * @param {number} options.maxFreq The maximum frequency to expect (TODO: create default val)
+ * @param {number} options.filterBanks The number of filter banks to retrieve (TODO: create default val)
+ * @param {Array.<number>=} options.fft FFT transformation data. If null, pulls from the analyzer
+ * @param {number=} options.sampleRate sampleRate the sample rate of the data. Required if data is not null
  * 
  * @return {Array.<number>} The MFFCs. Probably relevant are the second and
  * third values (i.e., a[1] and a[2])
  */
-proto.getMFCCs = function(options) {
+VowelWorm.instance.prototype.getMFCCs = function(options) {
   var fft = null;
 
   if(!options.fft) {
@@ -975,7 +1009,7 @@ proto.getMFCCs = function(options) {
  * @return {Array.<number>} The formants found for the audio stream/file. If
  * nothing worthwhile has been found, returns an empty array.
  */
-proto.getFormants = function getFormants(data, sampleRate) {
+VowelWorm.instance.prototype.getFormants = function(data, sampleRate) {
   var that = this;
 
   if(arguments.length !== 2 && arguments.length !== 0) {
@@ -1017,7 +1051,7 @@ proto.getFormants = function getFormants(data, sampleRate) {
  * Removes reference to this particular worm instance as well as
  * all properties of it.
  */
-proto.destroy = function() {
+VowelWorm.instance.prototype.destroy = function() {
   var index = instances.indexOf(this);
   if(index !== -1) {
     instances.splice(index, 1);
@@ -1033,8 +1067,9 @@ proto.destroy = function() {
  * @param {string} url Where to fetch the audio data from
  * @throws An error when the server returns an error status code
  * @throws An error when the audio file cannot be decoded
+ * @private
  */
-proto._loadFromURL = function loadFromURL(url) {
+VowelWorm.instance.prototype._loadFromURL = function loadFromURL(url) {
   var that = this,
       request = new XMLHttpRequest();
 
@@ -1077,8 +1112,9 @@ proto._loadFromURL = function loadFromURL(url) {
 /**
  * Loads an audio element as the data to be processed
  * @param {Audio} audio
+ * @private
  */
-proto._loadFromAudio = function loadFromAudio(audio) {
+VowelWorm.instance.prototype._loadFromAudio = function loadFromAudio(audio) {
   console.warn( "Cannot determine sample rate. Setting as " + DEFAULT_SAMPLE_RATE );
 
   this.mode = this.AUDIO;
@@ -1090,8 +1126,9 @@ proto._loadFromAudio = function loadFromAudio(audio) {
 /**
  * Loads a video element as the data to be processed
  * @param {Video} video
+ * @private
  */
-proto._loadFromVideo = function loadFromVideo(video) {
+VowelWorm.instance.prototype._loadFromVideo = function loadFromVideo(video) {
   console.warn( "Cannot determine sample rate. Setting as " + DEFAULT_SAMPLE_RATE );
 
   this.mode = this.VIDEO;
@@ -1103,8 +1140,9 @@ proto._loadFromVideo = function loadFromVideo(video) {
 /**
  * Creates (or resets) a source node, as long as an available audioBuffer
  * exists
+ * @private
  */
-proto._resetSourceNode = function resetSourceNode() {
+VowelWorm.instance.prototype._resetSourceNode = function resetSourceNode() {
     this._sourceNode = this._context.createBufferSource();
     this._sourceNode.buffer = this._audioBuffer;
     this._sourceNode.connect(this._analyzer);

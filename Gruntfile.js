@@ -23,8 +23,8 @@ module.exports = function(grunt) {
         ],
         dest: 'doc/',
         options: {
-          'verbose': true,
-          'recurse': true,
+          verbose: true,
+          recurse: true,
           'private': false
         }
       }
@@ -93,7 +93,10 @@ module.exports = function(grunt) {
         dest: config.all_js_concat_output
       }
     },
-    clean: [output_dir, 'src/modules/**/*.min.js', 'src/vowelworm.min.js']
+    clean: {
+      src: [output_dir, 'src/modules/**/*.min.js', 'src/vowelworm.min.js'],
+      doc: ['doc']
+    }
   });
   grunt.loadNpmTasks('grunt-contrib-qunit');
   grunt.loadNpmTasks('grunt-closure-tools');
@@ -102,8 +105,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-jsdoc');
 
   grunt.registerTask('test', 'qunit');
-  grunt.registerTask('doc', 'jsdoc');
+  grunt.registerTask('doc', ['clean:doc', 'jsdoc']);
   grunt.registerTask('compile-demo', ['concat:demo','closureCompiler:demo']);
-  grunt.registerTask('compile', ['clean', 'closureCompiler:main', 'concat:main', 'closureCompiler:all']);
+  grunt.registerTask('compile', ['clean:src', 'closureCompiler:main', 'concat:main', 'closureCompiler:all']);
   grunt.registerTask('default', ['test','compile','compile-demo','doc']);
 };
