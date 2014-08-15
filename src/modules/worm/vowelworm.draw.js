@@ -246,8 +246,7 @@ window.VowelWorm.module('draw', function createDrawModule(worm) {
     var stage    = this._stage;
     var renderer = this._renderer;     
 
-    var values = new Float32Array(worm.getFFTSize()/2);
-    worm._analyzer.getFloatFrequencyData(values);
+    var values = worm.getFFT();
 
     var smoothed_values = worm.hann(values, 75).slice(window.VowelWorm.HANNING_SHIFT)
 
