@@ -1,5 +1,4 @@
 /nbproject/
 /node_modules
 /out
-/doc/*
-!/doc/examples
+/doc
