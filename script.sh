@@ -1,6 +1,8 @@
 #!/bin/bash
 
-BRANCH=`git rev-parse --abbrev-ref HEAD`
+echo $TRAVIS_PULL_REQUEST
+echo $TRAVIS_BRANCH
 
-echo $BRANCH
-echo $TRAVIS_REPO_SLUG
+if [[ $TRAVIS_PULL_REQUEST == "false" && $TRAVIS_BRANCH == "master" ]]; then
+    echo "Commit made to master and is not a pull request"
+fi
