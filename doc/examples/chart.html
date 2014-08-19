@@ -1,0 +1,54 @@
+<html>
+<head>
+<meta charset=utf-8 />
+</head>
+<body>
+  <script src="../src/vowelworm.js"></script>
+  <script src="../src/lib/pixi.dev.js"></script>
+  <script src="../src/lib/numeric-1.2.6.js"></script>
+  <script src="../src/modules/worm/vowelworm.draw.js"></script>
+
+  <h1>Draw</h1>
+  <p>VowelWorm's draw module plots the FFT analysis, overlays a Savitzky-
+  Golay filter, and, when found, marks where it thinks formants are found.</p>
+
+  <p>The graph can be scaled by adjusting worm.draw.minDecibels and
+  worm.draw.maxDecibels. Try adjusting it below!</p>
+
+  <div>
+    <div><label>worm.draw.maxDecibels: <input type=number step=10 id=max></label></div>
+    <div><label>worm.draw.minDecibels: <input type=number step=10 id=min></label></div>
+  </div>
+
+  <audio id='media' controls src="../test/audio/vowels.wav"></audio>
+  <div id='graphs'></div>
+
+<script>
+  var worm = new VowelWorm.instance(document.getElementById('media')),
+      el = worm.draw.create(800, 500, 0xFFFFFF);
+
+  worm.draw.drawAxes();
+  document.getElementById('graphs').appendChild(el);
+
+  (function draw(){
+    worm.draw.drawDataLines();
+    window.requestAnimationFrame(draw);
+  })();
+
+  var max = document.getElementById('max'),
+      min = document.getElementById('min');
+
+  max.value = worm.draw.maxDecibels;
+  min.value = worm.draw.minDecibels;
+
+  min.addEventListener('change', function(){
+    worm.draw.minDecibels = parseFloat(min.value);
+    worm.draw.drawAxes();
+  });
+  max.addEventListener('change', function(){
+    worm.draw.maxDecibels = parseFloat(max.value);
+    worm.draw.drawAxes();
+  });
+</script>
+</body>
+</html>

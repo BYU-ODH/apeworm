@@ -95,7 +95,7 @@ module.exports = function(grunt) {
     },
     clean: {
       src: [output_dir, 'src/modules/**/*.min.js', 'src/vowelworm.min.js'],
-      doc: ['doc']
+      doc: ['doc/**/*','!doc/examples/**']
     }
   });
   grunt.loadNpmTasks('grunt-contrib-qunit');
