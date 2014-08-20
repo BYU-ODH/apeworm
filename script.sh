@@ -1,8 +1,5 @@
 #!/bin/bash
 
-echo $TRAVIS_PULL_REQUEST
-echo $TRAVIS_BRANCH
-
-if [[ $TRAVIS_PULL_REQUEST == "false" && $TRAVIS_BRANCH == "master" ]]; then
-    echo "Commit made to master and is not a pull request"
+if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_REPO_SLUG" == "BYU-ODH/apeworm" ] && [ "$TRAVIS_TAG" != "" ]; then
+    echo "Commit made to BYU-ODH/apeworm, is not a pull request and has a tag"
 fi
