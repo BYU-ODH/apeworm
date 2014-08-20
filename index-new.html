@@ -1,0 +1,25 @@
+<!doctype html>
+<script src='src/lib/tinycolor.js'></script>
+<script src='src/lib/pixi.dev.js'></script>
+<script src='src/lib/numeric-1.2.6.js'></script>
+<script src='out/release/vowelworm.complete.min.js'></script>
+<link href='//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.1.0/css/font-awesome.min.css' rel=stylesheet type=text/css>
+<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+<link href='demo/main.css' rel=stylesheet type=text/css></link>
+<title>VowelWorm</title>
+<h1>VowelWorm</h1>
+<audio style='display:none' class='media' controls src="examples/audio/vowels.wav"></audio>
+<audio style='display:none' class='media' controls src="examples/audio/vowels_pono.wav"></audio>
+<audio style='display:none' class='media' controls src="examples/audio/vowels_ryan.wav"></audio>
+<audio style='display:none' class='media' controls src="examples/audio/vowels_ian.wav"></audio>
+<audio style='display:none' class='media' controls src="examples/audio/vowels_rochelle.wav"></audio>
+<audio style='display:none' class='media' controls src="examples/audio/vowels_derrick.wav"></audio>
+
+<p>The VowelWorm plots vowel features on a canvas in real-time.</p>
+<div id=buttons>
+  <button class="fa fa-play" id=media_button alt="Play Audio" title="Play Audio"></button>
+  <button id=mic_button class="fa fa-microphone"></button>
+</div>
+<div id='wrapper'></div>
+
+<script src='demo/main.js'></script>
