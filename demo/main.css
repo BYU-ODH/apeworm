@@ -1,0 +1,96 @@
+h1{
+  font-family: 'Open Sans', sans-serif;
+  margin-bottom: 50px;  
+  text-align: center;
+}
+
+p {
+  text-align: justify;
+  width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+p, nav, a{
+  font-family: 'Open Sans', sans-serif;
+}
+a {
+  color: black;
+  text-decoration: none;
+  font-weight: bold;
+}
+a:hover {
+  text-decoration: underline;
+}
+nav {
+  text-align: center;
+}
+nav a {
+  display: block;
+  font-size: 80%;
+}
+.big-button {
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  background-color: rgb(49, 58, 61);
+  width: 200px;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 10px;
+  text-shadow: 1px 1px black;
+  font-size: 120%;
+}
+
+body{
+  background-color: lightblue;
+  color: rgb(49, 58, 61);
+}
+
+#buttons {
+  margin-left: auto;
+  margin-right: auto;
+  width: 700px;
+  position: relative;
+  height: 0;
+  padding: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+#buttons button {
+  width: 50px;
+  height: 50px;
+  background-color: rgb(49, 58, 61);
+  border-radius: 50px;
+  border: solid rgb(49, 58, 61) 1px;
+  cursor: pointer;
+  font-size: 35px;
+  color: white;
+  text-shadow: 1px 1px 1px black;
+  outline: none;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+#buttons button:active {
+  text-shadow: none;
+}
+#buttons button:last-of-type {
+  margin-left: 60px;
+}
+#media_button.fa-play {
+  /* The play icon otherwise doesn't look centered */
+  padding-left: 10px;
+}
+
+#wrapper{
+  margin: auto;
+  width: 700px;
+  text-align: center;
+}
+
+canvas{
+  border-style: solid;
+  border-color: rgb(49, 58, 61);
+}

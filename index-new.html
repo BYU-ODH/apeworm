@@ -1,0 +1,37 @@
+<!doctype html>
+<meta charset=utf-8>
+<script src='src/lib/tinycolor.js'></script>
+<script src='src/lib/pixi.dev.js'></script>
+<script src='src/lib/numeric-1.2.6.js'></script>
+<script src='out/release/vowelworm.complete.min.js'></script>
+<link href='//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.1.0/css/font-awesome.min.css' rel=stylesheet type=text/css>
+<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+<link href='demo/main.css' rel=stylesheet type=text/css></link>
+<title>VowelWorm</title>
+<!-- GITHUB BANNER -->
+<a href="https://github.com/byu-odh/apeworm"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+<!-- END GITHUB BANNER -->
+<h1>VowelWorm</h1>
+
+<p>The VowelWorm can plot vowel features on a canvas in real-time. It is based on
+the work done at the <a href="http://www.cp.jku.at/projects/realtime/vowelworm.html">
+Department of Computational Perception at Johannes Kepler Universität Linz</a>.</p>
+
+<nav>
+  <a class=big-button href='https://github.com/byu-odh/apeworm/releases/latest'>Download the Code</a>
+  <a href='doc'>check out examples and documentation</a>
+</nav>
+
+<div id=buttons>
+  <button class="fa fa-play" id=media_button alt="Play Audio" title="Play/Pause Audio"></button>
+  <button id=mic_button class="fa fa-microphone"></button>
+</div>
+<div id='wrapper'></div>
+
+<audio style='display:none' class=media src="examples/audio/vowels.wav"></audio>
+<audio style='display:none' class=media src="examples/audio/vowels_pono.wav"></audio>
+<audio style='display:none' class=media src="examples/audio/vowels_ryan.wav"></audio>
+<audio style='display:none' class=media src="examples/audio/vowels_ian.wav"></audio>
+<audio style='display:none' class=media src="examples/audio/vowels_rochelle.wav"></audio>
+<audio style='display:none' class=media src="examples/audio/vowels_derrick.wav"></audio>
+<script src='demo/main.js'></script>
