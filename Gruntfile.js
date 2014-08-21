@@ -28,6 +28,16 @@ module.exports = function(grunt) {
         }
       }
     },
+    replace: {
+      readme: {
+        src: 'README.html',
+        dest: 'README.html',
+        replacements: [{
+          from: 'https://byu-odh.github.io/apeworm/',
+          to: ''
+        }]
+      }
+    },
     jsdoc: {
       all: {
         src: [
@@ -115,11 +125,12 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-closure-tools');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-text-replace');
   grunt.loadNpmTasks('grunt-markdown');
   grunt.loadNpmTasks('grunt-jsdoc');
 
   grunt.registerTask('test', 'qunit');
-  grunt.registerTask('doc', ['clean:doc', 'jsdoc', 'markdown']);
+  grunt.registerTask('doc', ['clean:doc', 'jsdoc', 'markdown', 'replace:readme']);
   grunt.registerTask('compile-demo', ['concat:demo','closureCompiler:demo']);
   grunt.registerTask('compile', ['clean:src', 'closureCompiler:main', 'concat:main', 'closureCompiler:all']);
   grunt.registerTask('default', ['test','compile','compile-demo','doc']);
