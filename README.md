@@ -122,4 +122,4 @@ Sample data is used if `python windowing.py` is called without both the FFT and 
 [draw-url]: https://byu-odh.github.io/apeworm/examples/chart.html
 [chart-image]: examples/img/draw.png?raw=true
 [multiple-image]: examples/img/multiple.png?raw=true
-[docs-url]: https://byu-odh.github.io/apeworm/docs
+[docs-url]: https://byu-odh.github.io/apeworm/doc
