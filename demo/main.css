@@ -25,10 +25,10 @@ nav {
   text-align: center;
 }
 nav a {
-  display: block;
   font-size: 80%;
 }
 .big-button {
+  display: block;
   color: white;
   font-weight: bold;
   text-decoration: none;

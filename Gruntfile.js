@@ -14,10 +14,23 @@ module.exports = function(grunt) {
     qunit: {
       all: ['test/index.html']
     },
+    markdown: {
+      readme: {
+        files: [{
+          src: 'README.md',
+          dest: 'README.html'
+        }],
+        options: {
+          markdownOptions: {
+            highlight: 'manual',
+            gfm: true
+          }
+        }
+      }
+    },
     jsdoc: {
       all: {
         src: [
-          'README.md',
           'src/modules/',
           'src/vowelworm.js'
         ],
@@ -95,17 +108,18 @@ module.exports = function(grunt) {
     },
     clean: {
       src: [output_dir, 'src/modules/**/*.min.js', 'src/vowelworm.min.js'],
-      doc: ['doc']
+      doc: ['doc','README.html']
     }
   });
   grunt.loadNpmTasks('grunt-contrib-qunit');
   grunt.loadNpmTasks('grunt-closure-tools');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-markdown');
   grunt.loadNpmTasks('grunt-jsdoc');
 
   grunt.registerTask('test', 'qunit');
-  grunt.registerTask('doc', ['clean:doc', 'jsdoc']);
+  grunt.registerTask('doc', ['clean:doc', 'jsdoc', 'markdown']);
   grunt.registerTask('compile-demo', ['concat:demo','closureCompiler:demo']);
   grunt.registerTask('compile', ['clean:src', 'closureCompiler:main', 'concat:main', 'closureCompiler:all']);
   grunt.registerTask('default', ['test','compile','compile-demo','doc']);
