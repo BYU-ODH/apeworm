@@ -759,6 +759,31 @@ VowelWorm.removeModule = function(name) {
 VowelWorm.instance.prototype.mode = null;
 
 /**
+ * Retrieves the current FFT data of the audio source. NOTE: this returns a
+ * reference to the internal buffer used to store this information. It WILL
+ * change. If you need to store it, iterate through it and make a copy.
+ *
+ * The reason this doesn't return a new Float32Array is because Google Chrome
+ * (as of v. 36) does not adequately garbage collect new Float32Arrays. Best
+ * to keep them to a minimum.
+ *
+ * @return Float32Array
+ * @example
+ *  var w = new VowelWorm.instance(audioelement),
+ *      fft = w.getFFT();
+ *
+ *  // store a copy for later
+ *  var saved_data = [];
+ *  for(var i = 0; i<fft.length; i++) {
+ *    saved_data[i] = fft[i];
+ *  } 
+ */
+VowelWorm.instance.prototype.getFFT = function(){
+  this._analyzer.getFloatFrequencyData(this._buffer);
+  return this._buffer;
+};
+
+/**
  * @license
  *
  * VowelWorm.instance.prototype.setStream helper functions borrow heavily from
@@ -906,16 +931,30 @@ VowelWorm.instance.prototype.getFFTSize = function() {
  * @param {number} options.filterBanks The number of filter banks to retrieve (TODO: create default val)
  * @param {Array.<number>=} options.fft FFT transformation data. If null, pulls from the analyzer
  * @param {number=} options.sampleRate sampleRate the sample rate of the data. Required if data is not null
+ * @param {boolean=} [options.toLinearMagnitude=true] Whether or not to convert
+ *   the data to a linear magnitude scale (e.g., if the data being passed in is
+ *   in decibels—as is the default data that comes back from {@link VowelWorm.instance#getFFT}).
+ *   If this is set to false, the data will be mapped to Math.abs. Since this
+ *   calls Math.log on the data, negative values will mess everything up.
+ *   Granted, converting these to absolute values might _also_ mess everything
+ *   up, but at least it will avoid NaN values. :-)
  * 
  * @return {Array.<number>} The MFFCs. Probably relevant are the second and
  * third values (i.e., a[1] and a[2])
  */
 VowelWorm.instance.prototype.getMFCCs = function(options) {
   var fft = null;
+  var toLM = options.toLinearMagnitude === undefined ? true : !!options.toLinearMagnitude;
 
   if(!options.fft) {
-    fft = this._buffer;
-    this._analyzer.getFloatFrequencyData(fft);
+    fft = this.getFFT();
+  }
+  else
+  {
+    fft = options.fft;
+  }
+
+  if(toLM) {
     for(var j = 0; j<fft.length; j++) {
       fft[j] = VowelWorm.decibelsToLinear(fft[j]);
     }
@@ -924,8 +963,8 @@ VowelWorm.instance.prototype.getMFCCs = function(options) {
   {
     // we need to ensure that these are all positive values
     var tmpFFT = [];
-    for(var i = 0; i<options.fft.length; i++) {
-      tmpFFT[i] = Math.abs(options.fft[i]);
+    for(var i = 0; i<fft.length; i++) {
+      tmpFFT[i] = Math.abs(fft[i]);
     }
     fft = tmpFFT;
   }
@@ -1023,9 +1062,8 @@ VowelWorm.instance.prototype.getFormants = function(data, sampleRate) {
   }
   else
   {
-    data = this._buffer;
+    data = this.getFFT();
     fftSize = this.getFFTSize();
-    this._analyzer.getFloatFrequencyData(data);
     sampleRate = this.getSampleRate();
   }
 

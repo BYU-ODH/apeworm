@@ -58,7 +58,8 @@ test("MFCC", function() {
     filterBanks: 10,
     minFreq: 300,
     maxFreq: 8000,
-    sampleRate: 44100
+    sampleRate: 44100,
+    toLinearMagnitude: false
   });
   var expected = [ 7.835884051228317, 1.1605377428549413, -0.174171119713941, 1.3509315849239385, -0.1991916156746527, 1.1153378031810444, -0.12527438596350143, 0.7039658412425222, -0.06616022000494146, 0.24848612991692026 ];
   deepEqual(response.map(_round), expected.map(_round));
