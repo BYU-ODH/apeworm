@@ -4,7 +4,7 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_REPO_SLUG" == "BYU-ODH/ap
     echo "Commit made to BYU-ODH/apeworm, is not a pull request and has a tag"
     echo "Pushing master branch to gh-pages."
     
-    cp ~/travis-ssh ~/.ssh/id_rsa
+    cp ./travis-ssh ~/.ssh/id_rsa
     chmod 600 ~/.ssh/id_rsa
 
     git config --global user.email "travis@travis-ci.org"
