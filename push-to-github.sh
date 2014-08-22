@@ -10,7 +10,7 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_REPO_SLUG" == "BYU-ODH/ap
     git config --global user.email "travis@travis-ci.org"
     git config --global user.name "travis-ci"
 
-    git remote add github git@github.com/BYU-ODH/apeworm.git
+    git remote add github git@github.com:BYU-ODH/apeworm.git
 
     git checkout -b gh-pages
     git add -f doc
