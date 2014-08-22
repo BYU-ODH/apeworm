@@ -94,6 +94,9 @@ module.exports = function(grunt) {
         ],
       },
       all: {
+        TEMPcompilerOpts: {
+          externs: grunt.file.expand(['src/lib/externs/**/*.js','!src/lib/externs/vowelworm.externs.js'])
+        },
         src: config.main_concat_output,
         dest: release_dir + 'vowelworm.complete.min.js'
       }
