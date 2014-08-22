@@ -69,13 +69,6 @@ module.exports = function(grunt) {
         },
         TieredCompilation: true,
       },
-      demo: { // for Github pages
-        TEMPCompilerOpts: {
-          compilation_level: 'ADVANCED_OPTIMIZATIONS'
-        },
-        src: config.all_js_concat_output,
-        dest: release_dir + 'vowelworm-demo.min.js'
-      },
       core:{ // for vowelworm.js
         TEMPCompilerOpts: {
           externs: grunt.file.expand(['src/lib/externs/**/*.js','!src/lib/externs/vowelworm.externs.js'])
@@ -113,14 +106,6 @@ module.exports = function(grunt) {
         ],
         dest: config.main_concat_output
       },
-      demo: {
-        src: [
-          'src/vowelworm.js',
-          'src/modules/core/vowelworm.game.js',
-          'main.js'
-        ],
-        dest: config.all_js_concat_output
-      }
     },
     clean: {
       src: [output_dir, 'src/modules/**/*.min.js', 'src/vowelworm.min.js'],
@@ -137,7 +122,6 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test', 'qunit');
   grunt.registerTask('doc', ['clean:doc', 'jsdoc', 'markdown', 'replace:readme']);
-  grunt.registerTask('compile-demo', ['concat:demo','closureCompiler:demo']);
   grunt.registerTask('compile', ['clean:src', 'closureCompiler:modules', 'closureCompiler:core','concat:main', 'closureCompiler:all']);
-  grunt.registerTask('default', ['test','compile','compile-demo','doc']);
+  grunt.registerTask('default', ['test','compile','doc']);
 };
