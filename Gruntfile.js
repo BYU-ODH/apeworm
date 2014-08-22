@@ -70,7 +70,7 @@ module.exports = function(grunt) {
         TieredCompilation: true,
       },
       core:{ // for vowelworm.js
-        TEMPCompilerOpts: {
+        TEMPcompilerOpts: {
           externs: grunt.file.expand(['src/lib/externs/**/*.js','!src/lib/externs/vowelworm.externs.js'])
         },
         src: ['src/vowelworm.js'],
