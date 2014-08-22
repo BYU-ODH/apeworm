@@ -181,7 +181,7 @@ window.VowelWorm.module('draw', function createDrawModule(worm) {
 
       var freq = worm._toFrequency(x*scale, worm.getSampleRate(), worm.getFFTSize());
       freq /= 1000; // convert to kHz
-      freq = parseFloat(freq.toFixed(2),10); // round
+      freq = parseFloat(freq.toFixed(2)); // round
 
       var label = new PIXI.Text(freq, {
         font: LABEL_FONT_SIZE + 'px',

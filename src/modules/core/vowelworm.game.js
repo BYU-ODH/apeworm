@@ -6,7 +6,6 @@
  * @param {number=} [options.height=500] The height of the game board
  * @param {number=} [options.background=0xFFFFFF] The background color of the game
  * @param {HTMLElement=} [options.element=document.body] What to append the graph to
- * @type VowelWorm.Game
  * @constructor
  */
 window.VowelWorm.Game = function( options ) {
