@@ -76,12 +76,18 @@ module.exports = function(grunt) {
         src: config.all_js_concat_output,
         dest: release_dir + 'vowelworm-demo.min.js'
       },
-      main: {
+      core:{ // for vowelworm.js
+        TEMPCompilerOpts: {
+          externs: grunt.file.expand(['src/lib/externs/**/*.js','!src/lib/externs/vowelworm.externs.js'])
+        },
+        src: ['src/vowelworm.js'],
+        dest: release_dir + 'vowelworm.min.js'
+      },
+      modules: {
         files: [
           {
             expand: true,
             src: [
-              'src/vowelworm.js',
               'src/modules/**/*.js',
               '!src/modules/**/*.min.js'
             ],
@@ -132,6 +138,6 @@ module.exports = function(grunt) {
   grunt.registerTask('test', 'qunit');
   grunt.registerTask('doc', ['clean:doc', 'jsdoc', 'markdown', 'replace:readme']);
   grunt.registerTask('compile-demo', ['concat:demo','closureCompiler:demo']);
-  grunt.registerTask('compile', ['clean:src', 'closureCompiler:main', 'concat:main', 'closureCompiler:all']);
+  grunt.registerTask('compile', ['clean:src', 'closureCompiler:modules', 'closureCompiler:core','concat:main', 'closureCompiler:all']);
   grunt.registerTask('default', ['test','compile','compile-demo','doc']);
 };

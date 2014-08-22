@@ -325,7 +325,7 @@ VowelWorm.savitzkyGolay = function savitzkyGolay(y, window_size, order) {
   //probably we don't need to parseInt anything or take the absolute value if we always make sure that our windown size and order are positive.  "golay.py" gave a window size of 55 and said that anything higuer will make a flatter graph
   //window size must be positive and an odd number for this to work better
   var windowSize = Math.abs(parseInt(window_size, 10));
-  var order = Math.abs(parseInt(order, 10));
+  order = Math.abs(parseInt(order, 10));
   var order_range = order + 1;
 
   var half_window = (windowSize - 1)/2;
@@ -441,7 +441,7 @@ VowelWorm.REMOTE_URL = 4;
  */
 /**
  * Gets the frequency at the given index
- * @param {number} index the position of the data to get the frequency of
+ * @param {number} position the position of the data to get the frequency of
  * @param {number} sampleRate the sample rate of the data, in Hz
  * @param {number} fftSize the FFT size
  * @return {number} the frequency at the given index
@@ -579,8 +579,8 @@ function concatenate(args) {
 
 /**
  * Reverses an array
- * @param {Array.<number>} The array to reverse
- * @return {Array.<number>} a copy of the passed-in array, reversed
+ * @param {Array.<number>} y The array to reverse
+ * @return {Array.<number>} p A copy of the passed-in array, reversed
  */
 function flipArray(y) {
  var p = new Array();
@@ -603,7 +603,7 @@ function flipArray(y) {
  * Finds the pseudo-inverse of the given array
  * Requires NumericJS to be loaded
  * @param {Array.<Array.<number>>} A The array to apply the psuedo-inverse to
- * @return {Array.<number>} The psuedo-inverse applied to the array
+ * @return {Array.<Array.<number>>} The psuedo-inverse applied to the array
  */
 function pinv(A) {
   var z = numeric.svd(A), foo = z.S[0];
@@ -616,11 +616,10 @@ function pinv(A) {
 
 /**
  * Contains methods used in the analysis of vowel audio data
- * @param {MediaStream=|string=} stream The audio stream to analyze OR a string representing the URL for an audio file
+ * @param {*} stream The audio stream to analyze OR a string representing the URL for an audio file
  * @constructor
  * @struct
  * @final
- * @extends VowelWorm
  * @name VowelWorm.instance
  */
 VowelWorm.instance = function VowelWorm(stream) {

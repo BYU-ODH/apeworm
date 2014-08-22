@@ -21,7 +21,7 @@ numeric.epsilon;
 /**
  * @param {Array.<number>|Array.<Array.<number>>} A
  * @param {Array.<number>|Array.<Array.<number>>} B
- * @return {Array.<number>}
+ * @return {Array.<Array.<number>>}
  */
 numeric.dot = function(A,B){};
 
