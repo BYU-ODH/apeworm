@@ -860,7 +860,7 @@ VowelWorm.instance.prototype._getPeaks = function(smoothedArray, sampleRate, fft
         if(hz < F3_MIN || hz - peaks[1] < MIN_DIFF_F2_F3) { continue; }
         break;
       default:
-        return;
+        return null;
     }
 
     previousNum = smoothedArray[i-1] || 0;
@@ -918,26 +918,29 @@ VowelWorm.instance.prototype.getFFTSize = function() {
  */
 
 /**
- * Retrieves Mel Frequency Cepstrum Coefficients (MFCCs). For best results,
- * if using preexisting webaudio FFT data (from getFloatFrequencyData), pass
- * your values through {@link VowelWorm.decibelsToLinear} first. If you do not
- * pass in specific FFT data, the default data will be converted to a linear 
- * magnitude scale anyway.
- *
- * @param {Object} options
- * @param {number} options.minFreq The minimum frequency to expect (TODO: create default val)
- * @param {number} options.maxFreq The maximum frequency to expect (TODO: create default val)
- * @param {number} options.filterBanks The number of filter banks to retrieve (TODO: create default val)
- * @param {Array.<number>=} options.fft FFT transformation data. If null, pulls from the analyzer
- * @param {number=} options.sampleRate sampleRate the sample rate of the data. Required if data is not null
- * @param {boolean=} [options.toLinearMagnitude=true] Whether or not to convert
+ * @typedef mfccsOptions
+ * @property {number} minFreq The minimum frequency to expect (TODO: create default val)
+ * @property {number} maxFreq The maximum frequency to expect (TODO: create default val)
+ * @property {number} filterBanks The number of filter banks to retrieve (TODO: create default val)
+ * @property {Array.<number>=} fft FFT transformation data. If null, pulls from the analyzer
+ * @property {number=} sampleRate sampleRate the sample rate of the data. Required if data is not null
+ * @property {boolean=} [toLinearMagnitude=true] Whether or not to convert
  *   the data to a linear magnitude scale (e.g., if the data being passed in is
  *   in decibels—as is the default data that comes back from {@link VowelWorm.instance#getFFT}).
  *   If this is set to false, the data will be mapped to Math.abs. Since this
  *   calls Math.log on the data, negative values will mess everything up.
  *   Granted, converting these to absolute values might _also_ mess everything
  *   up, but at least it will avoid NaN values. :-)
- * 
+ */
+
+/**
+ * Retrieves Mel Frequency Cepstrum Coefficients (MFCCs). For best results,
+ * if using preexisting webaudio FFT data (from getFloatFrequencyData), pass
+ * your values through {@link VowelWorm.decibelsToLinear} first. If you do not
+ * pass in specific FFT data, the default data will be converted to a linear 
+ * magnitude scale anyway.
+ *
+ * @param {{minFreq: number, maxFreq: number, filterBanks: number, fft: Array.<number>, sampleRate: number, toLinearMagnitude: boolean}} options {@link mfccsOptions}
  * @return {Array.<number>} The MFFCs. Probably relevant are the second and
  * third values (i.e., a[1] and a[2])
  */
