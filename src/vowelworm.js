@@ -215,49 +215,6 @@ VowelWorm.decibelsToLinear = function(dB) {
 };
 
 /**
- * Given an array of formants, returns normalized X and Y coordinates
- * representing advancement and height, respectively.
- * @param {Array.<number>} formants The formants to normalize
- * @param {Function} [method=VowelWorm.Normalization.barkScale]
- *  the method to use for Normalization. Must be a property of
- *  {@see VowelWorm.Normalization}. Defaults to barkScale
- * 
- * @return {Array.<number>} an array formatted thusly: [x,y]. May be empty
- * @static
- *
- * TODO: check to see if passing a method in as a param seems sane with everyone else
- */
-VowelWorm.normalize = function(formants, method) {
-  if(!formants.length) {
-    return [];
-  }
-  if(method === undefined || method === null) {
-    method = VowelWorm.Normalization.barkScale;
-  }
-  if(typeof method !== 'function') {
-    throw new Error("Expecting a function as a method for VowelWorm.normalize");
-  }
-  if(!(method.name in VowelWorm.Normalization)) {
-    throw new Error("Method '" + method.name + "' is not part of " +
-        "VowelWorm.Normalization and cannot be used for normalization.");
-  }
-
-  var x = null;
-  var y = null;
-
-  switch(method) {
-    case this.Normalization.barkScale:
-      x = method(formants[2]) - method(formants[1]);
-      y = method(formants[2]) - method(formants[0]);
-  };
-
-  if(x === null || y === null) {
-    return [];
-  }
-  return [x,y];
-};
-
-/**
  * @license
  *
  * Hanning window code taken from http://wiki.scipy.org/Cookbook/SignalSmooth

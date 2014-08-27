@@ -7,9 +7,10 @@ module( "normalization" );
 test( "Bark Scale", function() {
   var formants = [100,1200,2400];
   var expected = [4.576785506909767, 13.456341854458003].map(_round);
-  var result = VowelWorm.normalize(formants, VowelWorm.Normalization.barkScale);
-  result = result.map(_round);
-  deepEqual(result, expected)
+  var f1 = VowelWorm.Normalization.barkScale(formants[2]) - VowelWorm.Normalization.barkScale(formants[1]);
+  var f2 = VowelWorm.Normalization.barkScale(formants[2]) - VowelWorm.Normalization.barkScale(formants[0]);
+  deepEqual(_round(f1), expected[0]);
+  deepEqual(_round(f2), expected[1]);
 });
 
 module( "smoothing" );
