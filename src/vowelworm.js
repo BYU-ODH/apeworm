@@ -622,7 +622,7 @@ function pinv(A) {
  * @final
  * @name VowelWorm.instance
  */
-VowelWorm.instance = function VowelWorm(stream) {
+VowelWorm.instance = function(stream) {
   var that = this;
 
   this._context    = CONTEXT;
