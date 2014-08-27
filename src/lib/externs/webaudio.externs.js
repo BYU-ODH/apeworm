@@ -40,6 +40,11 @@ var AudioContext = window.AudioContext;
  */
 AudioContext.prototype.createMediaElementSource
 
+/**
+ * @return {Object}
+ */
+AudioContext.prototype.createMediaStreamSource
+
 
 /** @type {AudioDestinationNode} */
 AudioContext.prototype.destination;
