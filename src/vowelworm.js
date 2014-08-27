@@ -1,12 +1,20 @@
+(function(numeric){
+"use strict";
+
+/**
+ * @namespace
+ * @struct
+ * @const
+ * @ignore
+ */
+var VowelWorm = {};
+
 /**
  * @struct
  * @namespace
  * @name VowelWorm
  */
-window.VowelWorm = window.VowelWorm || {};
-
-(function(VowelWorm, numeric){
-"use strict";
+window.VowelWorm = VowelWorm;
 
 /**
  * @const
@@ -121,6 +129,7 @@ var WINDOW_SIZES = [
  * @constant
  * @type {Object.<number, Array.<number>>}
  * @private
+ * @memberof VowelWorm
  */
 VowelWorm._HANNING_WINDOW = {
   61: new Float32Array([ 0.        ,  0.00273905,  0.0109262 ,  0.02447174,  0.04322727,
@@ -157,6 +166,8 @@ VowelWorm._HANNING_WINDOW = {
  * Contains methods for normalizing Hz values
  * @const
  * @namespace
+ * @memberof VowelWorm
+ * @name VowelWorm.Normalization
  */
 VowelWorm.Normalization = {
   /**
@@ -209,6 +220,8 @@ VowelWorm.Normalization = {
  * 
  * @TODO — If we can find a generic representation somewhere of this algorithm,
  * we can remove this license
+ * @public
+ * @memberof VowelWorm
  */
 VowelWorm.decibelsToLinear = function(dB) {
   return Math.pow(10, 0.05 * dB);
@@ -230,6 +243,7 @@ VowelWorm.decibelsToLinear = function(dB) {
  * @param {Array.<number>} vals The values to change
  * @param {number} window_size the size of the window
  * @return {Array.<number>} the new values 
+ * @memberof VowelWorm
  */
 VowelWorm.hann = function hann(vals, window_size) {
   if(typeof VowelWorm._HANNING_WINDOW[window_size] === 'undefined') {
@@ -277,6 +291,7 @@ VowelWorm.hann = function hann(vals, window_size) {
  * @param {number} window_size The window size.
  * @param {number} order The...? TODO
  * @return {Array.<number>} if plotted gives you a smooth curve version of an parameter array
+ * @memberof VowelWorm
  */
 VowelWorm.savitzkyGolay = function savitzkyGolay(y, window_size, order) {
   //probably we don't need to parseInt anything or take the absolute value if we always make sure that our windown size and order are positive.  "golay.py" gave a window size of 55 and said that anything higuer will make a flatter graph
@@ -328,6 +343,7 @@ VowelWorm.savitzkyGolay = function savitzkyGolay(y, window_size, order) {
  * @param {Array.<number>} m
  * @param {Array.<number>} y
  * @return {Array.<number>}
+ * @memberof VowelWorm
  * 
  */
 VowelWorm.convolve = function convolve(m, y) {
@@ -361,6 +377,7 @@ VowelWorm.convolve = function convolve(m, y) {
  * Representative of the current mode VowelWorm is in.
  * In this case, an audio element
  * @const
+ * @memberof VowelWorm
  */
 VowelWorm.AUDIO = 1;
 
@@ -368,6 +385,7 @@ VowelWorm.AUDIO = 1;
  * Representative of the current mode VowelWorm is in.
  * In this case, a video element
  * @const
+ * @memberof VowelWorm
  */
 VowelWorm.VIDEO = 2;
 
@@ -375,6 +393,7 @@ VowelWorm.VIDEO = 2;
  * Representative of the current mode VowelWorm is in.
  * In this case, a media stream
  * @const
+ * @memberof VowelWorm
  */
 VowelWorm.STREAM = 3;
 
@@ -382,6 +401,7 @@ VowelWorm.STREAM = 3;
  * Representative of the current mode VowelWorm is in.
  * In this case, a remote URL turned into a source node
  * @const
+ * @memberof VowelWorm
  */
 VowelWorm.REMOTE_URL = 4;
 
@@ -403,6 +423,7 @@ VowelWorm.REMOTE_URL = 4;
  * @param {number} fftSize the FFT size
  * @return {number} the frequency at the given index
  * @private
+ * @memberof VowelWorm
  */
 VowelWorm._toFrequency = function toFrequency(position, sampleRate, fftSize) {
   /**
@@ -436,6 +457,7 @@ VowelWorm._toFrequency = function toFrequency(position, sampleRate, fftSize) {
  * @param {Array.<number>} values The values of the array
  * @return {number} The height of the peak, or 0 if it is not a peak
  * @private
+ * @memberof VowelWorm
  */
 VowelWorm._peakHeight = function peakHeight(index, values) {
   var peak = values[index],
@@ -575,9 +597,10 @@ function pinv(A) {
  * Contains methods used in the analysis of vowel audio data
  * @param {*} stream The audio stream to analyze OR a string representing the URL for an audio file
  * @constructor
- * @struct
+ * //@struct (attaching modules breaks this as a struct; is there a better way?)
  * @final
  * @name VowelWorm.instance
+ * @memberof VowelWorm
  */
 VowelWorm.instance = function(stream) {
   var that = this;
@@ -592,10 +615,12 @@ VowelWorm.instance = function(stream) {
   if(stream) {
     this.setStream(stream);
   }
-  
-  Object.keys(modules).forEach(function(name) {
-    attachModuleToInstance(name, that);
-  });
+ 
+  for(var name in modules) { 
+    if(modules.hasOwnProperty(name)) {
+      attachModuleToInstance(name, that);
+    }
+  }
   instances.push(this);
 };
 
@@ -607,6 +632,7 @@ VowelWorm.instance = function(stream) {
  * @see {@link VowelWorm.hann}
  * @type number
  * @const
+ * @memberof VowelWorm
  */
 VowelWorm.HANNING_SHIFT = 32;
 
@@ -617,6 +643,7 @@ VowelWorm.HANNING_SHIFT = 32;
  * @see {@link http://www.sfu.ca/sonic-studio/handbook/Formant.html}
  * @const
  * @type number
+ * @memberof VowelWorm
  */
 VowelWorm.DEFAULT_MAX_FORMANT_MALE = 5000;
 /**
@@ -625,6 +652,7 @@ VowelWorm.DEFAULT_MAX_FORMANT_MALE = 5000;
  * @see {@link http://www.sfu.ca/sonic-studio/handbook/Formant.html}
  * @const
  * @type number
+ * @memberof VowelWorm
  */
 VowelWorm.DEFAULT_MAX_FORMANT_FEMALE = 5500;
 /**
@@ -633,6 +661,7 @@ VowelWorm.DEFAULT_MAX_FORMANT_FEMALE = 5500;
  * @see {@link http://www.sfu.ca/sonic-studio/handbook/Formant.html}
  * @const
  * @type number
+ * @memberof VowelWorm
  */
 VowelWorm.DEFAULT_MAX_FORMANT_CHILD = 8000;
 
@@ -653,6 +682,12 @@ function attachModuleToInstance(name, instance) {
 };
 
 /**
+ * Callback used by {@link VowelWorm.module}
+ * @callback VowelWorm~createModule
+ * @param {VowelWorm.instance.prototype} prototype
+ */
+
+/**
  * Adds a module to instances of {@link VowelWorm.instance}, as called by
  * `new VowelWorm.instance(...);`
  * @param {string} name the name of module to add
@@ -666,6 +701,7 @@ function attachModuleToInstance(name, instance) {
  * @see {@link attachModuleToInstance}
  * @see {@link modules}
  * @see {@link instances}
+ * @memberof VowelWorm
  */
 VowelWorm.module = function(name, callback) {
   if(proto[name] !== undefined || modules[name] !== undefined) {
@@ -686,6 +722,7 @@ VowelWorm.module = function(name, callback) {
  * Removes a module from all current and future VowelWorm instances. Used
  * primarily for testing purposes.
  * @param {string} name - The name of the module to remove
+ * @memberof VowelWorm
  */
 VowelWorm.removeModule = function(name) {
   if(modules[name] === undefined) {
@@ -696,11 +733,6 @@ VowelWorm.removeModule = function(name) {
     delete instance[name];
   });
 };
-/**
- * Callback used by {@link VowelWorm.module}
- * @callback VowelWorm~createModule
- * @param {VowelWorm.instance.prototype} prototype
- */
 
 /**
  * The current mode the vowel worm is in (e.g., stream, audio element, etc.)
@@ -711,6 +743,7 @@ VowelWorm.removeModule = function(name) {
  * @see VowelWorm.STREAM
  * @see VowelWorm.REMOTE_URL
  * @member
+ * @memberof VowelWorm.instance
  */
 VowelWorm.instance.prototype.mode = null;
 
@@ -724,6 +757,7 @@ VowelWorm.instance.prototype.mode = null;
  * to keep them to a minimum.
  *
  * @return Float32Array
+ * @memberof VowelWorm.instance
  * @example
  *  var w = new VowelWorm.instance(audioelement),
  *      fft = w.getFFT();
@@ -750,6 +784,7 @@ VowelWorm.instance.prototype.getFFT = function(){
 /**
  * Specifies the audio source for the instance. Can be a video or audio element,
  * a URL, or a MediaStream
+ * @memberof VowelWorm.instance
  * @param {MediaStream|string|HTMLAudioElement|HTMLVideoElement} stream The audio stream to analyze OR a string representing the URL for an audio file OR an Audio file
  * @throws An error if stream is neither a Mediastream, Audio or Video Element, or a string
  */
@@ -779,6 +814,7 @@ VowelWorm.instance.prototype.setStream = function(stream) {
 
 /**
  * @param {MediaStream} stream
+ * @memberof VowelWorm.instance
  * @private
  */
 VowelWorm.instance.prototype._loadFromStream = function(stream) {
@@ -794,6 +830,7 @@ VowelWorm.instance.prototype._loadFromStream = function(stream) {
  * @param {number} sampleRate the sample rate of the data
  * @param {number} fftSize the FFT size
  * @return {Array.<number>} the positions of all the peaks found, in Hz
+ * @memberof VowelWorm.instance
  * @private
  */
 VowelWorm.instance.prototype._getPeaks = function(smoothedArray, sampleRate, fftSize) {
@@ -839,6 +876,7 @@ VowelWorm.instance.prototype._getPeaks = function(smoothedArray, sampleRate, fft
 /**
  * The sample rate of the attached audio source
  * @return {number}
+ * @memberof VowelWorm.instance
  */
 VowelWorm.instance.prototype.getSampleRate = function() {
   switch(this.mode) {
@@ -860,6 +898,7 @@ VowelWorm.instance.prototype.getSampleRate = function() {
 /**
  * The size of the FFT, in bins
  * @return {number}
+ * @memberof VowelWorm.instance
  */
 VowelWorm.instance.prototype.getFFTSize = function() {
   return this._analyzer.fftSize;
@@ -900,6 +939,7 @@ VowelWorm.instance.prototype.getFFTSize = function() {
  * @param {{minFreq: number, maxFreq: number, filterBanks: number, fft: Array.<number>, sampleRate: number, toLinearMagnitude: boolean}} options {@link mfccsOptions}
  * @return {Array.<number>} The MFFCs. Probably relevant are the second and
  * third values (i.e., a[1] and a[2])
+ * @memberof VowelWorm.instance
  */
 VowelWorm.instance.prototype.getMFCCs = function(options) {
   var fft = null;
@@ -1006,6 +1046,7 @@ VowelWorm.instance.prototype.getMFCCs = function(options) {
  * @param {number=} sampleRate the sample rate of the data. Required if data is not null
  * @return {Array.<number>} The formants found for the audio stream/file. If
  * nothing worthwhile has been found, returns an empty array.
+ * @memberof VowelWorm.instance
  */
 VowelWorm.instance.prototype.getFormants = function(data, sampleRate) {
   var that = this;
@@ -1047,6 +1088,7 @@ VowelWorm.instance.prototype.getFormants = function(data, sampleRate) {
 /**
  * Removes reference to this particular worm instance as well as
  * all properties of it.
+ * @memberof VowelWorm.instance
  */
 VowelWorm.instance.prototype.destroy = function() {
   var index = instances.indexOf(this);
@@ -1065,6 +1107,7 @@ VowelWorm.instance.prototype.destroy = function() {
  * @throws An error when the server returns an error status code
  * @throws An error when the audio file cannot be decoded
  * @private
+ * @memberof VowelWorm.instance
  */
 VowelWorm.instance.prototype._loadFromURL = function loadFromURL(url) {
   var that = this,
@@ -1110,6 +1153,7 @@ VowelWorm.instance.prototype._loadFromURL = function loadFromURL(url) {
  * Loads an audio element as the data to be processed
  * @param {HTMLAudioElement} audio
  * @private
+ * @memberof VowelWorm.instance
  */
 VowelWorm.instance.prototype._loadFromAudio = function loadFromAudio(audio) {
   console.warn( "Cannot determine sample rate. Setting as " + DEFAULT_SAMPLE_RATE );
@@ -1124,6 +1168,7 @@ VowelWorm.instance.prototype._loadFromAudio = function loadFromAudio(audio) {
  * Loads a video element as the data to be processed
  * @param {HTMLVideoElement} video
  * @private
+ * @memberof VowelWorm.instance
  */
 VowelWorm.instance.prototype._loadFromVideo = function loadFromVideo(video) {
   console.warn( "Cannot determine sample rate. Setting as " + DEFAULT_SAMPLE_RATE );
@@ -1138,6 +1183,7 @@ VowelWorm.instance.prototype._loadFromVideo = function loadFromVideo(video) {
  * Creates (or resets) a source node, as long as an available audioBuffer
  * exists
  * @private
+ * @memberof VowelWorm.instance
  */
 VowelWorm.instance.prototype._resetSourceNode = function resetSourceNode() {
     this._sourceNode = this._context.createBufferSource();
@@ -1145,4 +1191,4 @@ VowelWorm.instance.prototype._resetSourceNode = function resetSourceNode() {
     this._sourceNode.connect(this._analyzer);
 };
 
-}(window.VowelWorm, window.numeric));
+}(window.numeric));

@@ -10,9 +10,10 @@ var VowelWorm = window.VowelWorm;
 /**
  * @param {*} stream The audio stream to analyze OR a string representing the URL for an audio file
  * @constructor
- * @struct
+ * //@struct (attaching modules breaks this as a struct; is there a better way?)
  * @final
  * @name VowelWorm.instance
+ * @memberof VowelWorm
  */
 VowelWorm.instance = function (stream) {};
 
