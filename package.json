@@ -13,9 +13,11 @@
     "grunt-contrib-qunit": "~0.5.2",
     "grunt-contrib-concat": "~0.5.0",
     "grunt-contrib-clean": "~0.6.0",
-    "grunt-jsdoc": "~0.5.6",
     "grunt-markdown": "~0.6.1",
-    "grunt-text-replace": "~0.3.12"
+    "grunt-text-replace": "~0.3.12",
+    "grunt-exec": "~0.4.6",
+    "jsdoc": "~3.3.0",
+    "jaguarjs-jsdoc": "git://github.com/webnard/jaguarjs-jsdoc.git#5ebced075b8ea6af38bc4b6a5612e141838b01e2"
   },
   "scripts": {
     "test": "grunt"

@@ -38,7 +38,8 @@ module.exports = function(grunt) {
         }]
       }
     },
-    jsdoc: {
+    // grunt-jsdoc won't work until it updates to version 3.3.0 of JSDoc
+    /*jsdoc: {
       all: {
         src: [
           'src/modules/',
@@ -51,7 +52,7 @@ module.exports = function(grunt) {
           'private': false
         }
       }
-    },
+    },*/
     closureCompiler: {
       options: {
         create_source_map: null,
@@ -113,6 +114,17 @@ module.exports = function(grunt) {
     clean: {
       src: [output_dir, 'src/modules/**/*.min.js', 'src/vowelworm.min.js'],
       doc: ['doc','README.html']
+    },
+    exec: {
+      jsdoc: {
+        cmd: 'node_modules/jsdoc/jsdoc.js ' +
+             'src/vowelworm.js ' +
+             'src/modules/ ' +
+             '--template node_modules/jaguarjs-jsdoc ' +
+             '--recurse ' +
+             '--destination doc/ ' +
+             '--verbose '
+      }
     }
   });
   grunt.loadNpmTasks('grunt-contrib-qunit');
@@ -121,10 +133,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-text-replace');
   grunt.loadNpmTasks('grunt-markdown');
-  grunt.loadNpmTasks('grunt-jsdoc');
+  grunt.loadNpmTasks('grunt-exec');
 
   grunt.registerTask('test', 'qunit');
-  grunt.registerTask('doc', ['clean:doc', 'jsdoc', 'markdown', 'replace:readme']);
+  grunt.registerTask('doc', ['clean:doc', 'exec:jsdoc', 'markdown', 'replace:readme']);
   grunt.registerTask('compile', ['clean:src', 'closureCompiler:modules', 'closureCompiler:core','concat:main', 'closureCompiler:all']);
   grunt.registerTask('default', ['test','compile','doc']);
 };
