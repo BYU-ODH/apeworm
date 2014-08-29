@@ -51,7 +51,7 @@ window.VowelWorm.Game = function( options ) {
 
   /**
    * Inserts a worm into the ever-increasing frenzy of VowelWorm.
-   * @param {VowelWorm.instance} worm
+   * @param {window.VowelWorm.instance} worm
    */
   game.addWorm = function(worm) {
    var container = {};

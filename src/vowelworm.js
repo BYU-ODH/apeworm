@@ -3,14 +3,12 @@
 
 /**
  * @namespace
- * @struct
  * @const
  * @ignore
  */
 var VowelWorm = {};
 
 /**
- * @struct
  * @namespace
  * @name VowelWorm
  */
@@ -24,7 +22,7 @@ var CONTEXT = new window.AudioContext();
 /**
  * A collection of all vowel worm instances. Used for attaching modules.
  * @see {@link VowelWorm.module}
- * @type {Array.<VowelWorm.instance>}
+ * @type {Array.<window.VowelWorm.instance>}
  */
 var instances = [];
 
@@ -602,7 +600,7 @@ function pinv(A) {
  * @name VowelWorm.instance
  * @memberof VowelWorm
  */
-VowelWorm.instance = function(stream) {
+window.VowelWorm.instance = function(stream) {
   var that = this;
 
   this._context    = CONTEXT;
@@ -623,6 +621,7 @@ VowelWorm.instance = function(stream) {
   }
   instances.push(this);
 };
+VowelWorm.instance = window.VowelWorm.instance;
 
 /**
  * The amount the Hanning window needs to be shifted to line up correctly.
@@ -674,7 +673,7 @@ var proto = VowelWorm.instance.prototype;
  * Attaches a module to the given instance, with the given name
  * @param {string} name The name of the module to attach. Should be present in
  * {@link modules} to work
- * @param {VowelWorm.instance} instance The instance to affix a module to
+ * @param {window.VowelWorm.instance} instance The instance to affix a module to
  */
 function attachModuleToInstance(name, instance) {
   instance[name] = {};
@@ -684,7 +683,7 @@ function attachModuleToInstance(name, instance) {
 /**
  * Callback used by {@link VowelWorm.module}
  * @callback VowelWorm~createModule
- * @param {VowelWorm.instance.prototype} prototype
+ * @param {window.VowelWorm.instance.prototype} prototype
  */
 
 /**

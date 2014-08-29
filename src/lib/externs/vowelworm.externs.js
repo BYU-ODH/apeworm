@@ -15,7 +15,8 @@ var VowelWorm = window.VowelWorm;
  * @name VowelWorm.instance
  * @memberof VowelWorm
  */
-VowelWorm.instance = function (stream) {};
+window.VowelWorm.instance = function (stream) {};
+VowelWorm.instance = window.VowelWorm.instance;
 
 /**
  * @return Float32Array
