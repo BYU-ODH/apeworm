@@ -7,6 +7,7 @@
  * @param {number=} [options.background=0xFFFFFF] The background color of the game
  * @param {HTMLElement=} [options.element=document.body] What to append the graph to
  * @constructor
+ * @name VowelWorm.Game
  */
 window.VowelWorm.Game = function( options ) {
   "use strict";
@@ -27,23 +28,34 @@ window.VowelWorm.Game = function( options ) {
    * Represents the threshold in dB that VowelWorm's audio should be at in
    * order to to plot anything.
    * @see {@link isSilent}
+   * @memberof VowelWorm.Game
+   * @name silence
+   * @type number
    */
   game.silence = -70;
 
   /**
    * Contains all instances of worms for this game
    * @type Array.<Object>
+   * @private
    */
   var worms = [];
 
   /**
    * You can change this with game.ipa = true/false
    * @type boolean
+   * @memberof VowelWorm.Game
+   * @name ipa
    */
   var ipaEnabled = true;
  
   var ipaChart = new PIXI.DisplayObjectContainer();  
 
+  /**
+   * Begins animation of worms
+   * @memberof VowelWorm.Game
+   * @name play
+   */
   game.play = function(){
     game.drawWorm();
     window.requestAnimationFrame(game.play);
@@ -52,6 +64,8 @@ window.VowelWorm.Game = function( options ) {
   /**
    * Inserts a worm into the ever-increasing frenzy of VowelWorm.
    * @param {window.VowelWorm.instance} worm
+   * @memberof VowelWorm.Game
+   * @name addWorm
    */
   game.addWorm = function(worm) {
    var container = {};
@@ -60,6 +74,9 @@ window.VowelWorm.Game = function( options ) {
    worms.push(container);
   };
 
+  /**
+   * @private
+   */
   game.drawWorm = function(){
     var current_color = 0x00FF00;
     worms.forEach(function(container) {

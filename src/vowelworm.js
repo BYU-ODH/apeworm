@@ -683,7 +683,7 @@ function attachModuleToInstance(name, instance) {
 /**
  * Callback used by {@link VowelWorm.module}
  * @callback VowelWorm~createModule
- * @param {window.VowelWorm.instance.prototype} prototype
+ * @param {window.VowelWorm.instance} instance
  */
 
 /**
