@@ -1,0 +1,195 @@
+<!DOCTYPE  html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    
+    <title>doc</title>
+    <style>
+      /*github.com style (c) Vasily Polovnyov <vast@whiteants.net>*/
+      pre code {
+        display: block; padding: 0.5em;
+        color: #333;
+        background: #f8f8ff
+      }
+      pre .comment,
+      pre .template_comment,
+      pre .diff .header,
+      pre .javadoc {
+        color: #998;
+        font-style: italic
+      }
+      pre .keyword,
+      pre .css .rule .keyword,
+      pre .winutils,
+      pre .javascript .title,
+      pre .nginx .title,
+      pre .subst,
+      pre .request,
+      pre .status {
+        color: #333;
+        font-weight: bold
+      }
+      pre .number,
+      pre .hexcolor,
+      pre .ruby .constant {
+        color: #099;
+      }
+      pre .string,
+      pre .tag .value,
+      pre .phpdoc,
+      pre .tex .formula {
+        color: #d14
+      }
+      pre .title,
+      pre .id {
+        color: #900;
+        font-weight: bold
+      }
+      pre .javascript .title,
+      pre .lisp .title,
+      pre .clojure .title,
+      pre .subst {
+        font-weight: normal
+      }
+      pre .class .title,
+      pre .haskell .type,
+      pre .vhdl .literal,
+      pre .tex .command {
+        color: #458;
+        font-weight: bold
+      }
+      pre .tag,
+      pre .tag .title,
+      pre .rules .property,
+      pre .django .tag .keyword {
+        color: #000080;
+        font-weight: normal
+      }
+      pre .attribute,
+      pre .variable,
+      pre .lisp .body {
+        color: #008080
+      }
+      pre .regexp {
+        color: #009926
+      }
+      pre .class {
+        color: #458;
+        font-weight: bold
+      }
+      pre .symbol,
+      pre .ruby .symbol .string,
+      pre .lisp .keyword,
+      pre .tex .special,
+      pre .prompt {
+        color: #990073
+      }
+      pre .built_in,
+      pre .lisp .title,
+      pre .clojure .built_in {
+        color: #0086b3
+      }
+      pre .preprocessor,
+      pre .pi,
+      pre .doctype,
+      pre .shebang,
+      pre .cdata {
+        color: #999;
+        font-weight: bold
+      }
+      pre .deletion {
+        background: #fdd
+      }
+      pre .addition {
+        background: #dfd
+      }
+      pre .diff .change {
+        background: #0086b3
+      }
+      pre .chunk {
+        color: #aaa
+      }
+    </style>
+  </head>
+  <body>  
+    <h1 id="vowelworm">VowelWorm</h1>
+<p><a href="https://travis-ci.org/BYU-ODH/apeworm"><img src="https://travis-ci.org/BYU-ODH/apeworm.svg" alt="Travis Builds"></a></p>
+<p>VowelWorm is based off the work done at the <a href="http://www.cp.jku.at/projects/realtime/vowelworm.html">Department of Computational Perception at Johannes Kepler Universität Linz</a>, and uses the same name. The goal is to produce real-time vocal analysis in the browser.</p>
+<p><a href="doc">Read the docs.</a></p>
+<h2 id="examples">Examples</h2>
+<h3 id="multiple-audio-sources">Multiple Audio Sources</h3>
+<p>VowelWorm can plot vocalizations against the IPA vowel chart in real time, for
+multiple audio sources at a time. Videos, audio files, and microphone input
+all work. Data comes from MFCC extraction. <a href="examples/sources.html">See demo</a></p>
+<p><a href="examples/sources.html"><img src="examples/img/multiple.png?raw=true" alt="Several audio sources being plotted"></a></p>
+<pre><code class="lang-javascript"><span class="keyword">var</span> graphs_element = document.getElementById(<span class="string">"graphs"</span>),
+    game = <span class="keyword">new</span> window.VowelWorm.Game({element: graphs_element});
+
+navigator.getUserMedia({audio: <span class="literal">true</span>}, <span class="function"><span class="keyword">function</span> <span class="title">success</span><span class="params">()</span>{</span>
+  <span class="keyword">var</span> worm = <span class="keyword">new</span> window.VowelWorm.instance(stream);
+  game.addWorm(worm);
+});</code></pre>
+<h3 id="formant-drawing">Formant Drawing</h3>
+<p>In addition to extracting MFCCs, VowelWorm also supports applying a Hanning
+window or Savitzky-Golay filter to FFT data to attempt to extract formants.
+Using the <code>draw</code> module, this data can be plotted. <a href="examples/chart.html">See demo</a></p>
+<p><a href="examples/chart.html"><img src="examples/img/draw.png?raw=true" alt="Plotted Data"></a></p>
+<pre><code class="lang-javascript"><span class="keyword">var</span> worm = <span class="keyword">new</span> VowelWorm.instance(document.getElementById(<span class="string">'media'</span>)),
+    el = worm.draw.create(<span class="number">800</span>, <span class="number">500</span>, <span class="number">0xFFFFFF</span>);
+
+worm.draw.drawAxes();
+document.getElementById(<span class="string">'graphs'</span>).appendChild(el);
+
+<span class="function"><span class="keyword">function</span> <span class="title">draw</span><span class="params">()</span>{</span>
+  worm.draw.drawDataLines();
+  window.requestAnimationFrame(draw);
+}
+window.requestAnimationFrame(draw);</code></pre>
+<h3 id="mfccs">MFCCs</h3>
+<p>VowelWorm can extract MFCCs from any audio or video source.</p>
+<pre><code class="lang-javascript"><span class="keyword">var</span> worm = <span class="keyword">new</span> VowelWorm.instance(audio);
+<span class="keyword">var</span> mfccs = worm.getMFCCs({
+  minFreq: <span class="number">300</span>,
+  maxFreq: <span class="number">8000</span>,
+  filterBanks: <span class="number">20</span>
+});</code></pre>
+<h3 id="curve-smoothing">Curve Smoothing</h3>
+<p>VowelWorm can smooth data using either a Hanning window or a Savitzky-Golay
+filter.</p>
+<pre><code class="lang-javascript"><span class="keyword">var</span> data = [...], <span class="comment">// or data = new Float32Array(...)</span>
+    window_size = <span class="number">55</span>,
+    order = <span class="number">1</span>;
+
+<span class="comment">// NOTE: savitzkyGolay requires numericJS to be loaded</span>
+<span class="keyword">var</span> smooth1 = VowelWorm.savitzkyGolay(data, window_size, order);
+
+smooth2 = VowelWorm.hann(data, window_size); <span class="comment">// not all window sizes supported (yet!)</span></code></pre>
+<h3 id="formant-extraction">Formant Extraction</h3>
+<p>VowelWorm can attempt to extract formants. NOTE: this is very much a work in
+progress.</p>
+<pre><code class="lang-javascript"><span class="keyword">var</span> worm = <span class="keyword">new</span> VowelWorm.instance(audio_source);
+<span class="keyword">var</span> formants = worm.getFormants();</code></pre>
+<h3 id="normalization">Normalization</h3>
+<p>VowelWorm has methods for normalizing data, like the Bark Scale.</p>
+<pre><code class="lang-javascript"><span class="keyword">var</span> f1 = <span class="number">300</span>,
+    f2 = <span class="number">950</span>;
+
+<span class="keyword">var</span> f1_bark = VowelWorm.Normalization.barkScale(f1);
+<span class="keyword">var</span> f2_bark = VowelWorm.Normalization.barkScale(f2);</code></pre>
+<h2 id="development">Development</h2>
+<h3 id="code-organization">Code Organization</h3>
+<ul>
+<li>VowelWorm base code: <code>src/vowelworm.js</code></li>
+<li>Library Files: <code>src/lib/</code></li>
+<li>Modules attached to individual <code>VowelWorm.instance</code> objects: <code>src/modules/worm</code></li>
+<li>Additions to VowelWorm object: <code>src/modules/core</code></li>
+<li>Test assets: <code>test/assets</code></li>
+</ul>
+<p>JavaScript files should be annotated using JSDoc and Google Closure Compiler&#39;s standards for improved compilation</p>
+<h3 id="tools">Tools</h3>
+<p>Many of our algorithms are based off Python scripts. If you would like to test the Hanning Window functionality to compare it to an LPC analysis and an FFT analysis, use the <code>windowing.py</code> script, coupled with WaveSurfer export files, as such</p>
+<pre><code><span class="comment">$</span> <span class="comment">python</span> <span class="comment">windowing</span>.<span class="comment">py</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">fft=</span>.<span class="comment">/path/to/fft</span>-<span class="comment">spectrum</span>.<span class="comment">txt</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">lpc=</span>.<span class="comment">/path/to/lpc</span>-<span class="comment">spectrum</span>.<span class="comment">txt</code></pre>
+<p>Sample data is used if <code>python windowing.py</code> is called without both the FFT and LPC arguments.</p>
+
+  </body>
+</html>
