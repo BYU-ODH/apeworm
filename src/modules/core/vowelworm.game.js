@@ -149,7 +149,7 @@ window.VowelWorm.Game = function( options ) {
     
     if(mfccs.length) {
       mfccs = mfccs.slice(0,game.coefficients);
-      var position = VowelWorm.normalize(mfccs, VowelWorm.Normalization.regression);
+      var position = window.VowelWorm.normalize(mfccs, window.VowelWorm.Normalization.regression);
       if(position.length) {
         var coords = adjustXAndY(position[0],position[1]);
         return coords;

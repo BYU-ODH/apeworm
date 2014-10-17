@@ -291,7 +291,7 @@ VowelWorm.decibelsToLinear = function decibelsToLinear(dB) {
  * Given an array of formants (or MFCC values), returns normalized X and Y
  * coordinates representing advancement and height, respectively.
  * @param {Array.<number>} formants The formants to normalize
- * @param {function} [method=VowelWorm.Normalization.barkScale]
+ * @param {Function} [method=VowelWorm.Normalization.barkScale]
  *  the method to use for Normalization. Must be a property of
  *  {@see VowelWorm.Normalization}. Defaults to barkScale
  * 
