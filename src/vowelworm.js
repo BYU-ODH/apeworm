@@ -1039,6 +1039,33 @@ VowelWorm.instance.prototype.getMFCCs = function(options) {
 };
 
 /**
+ * Returns array of strings matching up with IPA Vowels
+ * Let there be some set that alows us to have abritray values (Values that
+ * simply are regressed in a none specific manner) for each x in the vowle IPA chart
+ * Here we will simply assume that for A x=3 and y=3, for U x=3 and y=1, for O x=3
+ * and y=2, for I x=1 y=1, for E x=1.25 y=2
+ */
+VowelWorm.instance.prototype.estimateVowels = function(x,y){
+  var estimate_vowl=[]
+  if ((y>1.5) && (x>1.9) && ((y/x)<.9)){
+    estimate_vowl.push('o')
+  }
+  if ((y>1.8) &&  (x>1.4) && (x<1.6) && ((y/x)>1)){
+    estimate_vowl.push('u')
+  }
+  if ((y<1.5) && (x>1.6)){
+    estimate_vowl.push('a')
+  }
+  if((x<.7) && (y>1.5) && ((y/x)>2)){
+    estimate_vowl.push('i')
+  }
+  if((x<1.3) && (y>1.5) && ((y/x)>2)){
+    estimate_vowl.push('e')
+  }
+  return estimate_vowl;
+};
+
+/**
  * Retrieves formants. Uses the current time of the audio file or stream,
  * unless data is passed in.
  * @param {Array.<number>=} data FFT transformation data. If null, pulls from the analyzer
