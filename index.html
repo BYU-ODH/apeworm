@@ -3,7 +3,8 @@
 <script src='src/lib/tinycolor.js'></script>
 <script src='src/lib/pixi.dev.js'></script>
 <script src='src/lib/numeric-1.2.6.js'></script>
-<script src='out/release/vowelworm.complete.min.js'></script>
+<script src='src/vowelworm.js'></script>
+<script src='src/modules/core/vowelworm.game.js'></script>
 <link href='//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.1.0/css/font-awesome.min.css' rel=stylesheet type=text/css>
 <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
 <link href='demo/main.css' rel=stylesheet type=text/css>
@@ -22,6 +23,13 @@ Department of Computational Perception at Johannes Kepler Universität Linz</a>.
   check out the <a href=README.html>README</a> or view the <a href=doc>documentation</a>
 </nav>
 <br>
+<div id=lang>
+  <small>Position of letters for demonstration purposes only.</small>
+  <select id=language>
+    <option value=en selected>English</option>
+    <option value=de>German</option>
+  </select>
+</div>
 <div id=buttons>
   <button class="fa fa-play" id=media_button alt="Play Audio" title="Play/Pause Audio"></button>
   <button id=mic_button class="fa fa-microphone"></button>
