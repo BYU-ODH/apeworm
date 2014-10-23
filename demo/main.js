@@ -2,14 +2,22 @@ var selected_mic = false;
 var graphs_element = document.getElementById("wrapper");
 var media_button = document.getElementById("media_button");
 var mic_button = document.getElementById("mic_button");
+var language_select = document.getElementById("language");
 
+language_select.addEventListener("change",changelang,false);
 media_button.addEventListener("click",usemedia,false);
+mic_button.addEventListener("click",usemic,false);
 mic_button.addEventListener("click",usemic,false);
 
 var game = new window.VowelWorm.Game({element: graphs_element});
 
 var media_on = false;
 var started = false;
+
+function changelang() {
+  game.language = language_select.value;
+};
+
 function usemedia() {
   var audio_els = document.getElementsByClassName('media');
   if(media_on) {

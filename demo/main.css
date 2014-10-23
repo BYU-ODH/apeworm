@@ -89,6 +89,11 @@ body{
   width: 700px;
   text-align: center;
 }
+#lang{
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+  text-align: center;
+}
 
 canvas{
   border-style: solid;

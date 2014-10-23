@@ -106,7 +106,16 @@ window.VowelWorm.Game = function( options ) {
     game._renderer.render(game._stage);
   };
 
+  function setLanguage(language) {
+    drawVowels(language);
+  };
+
   Object.defineProperties(game, {
+    language: {
+      set: function(val) {
+        setLanguage(val);
+      }
+    },
     ipa: {
       enumerable: true,
       get: function() {
@@ -224,22 +233,40 @@ window.VowelWorm.Game = function( options ) {
   /**
    * Fills the IPA Chart. A constructor helper method.
    */
-  var drawVowels = function() {
-    if(!ipaChart.children.length) {
-      var letters = [
+  var drawVowels = function(language) {
+    language = language || 'en';
+    try {
+      game._stage.removeChild(ipaChart);
+    }catch(e) {
+
+    }
+    ipaChart = new PIXI.DisplayObjectContainer();
+
+    var lettermap =
+    {'en': [
         ["e",221.28871891963863,252.35519027188354],
         ["i",169.01833799969594,171.97765003235634],
         ["a",317.6219414250667,337.00896411883406],
         ["o",384.5714404194302,284.96641792056766],
         ["u",412.17314090483404,231.94657762575406]
-      ];
-      for(var i=0; i<letters.length; i++){
-        var letter = new PIXI.Text(letters[i][0],{font: "35px sans-serif", fill: "black", align: "center"});
-        letter.position.x = letters[i][1];
-        letter.position.y = letters[i][2];
-        ipaChart.addChild(letter);
-      }
+      ],
+     'de': [
+        ["e",190.28871891963863,222.35519027188354],
+        ["i",185.01833799969594,156.97765003235634],
+        ["a",379.6219414250667,348.00896411883406],
+        ["o",409.5714404194302,287.96641792056766],
+        ["u",445.17314090483404,213.94657762575406]
+      ]
+    };
+    var letters = lettermap[language];
+
+    for(var i=0; i<letters.length; i++){
+      var letter = new PIXI.Text(letters[i][0],{font: "35px sans-serif", fill: "black", align: "center"});
+      letter.position.x = letters[i][1];
+      letter.position.y = letters[i][2];
+      ipaChart.addChild(letter);
     }
+    game._stage.addChild(ipaChart);
   };
 
   // CREATE GAME
