@@ -1,78 +1,87 @@
+#include <fstream>
 #include <iostream>
 #include <vector>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 #include <math.h>
 #include <string.h>
-#include <iostream>
 #include <vector>
 #include <map>
+#include <cmath>
 #include "mfcc.h"
 
 #define _USE_MATH_DEFINES
 
 MFCC::MFCC(int noFilterBanks, int NFFT, double minFreq, double maxFreq, double sampleFreq)
 {
+	init(noFilterBanks, NFFT, minFreq, maxFreq, sampleFreq);
+	this->data = nullptr;
+}
+
+MFCC::MFCC(double* data, int noFilterBanks, int NFFT, double minFreq, double maxFreq, double sampleFreq)
+{
+	init(noFilterBanks, NFFT, minFreq, maxFreq, sampleFreq);
+	this->data = data;
+}
+
+void MFCC::init(int noFilterBanks, int NFFT, double minFreq, double maxFreq, double sampleFreq)
+{
 	this->noFilterBanks = noFilterBanks;
 	this->NFFT = NFFT;
 	this->minFreq = minFreq;
 	this->maxFreq = maxFreq;
 	this->sampleFreq = sampleFreq;
-	this->data = nullptr;
-	
+
 	for (int f = 0; f < 1+NFFT/2; f++) {
 		binToFreq[f] = ( (double) f * sampleFreq) / (NFFT);
 	}
+
 	initFilterBanks();
 }
 
-MFCC::MFCC(double* data, int noFilterBanks, int NFFT, double minFreq, double maxFreq, double sampleFreq) 
+void MFCC::initFilterBanks()
 {
-	this->noFilterBanks = noFilterBanks;
-	this->NFFT = NFFT;
-	this->minFreq = minFreq;
-	this->maxFreq = maxFreq;
-	this->sampleFreq = sampleFreq;
-	this->data = data;
-	
-	for (int f = 0; f < NFFT/2; f++) {
-		binToFreq[f] = ( (double) f * sampleFreq) / (NFFT);
-	}
-	initFilterBanks();
-}
-
-void MFCC::initFilterBanks() 
-{
-	double maxMel = 1125 * log(1.0 + maxFreq/700.0);
-	double minMel = 1125 * log(1.0 + minFreq/700.0);
+	int Nspec = NFFT / 2 + 1;
+	int totalFilters = getnoFilterBanks();
+	double minMel = 1127.01048 * log(1.0 + minFreq/700.0);
+	double maxMel = 1127.01048 * log(1.0 + maxFreq/700.0);
 	double dMel = (maxMel - minMel) / (noFilterBanks+1);
-	for (int n = 0; n < noFilterBanks + 2; n++) {
-		double mel = minMel + n * dMel;
-		double Hz = 700  * (exp(mel / 1125) - 1);
-		centreFreqs.push_back(Hz);
-		int bin = (int)floor( (NFFT)*Hz / sampleFreq);	
-		bins.push_back(bin);
+	vector<double> melSpacing;
+	vector<double> fftFreqs2Mel;
+
+	vector<double> lower;
+	vector<double> center;
+
+	// Init melSpacing
+	for (int i = 0; i < noFilterBanks + 2; i++) {
+		double mel = minMel + i * dMel;
+		melSpacing.push_back(mel);
 	}
 
-	for (vector<int>::iterator it1 = bins.begin() + 1 ; it1 != bins.end() - 1; it1++)  {
+	// Init fftFreqs2Mel
+	for (int i = 0; i < Nspec; i++) {
+		double fftFreq = i * getSampleFrequency()/NFFT;
+		double fftFreq2Mel = log(1 + fftFreq/700) * 1127.01048;
+		fftFreqs2Mel.push_back(fftFreq2Mel);
+	}
+
+	// Init lower
+	for (int i = 0; i < noFilterBanks; i++) {
+		lower.push_back(melSpacing[i]);
+	}
+
+	// Init center
+	for (int i = 1; i < noFilterBanks + 1; i++) {
+		center.push_back(melSpacing[i]);
+	}
+
+	// Prepare the mel scale filterbank
+	for (int i = 0; i < totalFilters; i++) {
 		vector<double> fBank;
-
-		double fBelow = binToFreq[*(it1 - 1)];
-		double fCentre = binToFreq[*it1];
-		double fAbove = binToFreq[*(it1 + 1)];
-
-		for (int n = 0; n < NFFT / 2; n++) {
-			double freq = binToFreq[n];
-			double val;
-
-			if ((freq <= fCentre) && (freq >= fBelow)) {
-				val = ((freq - fBelow) / (fCentre - fBelow));
-			} else if ((freq > fCentre) && (freq <= fAbove)) {
-				val = ((fAbove - freq) / (fAbove - fCentre));
-			} else {
-				val = 0.0;
-			}
-		        fBank.push_back(val);
+		for (int j = 0; j < Nspec; j++) {
+			double val = max(0.0, (1 - std::abs (fftFreqs2Mel[j] - center[i])/(center[i] - lower[i])));
+			fBank.push_back(val);
 		}
 		filterBanks.push_back(fBank);
 	}
@@ -93,45 +102,83 @@ double  MFCC::getSampleFrequency()  { return this->sampleFreq; }
 int     MFCC::getnoFilterBanks()    { return this->noFilterBanks; }
 int     MFCC::getNFFT()             { return this->NFFT; }
 
-
-vector<double> MFCC::getLogCoefficents() 
+vector<double> MFCC::getLogCoefficents()
 {
 
-	if (this->data == nullptr) { 
+	if (this->data == nullptr) {
 		std::cout << "No Data ! " << std::endl;
 		exit(-1);
 	}
 
-	vector<double> preDCT; // Initilise pre-discrete cosine transformation vetor array
-	vector<double> postDCT;// Initilise post-discrete cosine transformation vetor array / MFCC Coefficents
- 
+	vector<double> melSpectrum;
+	vector<double> preDCT; // Initilise pre-discrete cosine transformation vector array
+	vector<double> postDCT;// Initilise post-discrete cosine transformation vector array / MFCC Coefficents
+
+	// Map the spectrum to the mel scale (apply triangular filters)
+ 	// For each filter bank (i.e. for each mel frequency)
 	for (auto& it : filterBanks) {
 		double cel = 0;
-		int n = 0; 
+		int n = 0;
+		// For each frequency in the original spectrum
 		for (auto& it2 : it) {
 			cel += it2 * data[n++];
 		}
-		preDCT.push_back(log(cel)); // Compute the log of the spectrum
+
+		melSpectrum.push_back(cel);
+		preDCT.push_back(log10(cel)); // Compute the log of the mel-frequency spectrum
 	}
 
 	// Perform the Discrete Cosine Transformation
 	for (int i = 0; i < filterBanks.size(); i++) {
 		double val = 0;
-		int n = 0;
-		for (auto& it : preDCT) {
-			val += it * cos(i * (n++ - 0.5) *  M_PI / filterBanks.size());
+		for (int j = 0; j < preDCT.size(); j++) {
+			val += preDCT[j] * cos(i * (j + 0.5) *  M_PI / filterBanks.size());
 		}
-		val /= filterBanks.size();
-		postDCT.push_back(val); 
+
+		// Perform scaling used by matlab implementation of dct
+		if (i == 0) {
+			val /= sqrt(2.0);
+		}
+		val *= sqrt(2.0 / filterBanks.size());
+
+		postDCT.push_back(val);
 	}
+
+	outputComputationSteps(&filterBanks, &melSpectrum, &preDCT, &postDCT);
 	return postDCT;
 }
 
-int main(void) 
+void outputComputationSteps(vector<double>* melSpectrum, vector<double>* melLogSpectrum, vector<double>* mfccs) {
+
+	ofstream filterBanksOut ("filter_banks.csv");
+	ofstream melSpectrumOut ("mel_spectrum.csv");
+	ofstream melLogPowersOut ("mel_log_powers.csv");
+	ofstream mfccOut ("mfccs.csv");
+
+	for (int i=0; i < melSpectrum.size(); i++) {
+
+		// Output filter banks
+		for (int j=0; j < filterBanks[i].size(); j++) {
+			filterBanksOut << filterBanks[i][j];
+			if (j < filterBanks[i].size() - 1) {
+				filterBanksOut << ",";
+			}
+		}
+		filterBanksOut << endl;
+
+		melSpectrumOut << melSpectrum[i] <<  endl;
+		melLogPowersOut << preDCT[i] <<  endl;
+		mfccOut << postDCT[i] <<  endl;
+	}
+}
+
+int main(void)
 {
-	// Initilise fake Spectrum data (Frequency Domain) 
+	srand(time(0));
+
+	// Initialize fake Spectrum data (Frequency Domain)
 	double data[257];
-	for (int i = 0; i < 257;i++) { 
+	for (int i = 0; i < 257;i++) {
 		data[i] = (double) ((rand() % 100) / 100.0);
 	}
 
@@ -142,11 +189,34 @@ int main(void)
 	// Maximum Frequency: 8000 Hz
 	// Sampling Frequency: 16 kHz
 	MFCC mfcc(10,512,300.0,8000.0,16000.0);
-	mfcc.setSpectrumData(data); // Set the data pointer in the MFCC object. 
+	mfcc.setSpectrumData(data); // Set the data pointer in the MFCC object.
 	vector<double> c = mfcc.getLogCoefficents();
 	for (auto& it : c) {
 		std::cout << it <<  " ";
 	}
 	std::cout << std::endl;
 	return 0;
+}
+
+void testForComparison() {
+	// Load spectrum data
+	ifstream file ( "spectrum_data.csv" );
+	vector<double> dataVector;
+	while ( file.good() ) {
+		string value;
+		getline ( file, value); // read a string until next line
+		dataVector.push_back(atof(value.c_str()));
+	}
+
+	double* data = &dataVector[0];
+
+	// Set parameters
+	int NFFT = 1024;
+	double fSample = 44100.0;
+	double minF = 0.0;
+	double maxF = 8000.0;
+	int numFilterBanks = 40;
+
+	MFCC mfcc(data, numFilterBanks,NFFT,minF,maxF,fSample);
+	vector<double> c = mfcc.getLogCoefficents();
 }

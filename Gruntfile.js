@@ -92,7 +92,7 @@ module.exports = function(grunt) {
               return matchedSrcPath.replace(/^src/, release_dir);
             }
           }
-        ],
+        ]
       },
       all: {
         TEMPcompilerOpts: {
@@ -134,10 +134,12 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-text-replace');
   grunt.loadNpmTasks('grunt-markdown');
   grunt.loadNpmTasks('grunt-exec');
-
-  grunt.registerTask('test', 'qunit');
+  // Commented out tests since they were for the old version
+  //grunt.registerTask('test', 'qunit');
   grunt.registerTask('doc', ['clean:doc', 'exec:jsdoc', 'markdown', 'replace:readme']);
   grunt.registerTask('compile', ['clean:src', 'closureCompiler:modules', 'closureCompiler:core','compile:complete']);
   grunt.registerTask('compile:complete', ['clean:src', 'concat:main', 'closureCompiler:all']);
-  grunt.registerTask('default', ['test','compile','doc']);
+  // Commented out tests since they were for the old version
+  // grunt.registerTask('default', ['test','compile','doc']);
+  grunt.registerTask('default', ['compile','doc']);
 };

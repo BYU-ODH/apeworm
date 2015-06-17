@@ -137,7 +137,7 @@ VowelWorm._MFCC_WEIGHTS = {
       1.104270,  0.120389,  0.271996,   0.246571, 0.029848, -0.489273, -0.734283,
       -0.796145, -0.441830, -0.033330,  0.415667, 0.341943, 0.380445, 0.260451,
       0.092989,  -0.161122, -0.173544, -0.015523, 0.251668, 0.022534, 0.054093,
-      0.005430,  -0.035820, -0.057551,  0.161558,                      
+      0.005430,  -0.035820, -0.057551,  0.161558
     ]),
     backness: new Float32Array([
       0.995437, 0.540693, 0.121922, -0.585859, -0.443847, 0.170546, 0.188879,
@@ -201,7 +201,7 @@ VowelWorm._HANNING_WINDOW = {
  */
 VowelWorm.Normalization = {
   /**
-   * Uses the Traunmüller conversion to conver the formant to the Bark Scale
+   * Uses the Traunmüller conversion to convert the formant to the Bark Scale
    * @param {number} formant The formant (in Hz) to convert to the Bark Scale
    * @return {number} The formant converted to the Bark Scale
    * @nosideeffects
@@ -311,10 +311,6 @@ VowelWorm.normalize = function normalize(formants, method) {
   if(typeof method !== 'function') {
     throw new Error("Expecting a function as a method for VowelWorm.normalize");
   }
-  if(!(method.name in VowelWorm.Normalization)) {
-    throw new Error("Method '" + method.name + "' is not part of " +
-        "VowelWorm.Normalization and cannot be used for normalization.");
-  }
 
   var x = null;
   var y = null;
@@ -332,6 +328,7 @@ VowelWorm.normalize = function normalize(formants, method) {
             "the keys found in VowelWorm._MFCC_WEIGHTS.");
       }
       var coefficients = formants.slice(); // makes a copy
+      // Don't use the first MFCC, but replace it with 1 (necessary for regression DC coefficient)
       coefficients[0] = 1;
       x = method(coefficients, this._MFCC_WEIGHTS[coefficients.length].backness);
       y = method(coefficients, this._MFCC_WEIGHTS[coefficients.length].height_no_f0);
@@ -720,6 +717,14 @@ function pinv(A) {
 };
 
 /**
+ * Extends Math class to include log10
+ * @type {Function|*}
+ */
+Math.log10 = Math.log10 || function(x) {
+  return Math.log(x) / Math.LN10;
+};
+
+/**
  * Contains methods used in the analysis of vowel audio data
  * @param {*} stream The audio stream to analyze OR a string representing the URL for an audio file
  * @constructor
@@ -734,8 +739,8 @@ window.VowelWorm.instance = function(stream) {
   this._context    = CONTEXT;
   this._analyzer   = this._context.createAnalyser();
   this._sourceNode = null; // for analysis with files rather than mic input
-  this._analyzer.fftSize = 2048;
-  this._buffer = new Float32Array(this._analyzer.fftSize/2);
+  this._analyzer.fftSize = 1024;
+  this._buffer = new Float32Array(this._analyzer.fftSize);
   this._audioBuffer = null; // comes from downloading an audio file
 
   if(stream) {
@@ -966,7 +971,7 @@ VowelWorm.instance.prototype._loadFromStream = function(stream) {
  * @private
  */
 VowelWorm.instance.prototype._getPeaks = function(smoothedArray, sampleRate, fftSize) {
-  var peaks = new Array();
+  var peaks = [];
   var previousNum;
   var currentNum;
   var nextNum;
@@ -1104,73 +1109,100 @@ VowelWorm.instance.prototype.getMFCCs = function(options) {
 
   var filterBanks = [],
       noFilterBanks = options.filterBanks,
-      NFFT = fft.length*2,
+      NFFT = fft.length,
       minFreq = options.minFreq,
       maxFreq = options.maxFreq,
       sampleRate = options.sampleRate || this.getSampleRate();
 
-  // initialize filter banks
-  var maxMel = 1125 * Math.log(1.0 + maxFreq/700);
-  var minMel = 1125 * Math.log(1.0 + minFreq/700);
-  var dMel = (maxMel - minMel) / (noFilterBanks+1);
-
-  var bins = [];
-  for (var n = 0; n < noFilterBanks + 2; n++) {
-    var mel = minMel + n * dMel;
-    var Hz = 700  * (Math.exp(mel / 1125) - 1);
-    var bin = Math.floor( (NFFT)*Hz / sampleRate);
-    bins.push(bin);
-  }
-
-  for(var i = 1; i<bins.length-1; i++) {
-    var fBank = [];
-
-    var fBelow = VowelWorm._toFrequency(bins[i-1], sampleRate, NFFT);
-    var fCentre = VowelWorm._toFrequency(bins[i], sampleRate, NFFT);
-    var fAbove = VowelWorm._toFrequency(bins[i+1], sampleRate, NFFT);
-
-    for(var n = 0; n < 1 + NFFT / 2; n++) {
-      var freq = VowelWorm._toFrequency(n, sampleRate, NFFT);
-      var val = null;
-
-      if ((freq <= fCentre) && (freq >= fBelow)) {
-        val = ((freq - fBelow) / (fCentre - fBelow));
-      } else if ((freq > fCentre) && (freq <= fAbove)) {
-        val = ((fAbove - freq) / (fAbove - fCentre));
-      } else {
-        val = 0.0;
-      }
-      fBank.push(val);
-    }
-
-    filterBanks.push(fBank);
-  }
-  // end initialize filterBanks
+  filterBanks = initFilterBanks(NFFT, noFilterBanks, minFreq, maxFreq, sampleRate);
 
   // get log coefficients
   var preDCT = []; // Initialise pre-discrete cosine transformation vetor array
   var postDCT = [];// Initialise post-discrete cosine transformation vetor array / MFCC Coefficents
 
+  // Map the spectrum to the mel scale (apply triangular filters)
   for(var i = 0; i<filterBanks.length; i++) {
-    var cel = 0;
-    var n = 0;
-    for(var j = 0; j < filterBanks[i].length-1; j++) {
-      cel += (filterBanks[i][j]) * fft[n++];
+    var val = 0.0;
+    for(var j = 0; j < filterBanks[i].length; j++) {
+      val += (filterBanks[i][j]) * fft[j];
     }
-    preDCT.push(Math.log(cel)); // Compute the log of the spectrum
+    preDCT.push(Math.log10(val)); // Compute the log of the spectrum
   }
 
   // Perform the Discrete Cosine Transformation
   for (var i = 0; i < filterBanks.length; i++) {
     var val = 0;
-    var n = 0;
-    for (var j = 0; j<preDCT.length; j++) {
-      val += (preDCT[j]) * Math.cos(i * (n++ - 0.5) *  Math.PI / filterBanks.length);
+    for (var j = 0; j < preDCT.length; j++) {
+      val += preDCT[j] * Math.cos(i * (j + 0.5) *  Math.PI / filterBanks.length);
     }
-    val /= filterBanks.length;
+
+    // Perform scaling used by matlab implementation of dct
+    if (i == 0) {
+      val /= Math.sqrt(2.0);
+    }
+    val *= Math.sqrt(2.0 / filterBanks.length);
+
     postDCT.push(val);
   }
   return postDCT;
+};
+
+/**
+ * Initializes the filter banks used in the MFCC computation.
+ * @param {number} NFFT Size of the fft array
+ * @param {number} noFilterBanks Number of mfccs
+ * @param {number} minFreq Minimum frequency
+ * @param {number} maxFreq Maximum frequency
+ * @param {number} sampleRate Sample rate of the original signal
+ */
+var initFilterBanks = function(NFFT, noFilterBanks, minFreq, maxFreq, sampleRate) {
+  var filterBanks = [];
+
+  var Nspec = NFFT / 2 + 1;
+  var totalFilters = noFilterBanks;
+  var minMel = 1127.01048 * Math.log(1.0 + minFreq/700.0);
+  var maxMel = 1127.01048 * Math.log(1.0 + maxFreq/700.0);
+  var dMel = (maxMel - minMel) / (noFilterBanks+1);
+  var melSpacing = [];
+  var fftFreqs2Mel = [];
+
+  var lower = [];
+  var center = [];
+
+  // Init melSpacing
+  for (var i = 0; i < noFilterBanks + 2; i++) {
+    var mel = minMel + i * dMel;
+    melSpacing.push(mel);
+  }
+
+  // Init fftFreqs2Mel
+  for (var i = 0; i < Nspec; i++) {
+    var fftFreq = i * sampleRate/NFFT;
+    var fftFreq2Mel = Math.log(1 + fftFreq/700) * 1127.01048;
+    fftFreqs2Mel.push(fftFreq2Mel);
+  }
+
+  // Init lower
+  for (var i = 0; i < noFilterBanks; i++) {
+    lower.push(melSpacing[i]);
+  }
+
+  // Init center
+  for (var i = 1; i < noFilterBanks + 1; i++) {
+    center.push(melSpacing[i]);
+  }
+
+  // Prepare the mel scale filterbank
+  for (var i = 0; i < totalFilters; i++) {
+    var fBank = [];
+    for (var j = 0; j < Nspec; j++) {
+      var val = Math.max(0.0, (1 - Math.abs(fftFreqs2Mel[j] - center[i])/(center[i] - lower[i])));
+      fBank.push(val);
+    }
+    filterBanks.push(fBank);
+  }
+
+  return filterBanks;
 };
 
 /**

@@ -15,14 +15,14 @@ window.VowelWorm.Game = function( options ) {
   var game = this;
   game.width = options.width || 700;
   game.height = options.height || 500;
-  game.x1 = .2;
-  game.x2 = 2;
-  game.y1 = 0.9;
-  game.y2 = 1.8;
-  
+  game.x1 = 0;
+  game.x2 = 4.0;
+  game.y1 = 0;
+  game.y2 = 3.0;
+
   game.minHz = 0;
   game.maxHz = 8000;
-  game.fb = 40;
+  game.fb = 25;
   game.coefficients = 25;
 
   /**
@@ -88,7 +88,7 @@ window.VowelWorm.Game = function( options ) {
 
       if(coords!==null){
         var doRender = true;
-        
+
         var x = coords.x;
         var y = coords.y;
 
@@ -146,7 +146,7 @@ window.VowelWorm.Game = function( options ) {
       filterBanks: game.fb,
       fft: buffer
     });
-    
+
     if(mfccs.length) {
       mfccs = mfccs.slice(0,game.coefficients);
       var position = window.VowelWorm.normalize(mfccs, window.VowelWorm.Normalization.regression);
@@ -158,7 +158,7 @@ window.VowelWorm.Game = function( options ) {
     return null;
   };
   
-  var adjustXAndY = function(x,y){    
+  var adjustXAndY = function(x,y){
     var xStart = game.x1;
     var xEnd = game.x2;
     var yStart = game.y1;
@@ -169,7 +169,7 @@ window.VowelWorm.Game = function( options ) {
 
     var adjustedX = (x-xStart)*xDist;
     var adjustedY = game.height-(y-yStart)*yDist;
-    
+
     return {x:adjustedX,y:adjustedY};
   };
 

@@ -16,9 +16,10 @@ function usemedia() {
     media_on = false;
     media_button.classList.add('fa-play');
     media_button.classList.remove('fa-pause');
-    for(var i = 0; i<audio_els.length; i++) {
+    for (var i = 0; i < audio_els.length; i++) {
       audio_els[i].pause();
     }
+
     return;
   }
 
