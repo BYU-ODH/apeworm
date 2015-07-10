@@ -26,7 +26,9 @@ class MFCC {
 		vector<double> centreFreqs;
 		vector<vector<double> >  filterBanks;  // Vector array of the filterbanks 
 		vector<int> bins;  
-		map<int,double> binToFreq; // Frequency Bin -> Frequency (Hz) 
+		map<int,double> binToFreq; // Frequency Bin -> Frequency (Hz)
+
+		void init(int noFilterBanks, int NFFT, double minFreq, double maxFreq, double sampleFreq);
 
 	public:
 		// Methods		
@@ -51,7 +53,7 @@ class MFCC {
 		double getMinimumFrequency();
  		double getMaximumFrequency();
  		double getSampleFrequency();
-    		int getnoFilterBanks();
-    		int getNFFT();
+		int getnoFilterBanks();
+		int getNFFT();
 
 };
