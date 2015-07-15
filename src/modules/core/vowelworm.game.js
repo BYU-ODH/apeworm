@@ -133,38 +133,12 @@ window.VowelWorm.Game = function( options ) {
         }
       }
     });
-<<<<<<< HEAD
 
     var getCoords = function(worm){
         var buffer = worm.getFFT();
 
         if(isSilent(buffer)) {
           return null;
-=======
-    fadeOldCircles();
-    game._renderer.render(game._stage);
-  };
-
-  function setLanguage(language) {
-    drawVowels(language);
-  };
-
-  Object.defineProperties(game, {
-    language: {
-      set: function(val) {
-        setLanguage(val);
-      }
-    },
-    ipa: {
-      enumerable: true,
-      get: function() {
-        return ipaEnabled;
-      },
-      set: function(val) {
-        var bool = !!val;
-        if(ipaEnabled === bool) {
-          return;
->>>>>>> d00c35826dee68f697b003f39f98700e492e3ded
         }
 
         var mfccs = worm.getMFCCs({
@@ -232,7 +206,6 @@ window.VowelWorm.Game = function( options ) {
       });
     };
 
-<<<<<<< HEAD
     //Color Functions
     //Converts an integer representing a color to an integer representing a color 45 degrees away
     var getNextColor = function(old_color){
@@ -287,72 +260,6 @@ window.VowelWorm.Game = function( options ) {
     drawVowels();
     if(ipaEnabled) {
       game._stage.addChild(ipaChart);
-=======
-    old_color = new tinycolor(old_color);
-    var new_color = old_color.spin(45).toHex();
-    new_color = parseInt(new_color,16);
-    return new_color;
-  };
- 
-  /**
-   * Fills the IPA Chart. A constructor helper method.
-   */
-  var drawVowels = function(language) {
-    language = language || 'en';
-    try {
-      game._stage.removeChild(ipaChart);
-    }catch(e) {
-
-    }
-    ipaChart = new PIXI.DisplayObjectContainer();
-
-    var lettermap =
-    {'en': [
-        ["e",221.28871891963863,252.35519027188354],
-        ["i",169.01833799969594,171.97765003235634],
-        ["a",317.6219414250667,337.00896411883406],
-        ["o",384.5714404194302,284.96641792056766],
-        ["u",412.17314090483404,231.94657762575406]
-      ],
-     'de': [
-        ["e",190.28871891963863,222.35519027188354],
-        ["i",185.01833799969594,156.97765003235634],
-        ["a",379.6219414250667,348.00896411883406],
-        ["o",409.5714404194302,287.96641792056766],
-        ["u",445.17314090483404,213.94657762575406]
-      ]
-    };
-    var letters = lettermap[language];
-
-    for(var i=0; i<letters.length; i++){
-      var letter = new PIXI.Text(letters[i][0],{font: "35px sans-serif", fill: "black", align: "center"});
-      letter.position.x = letters[i][1];
-      letter.position.y = letters[i][2];
-      ipaChart.addChild(letter);
-    }
-    game._stage.addChild(ipaChart);
-  };
-
-  // CREATE GAME
-  var bgColor = options.background !== undefined ? options.background : 0xFFFFFF;
-  game._stage = new PIXI.Stage(bgColor);
-  game._renderer = PIXI.autoDetectRenderer(game.width, game.height);
-  try{
-    options.element.appendChild(game._renderer.view);
-  }catch(e){
-    document.body.appendChild(game._renderer.view);
-  }
-  drawVowels();
-  if(ipaEnabled) {
-    game._stage.addChild(ipaChart);
-  }
-  
-  if(options.worms) {
-    if(options.worms instanceof Array) {
-      options.worms.forEach(function(worm) {
-        game.addWorm(worm);
-      });
->>>>>>> d00c35826dee68f697b003f39f98700e492e3ded
     }
 
     if(options.worms) {
