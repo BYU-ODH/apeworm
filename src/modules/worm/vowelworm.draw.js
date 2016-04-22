@@ -248,7 +248,8 @@ window.VowelWorm.module('draw', function createDrawModule(worm) {
 
     var values = worm.getFFT();
 
-    var smoothed_values = worm.hann(values, 75).slice(window.VowelWorm.HANNING_SHIFT)
+    var smoothed_values = window.AudioProcessor.hann(values, 75)
+        .slice(window.AudioProcessor.HANNING_SHIFT);
 
     var COLOR_RED = 16711680;
     var COLOR_BLACK = 0;
@@ -264,11 +265,21 @@ window.VowelWorm.module('draw', function createDrawModule(worm) {
     }
     this.raw_line = this.drawLine(values,COLOR_BLACK,point_distance);
 
+    // Get envelope
+    var cepstrum = window.AudioProcessor.getCepstrum(values, {});
+    var envelope = window.AudioProcessor.inverseDct(cepstrum);
+    for (var i = 0; i < envelope.length; i++) {
+      envelope[i] = window.AudioProcessor.linearToDecibel(envelope[i]);
+    }
+    this.makeValuesGraphable(envelope);
+
+
     //Smoothed Line
     if(this.smoothed_line){
         stage.removeChild(this.smoothed_line);
     }
-    this.smoothed_line = this.drawLine(smoothed_values,COLOR_RED,point_distance);
+    this.smoothed_line = this.drawLine(envelope,COLOR_RED,point_distance);
+    // this.smoothed_line = this.drawLine(smoothed_values,COLOR_RED,point_distance);
 
     //Peaks
     if(this.peaks){
@@ -314,6 +325,15 @@ window.VowelWorm.module('draw', function createDrawModule(worm) {
       stage.addChild(peaks);
       
       return peaks;
+  };
+
+  var isSilent = function(data) {
+    for(var i = 0; i<data.length; i++) {
+      if(data[i] > -892) {
+          return false;
+      }
+    }
+    return true;
   };
 
 });

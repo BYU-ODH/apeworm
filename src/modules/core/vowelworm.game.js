@@ -24,7 +24,6 @@ window.VowelWorm.Game = function( options ) {
 
     game.minHz = 0;
     game.maxHz = 8000;
-    game.fb = 25;
 
     /**
      * Represents the threshold in dB that VowelWorm's audio should be at in
@@ -37,11 +36,47 @@ window.VowelWorm.Game = function( options ) {
     game.silence = -70;
 
     /**
+     * Specify here which vowel mapping algorithm to use
+     * @see {@link VowelWorm._MAPPING_METHODS}
+     * @memberof VowelWorm.Game
+     * @name map
+     */
+    game.map = window.VowelWorm._MAPPING_METHODS.linearRegression;
+    // game.map = window.VowelWorm._MAPPING_METHODS.mfccFormants;
+    // game.map = window.VowelWorm._MAPPING_METHODS.cepstrumFormants;
+
+    /**
+     * Indicates whether to normalize the MFCC vector before prediction
+     * @memberof VowelWorm.Game
+     * @name normalizeMFCCs
+     * @type boolean
+     */
+    game.normalizeMFCCs = true;
+
+    /**
+     * Indicates whether to save time domain  and frequency domain data for experimentation.
+     * @memberof VowelWorm.Game
+     * @name saveData
+     * @type boolean
+     */
+    game.saveData = false;
+
+    /**
+     * The number of past positions to keep when computing the simple moving average (SMA)
+     * @memberof VowelWorm.Game
+     * @name smoothingConstant
+     * @type number
+     */
+    game.smoothingConstant = 5;
+
+    /**
      * Contains all instances of worms for this game
      * @type Array.<Object>
      * @private
      */
     var worms = [];
+
+    var stopped = false;
 
     /**
      * You can change this with game.ipa = true/false
@@ -135,31 +170,32 @@ window.VowelWorm.Game = function( options ) {
     });
 
     var getCoords = function(worm){
+  
         var buffer = worm.getFFT();
 
         if(isSilent(buffer)) {
+          worm.resetPosition();
           return null;
         }
 
-        var mfccs = worm.getMFCCs({
-            minFreq: game.minHz,
-            maxFreq: game.maxHz,
-            filterBanks: game.fb,
-            fft: buffer
-        });
+        // Get the position from the worm
+        var position = worm.getPosition();
 
-        if(mfccs.length) {
-            mfccs = mfccs.slice(0,game.fb);
-            var position = window.VowelWorm.normalize(mfccs, window.VowelWorm.Normalization.regression);
-            if(position.length) {
-              var coords = adjustXAndY(position[0],position[1]);
-              return coords;
-            }
+        // Transform (backness, height) to (x, y) canvas coordinates
+        if(position.length) {
+          var coords = transformToXAndY(position[0],position[1]);
+          return coords;
         }
         return null;
     };
 
-    var adjustXAndY = function(x,y){
+    /**
+     * Transforms from vowel space (backness, height) to canvas space (x, y)
+     * @param {number} backness
+     * @param {number} height
+     * @name transformToXAndY
+     */
+    var transformToXAndY = function(backness, height){
         var xStart = game.x1;
         var xEnd = game.x2;
         var yStart = game.y1;
@@ -168,8 +204,8 @@ window.VowelWorm.Game = function( options ) {
         var xDist = game.width/(xEnd-xStart);
         var yDist = game.height/(yEnd-yStart);
 
-        var adjustedX = (x-xStart)*xDist + game.margin;
-        var adjustedY = game.height-(y-yStart)*yDist + game.margin;
+        var adjustedX = (backness-xStart)*xDist + game.margin;
+        var adjustedY = game.height-(height-yStart)*yDist + game.margin;
 
         return {x:adjustedX,y:adjustedY};
     };
@@ -274,5 +310,6 @@ window.VowelWorm.Game = function( options ) {
       }
     }
     game._renderer.render(game._stage);
+    window.VowelWorm.loadRegressionWeights(game.normalizeMFCCs);
     game.play();
 };
