@@ -38,7 +38,24 @@
     var DEFAULT_SAMPLE_RATE = 44100;
 
     /**
+<<<<<<< HEAD
      * The window size to use for each analysis frame
+=======
+     * From both Wikipedia (http://en.wikipedia.org/wiki/Formant; retrieved 23 Jun.
+     * 2014, 2:52 PM UTC) and Cory Robinson's chart (personal email)
+     *
+     * These indicate the minimum values in Hz in which we should find our formants
+     * 
+     * TODO get better documentation (wikipedia's not the most reliable of sources, and I don't know if anyone who's still here has access to the email with Cory Robinson's chart.)
+     */
+
+    /**
+     * @const
+     * @type number
+     */
+    var F1_MIN = 100;
+    /**
+>>>>>>> ae5b061f1d0660bdb59dd980c7dd801ac5f31fb2
      * @const
      * @type number
      */
@@ -66,7 +83,20 @@
     var LAST_MFCC = 25;
 
     /**
+<<<<<<< HEAD
      * The minimum backness value. Used for transforming between formants to backness.
+=======
+     * Represent the minimum differences between formants, to ensure they are
+     * properly spaced
+     *
+     * 
+     * I'm not sure if this is possible. Sometimes the formants, especially the
+     * second and third formants, merge together for a little bit. (TODO Find source.)
+     * 
+     * If it's possible/reasonable, we might want to look at the beginning and end of
+     * the vowelss to see if it's one or two formants.
+     *
+>>>>>>> ae5b061f1d0660bdb59dd980c7dd801ac5f31fb2
      * @const
      * @type number
      */
