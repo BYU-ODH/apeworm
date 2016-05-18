@@ -1,3 +1,6 @@
+if ((window.location.host == "byu-odh.github.io") && (window.location.protocol != "https:"))
+  window.location.protocol = "https";
+
 var selected_mic = false;
 var graphs_element = document.getElementById("wrapper");
 var media_button = document.getElementById("media_button");
