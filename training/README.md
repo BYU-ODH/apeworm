@@ -1,5 +1,4 @@
-Instructions on training the multiple linear regression model.
-----------------------------------------------------------------
+## Instructions on training the multiple linear regression model.
 
 1. Unzip VJCorpusF0.tar.gz in this directory (apeworm/training).
 
