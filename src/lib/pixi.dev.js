@@ -1,6 +1,6 @@
 /**
  * @license
- * pixi.js - v1.6.1
+ * pixi.js - v2.14.12
  * Copyright (c) 2012-2014, Mat Groves
  * http://goodboydigital.com/
  *
@@ -35,7 +35,7 @@ PIXI.WEBGL_RENDERER = 0;
 PIXI.CANVAS_RENDERER = 1;
 
 // useful for testing against if your lib is using pixi.
-PIXI.VERSION = "v1.6.1";
+PIXI.VERSION = "v2.14.12";
 
 
 // the various blend modes supported by pixi

@@ -38,8 +38,17 @@
     var DEFAULT_SAMPLE_RATE = 44100;
 
     /**
+<<<<<<< HEAD
+     * The window size to use for each analysis frame
+=======
      * From both Wikipedia (http://en.wikipedia.org/wiki/Formant; retrieved 23 Jun.
      * 2014, 2:52 PM UTC) and Cory Robinson's chart (personal email)
+	 * 
+	 * Changed by Rebecca Emery based on the article "Acoustic characteristics of American English vowels" by James Hillenbrand et al.
+	 * Old:
+	 * 		F1_MIN = 100; F1_MAX = 1000
+	 * 		F2_MIX = 600; F2_MAX = 3000
+	 * 		F3_MIN = 1500; F3_MAX = 5000
      *
      * These indicate the minimum values in Hz in which we should find our formants
      */
@@ -48,12 +57,12 @@
      * @const
      * @type number
      */
-    var F1_MIN = 100;
+    var F1_MIN = 300;
     /**
      * @const
      * @type number
      */
-    var F1_MAX = 1000;
+    var F1_MAX = 1200;
     /**
      * @const
      * @type number
@@ -63,7 +72,7 @@
      * @const
      * @type number
      */
-    var F2_MAX = 3000;
+    var F2_MAX = 3400;
     /**
      * @const
      * @type number
@@ -73,7 +82,7 @@
      * @const
      * @type number
      */
-    var F3_MAX = 5000;
+    var F3_MAX = 3750;
 
     /**
      * Represent the minimum differences between formants, to ensure they are
@@ -335,8 +344,7 @@
                 break;
             default:
                 throw new Error("No valid normalization method given.");
-        }
-        ;
+        };
 
         if (x === null || y === null) {
             return [];
@@ -566,7 +574,7 @@
         var nyquist = sampleRate / 2;
 
         var totalBins = fftSize / 2;
-
+		console.log (position * (nyquist / totalBins));
         return position * (nyquist / totalBins);
     };
 
@@ -737,8 +745,8 @@
     window.VowelWorm.instance = function (stream) {
         var that = this;
 
-        this._context = CONTEXT;
-        this._analyzer = this._context.createAnalyser();
+        this._context = CONTEXT; //defined in line 20: new window.AudioContext();
+        this._analyzer = this._context.createAnalyser();//"Creates an AnalyserNode, which can be used to expose audio time and frequency data and for example to create data visualisations"
         this._sourceNode = null; // for analysis with files rather than mic input
         this._analyzer.fftSize = 1024;
         this._buffer = new Float32Array(this._analyzer.frequencyBinCount);
