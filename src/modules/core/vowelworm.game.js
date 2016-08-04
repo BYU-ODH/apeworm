@@ -285,7 +285,7 @@ window.VowelWorm.Game = function( options ) {
     };
 
     // CREATE GAME
-    var bgColor = options.background !== undefined ? options.background : 0xFFFFFF;
+    var bgColor = options.background !== undefined ? options.background : 0x99ccff;
     game._stage = new PIXI.Stage(bgColor);
     game._renderer = PIXI.autoDetectRenderer(game.width + game.margin*2, game.height + game.margin*2);
     try{
