@@ -1,18 +1,75 @@
 <!doctype html>
+<html>
+<title>VowelWorm</title>
 <meta charset=utf-8>
+
 <script src='src/lib/tinycolor.js'></script>
 <script src='src/lib/pixi.dev.js'></script>
 <script src='src/lib/numeric-1.2.6.js'></script>
-<!--script src='out/release/vowelworm.complete.min.js'></script-->
+
+<script src='src\modules\utils\audioprocessor.js'></script>
+<script src='src\modules\utils\mathutils.js'></script>
+<script src='src/vowelworm.js'></script>
 <script src='src/modules/core/vowelworm.game.js'></script>
-<link href='//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.1.0/css/font-awesome.min.css' rel=stylesheet type=text/css>
-<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-<link href='demo/main.css' rel=stylesheet type=text/css>
-<title>VowelWorm</title>
+<script type='text/javascript' src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+<script   src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"   integrity="sha256-xNjb53/rY+WmG+4L6tTl9m6PpqknWZvRt0rO1SRnJzw="   crossorigin="anonymous"></script>
+ 
+  <!-- Libraries -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+	
+
+<!-- Stylesheets -->
+	<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+	<link href='demo/main.css' rel=stylesheet type=text/css>
+<!-- scripts from docs-->
+	<script src='doc/scripts/bootstrap.min.js'></script>
+
+	<script src='src/modules/core/vowelworm.game.js'></script>
+	<link href='//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.1.0/css/font-awesome.min.css' rel=stylesheet type=text/css>
+	<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+	<link href='demo/main.css' rel=stylesheet type=text/css>
+</head>
+
+	<a style="text-decoration: none;"><div class="page-header">
+		<div class="container">
+			<p><a href="http://home.byu.edu/home/"><b><font color="white">BYU</font></b></a>'s VowelWorm</p>
+		</div></div>
+
+
 <!-- GITHUB BANNER -->
-<a href="https://github.com/byu-odh/apeworm"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+<a href="https://github.com/byu-odh/apeworm"><img style="position: absolute; top: 0; right: 0; border: 0;" src="findme_right_red.png" alt="Find me on GitHub"> <!--old src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67"--> <!--other old src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"--></a>
 <!-- END GITHUB BANNER -->
-<h1>VowelWorm</h1>
+
+<body>
+<p>VowelWorm will show you where in your mouth your tongue is compared to where the vowel you're trying hit is.</p>
+<p><small>Note: The vowel space is actually much smaller in the mouth than represented here by the trapezoid.</small></p>
+<p>Press the mic button and try to get the dot to hover around the symbol of your target vowel.</p>
+
+	<!--div id=lang>
+	  <small>I want to practice</small>
+		  <select id=language>
+			<option value=en>English</option>
+			<option value=de selected>German</option>
+		  </select>
+	  <small>vowels.</small>
+	</div-->
+
+
+<p id="yayVowel"></p>
+
+<div id="canvasesdiv" style="position:relative; width:800px; height:600px">
+	<div id=VowelsButtons>
+		<!--button type="button" id="/a/" class="btn btn-lg btn-primary btn-circle-3d" alt="/a/" title="/a/" onclick="makeOval()">/a/</button-->
+	</div>
+	<div id=buttons style="position:absolute; left:0px; top:0px">
+		<button class="fa fa-play" id=media_button alt="Play Audio" title="Play/Pause Audio"></button>
+		<button id=mic_button class="fa fa-microphone" alt="Turn on mic" title="Try it yourself!"></button>
+	</div>
+	<div id='wrapper'></div>
+	<script src='demo/main.js'></script>
+</div>
 
 <p>The VowelWorm can plot vowel features on a canvas in real-time. It is based on
 the work done at the <a href="http://www.cp.jku.at/projects/realtime/vowelworm.html">
@@ -23,12 +80,6 @@ Department of Computational Perception at Johannes Kepler Universität Linz</a>.
   check out the <a href=README.html>README</a> or view the <a href=doc>documentation</a>
 </nav>
 <br>
-<div id=buttons>
-  <button class="fa fa-play" id=media_button alt="Play Audio" title="Play/Pause Audio"></button>
-  <button id=mic_button class="fa fa-microphone"></button>
-	<script src='demo/main.js'></script>
-</div>
-<div id='wrapper'></div>
 
 <audio style='display:none' class=media src="examples/audio/vowels.wav"></audio>
 <audio style='display:none' class=media src="examples/audio/vowels_pono.wav"></audio>
@@ -36,3 +87,15 @@ Department of Computational Perception at Johannes Kepler Universität Linz</a>.
 <audio style='display:none' class=media src="examples/audio/vowels_ian.wav"></audio>
 <audio style='display:none' class=media src="examples/audio/vowels_rochelle.wav"></audio>
 <audio style='display:none' class=media src="examples/audio/vowels_derrick.wav"></audio>
+</body>
+
+<div id="footer">
+	<a style="text-decoration: none;"><div class="page-footer">
+		<div class="container">
+			<p><strong><a href="https://ape.byu.edu/">Home</a> | <a href="contact.html">Contact Us</a> | <a href="/site/about">About</a></strong></p>
+			<p>Copyright 2010-2016 &#169; Brigham Young University</p>
+		</div>
+	</div></a>
+</div>
+
+</html>

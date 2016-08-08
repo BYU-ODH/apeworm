@@ -4,13 +4,41 @@
  * VowelWorm instances to begin with
  * @param {number=} [options.width=700] The width of the game board
  * @param {number=} [options.height=500] The height of the game board
- * @param {number=} [options.background=0xFFFFFF] The background color of the game
+ * @param {number=} [options.background=0x99ccff] The background color of the game  (old color = 0xFFFFFF)
  * @param {HTMLElement=} [options.element=document.body] What to append the graph to
  * @constructor
  * @name VowelWorm.Game
  */
 window.VowelWorm.Game = function( options ) {
     "use strict";
+	
+	/**>>>>>>> ae5b061f1d0660bdb59dd980c7dd801ac5f31fb2
+     * @const
+     * @type number
+     */
+    var BACKNESS_MIN = 0;
+
+    /**
+     * The maximum backness value. Used for transforming between formants and backness.
+     * @const
+     * @type number
+     */
+    var BACKNESS_MAX = 4;
+
+    /**
+     * The minimum height value. Used for transforming between formants and height.
+     * @const
+     * @type number
+     */
+    var HEIGHT_MIN = 0;
+
+    /**
+     * The maximum height value. Used for transforming between formants and height.
+     * @const
+     * @type number
+     */
+    var HEIGHT_MAX = 3;
+
 
     var game = this;
     game.width = options.width || 700;
@@ -264,6 +292,7 @@ window.VowelWorm.Game = function( options ) {
      */
     var drawVowels = function() {
         if(!ipaChart.children.length) {
+			//mostly arbitrarily placed letters for demonstration purposes only
             var letters = [
                 ["e",221.28871891963863,252.35519027188354],
                 ["i",169.01833799969594,171.97765003235634],
@@ -271,7 +300,7 @@ window.VowelWorm.Game = function( options ) {
                 ["o",384.5714404194302,284.96641792056766],
                 ["u",412.17314090483404,231.94657762575406]
             ];
-            var chart = new PIXI.Sprite.fromImage("plot2.png");
+            var chart = new PIXI.Sprite.fromImage("Mouth.png");
             chart.position.x = 0 + game.margin;
             chart.position.y = 0 + game.margin;
             ipaChart.addChild(chart);
@@ -312,4 +341,150 @@ window.VowelWorm.Game = function( options ) {
     game._renderer.render(game._stage);
     window.VowelWorm.loadRegressionWeights(game.normalizeMFCCs);
     game.play();
+	
+	var i_en_F2 = 2761;		var i_en_F1 = 437;
+	var I_en_F2 = 2365;		var I_en_F1 = 483;
+	var e_en_F2 = 2530;		var e_en_F1 = 536;
+	var E_en_F2 = 2058;		var E_en_F1 = 731;
+	var ae_en_F2 = 2349;	var ae_en_F1 = 731;
+	var a_en_F2 = 1551;		var a_en_F1 = 936;
+	var c_en_F2 = 1136;		var c_en_F1 = 781;
+	var o_en_F2 = 1035;		var o_en_F1 = 555;
+	var horse_en_F2 = 1225;	var horse_en_F1 = 519;
+	var u_en_F2 = 1105;		var u_en_F1 = 459;
+	var hut_en_F2 = 1426;	var hut_en_F1 = 753;
+	var Er_en_F2 = 1588;	var Er_en_F1 = 523;
+
+	var Englishletters = [
+		// tests borders
+		//['tl',(((x2_guess-x2_guess)/x_scale) - 20),(((y1_guess-y1_guess)/y_scale)-20)],
+		//['bl',(((x2_guess-x2_guess)/x_scale) - 20),(((y2_guess-y1_guess)/y_scale)-20)],
+		//['tr',(((x2_guess-x1_guess)/x_scale) - 20),(((y1_guess-y1_guess)/y_scale)-20)],
+		//['br',(((x2_guess-x1_guess)/x_scale) - 20),(((y2_guess-y1_guess)/y_scale)-20)],
+		['i',i_en_F2,i_en_F1],
+		['\u026A',I_en_F2,I_en_F1],
+		['e',e_en_F2,e_en_F1],
+		['\u025B',E_en_F2,E_en_F1],
+		['\u00E6',ae_en_F2,ae_en_F1],
+		['\u0251',a_en_F2,a_en_F1],
+		['\u0254',c_en_F2,c_en_F1],
+		['o',o_en_F2,o_en_F1],
+		['\u028A',horse_en_F2,horse_en_F1],
+		['u',u_en_F2,u_en_F1],
+		['\u028C',hut_en_F2,hut_en_F1],
+		['\u025D',Er_en_F2,Er_en_F1],
+	];
+
+	var Germanletters = [
+		//[letter,targetF2, minF2, maxF2, targetF1, minF1, maxF1]
+		// tests borders
+		['tl',2500,2500,2500,300,300,300],
+		['bl',2500,2500,2500,900,900,900],
+		['tr',1000,1000,1000,300,300,300],
+		['br',1000,1000,1000,900,900,900],
+		["a", 1384.5, 1224, 1583, 679.5, 529, 838], //a
+		["ah", 1286, 1166, 1439, 709, 570, 880], //ah
+		["\u00E4", 1791.5, 1517, 2100, 545, 443, 687], //ä
+		["\u00E4"+"h", 2034, 1902, 2166, 533, 482, 584], //äh
+		["eh", 2060, 1700, 2472, 401.5, 328, 495], //eh
+		["i", 1969.5, 1640, 2348, 367, 303, 442], //i
+		["ih", 2151, 1813, 2496, 309.5, 266, 385], //ih
+		["o", 1117, 992, 1279, 539.5, 455, 660], //o
+		["oh", 930, 774, 1102, 409, 352, 487], //oh
+		["\u00F6", 1635.5, 1376, 1870, 473, 407, 584], //ö
+		["\u00F6"+"h", 1552, 1383, 1739, 404.5, 333, 482], //öh
+		["u", 1121, 966, 1302, 416, 332, 504], //u
+		["uh", 1004.5, 835, 1220, 329.5, 283, 405], //uh
+		["\u00fc", 1521.5, 1345, 1735, 390, 333, 466], //üh
+		["\u00fc"+"h", 1586, 1362, 1833, 326, 278, 401], //üh
+		["e", 1633.5, 1391, 1948, 395, 321, 482], //e
+		["er", 1490, 1253, 1754, 546.5, 440, 685], //er
+	];
+
+	//Draws the vowels ("letters") on the gameboard
+			
+	for(var i=0; i<Germanletters.length; i++){
+		var text = "/"+Germanletters[i][0]+"/";
+		var x = window.MathUtils.mapToScale(Germanletters[i][1], window.AudioProcessor.F2_MAX, window.AudioProcessor.F2_MIN, 0, game.width);
+		var y = window.MathUtils.mapToScale(Germanletters[i][4], window.AudioProcessor.F1_MIN, window.AudioProcessor.F1_MAX, 0, game.height);
+		/*console.log (Germanletters[i][4], window.AudioProcessor.F1_MAX, window.AudioProcessor.F1_MIN, game.height, 0)*/
+		//console.log ("/"+Germanletters[i][0]+"/", x,y)
+		
+		var buttcanvas= document.getElementById('VowelsButtons');//('ButtonCanvas');
+		
+		var button = document.createElement("button");
+		button.className = "btn btn-lg btn-primary btn-circle-3d";
+		button.setAttribute("id", Germanletters[i][0]);
+		var t = document.createTextNode(text);
+		button.appendChild(t);
+		button.style.position='absolute';
+		button.style.left = x+'px'; //Germanletters[i][1]
+		button.style.top = y+'px'; //Germanletters[i][2]
+		//button.style.top='10px';
+		//button.style.left='10px';
+		
+		/*if(Germanletters[i][0]=="i"){
+			button.setAttribute("onclick", "makeOval()");
+		}*/
+		
+		VowelsButtons.appendChild(button);
+	}
+
+	var mimi = 215;
+	var titi = 217;
+	
+	//Lets vowel button toggle the oval
+	/*
+		$(document).ready(function(){
+			$("#i").click(function(){
+				$(".ovalCanvas").toggle();
+			});
+		});
+		
+		var centerX = 65;
+		var centerY = 55;
+		var radiusX = 40;
+		var radiusY = 69;
+		var rotation = 0.8;
+		
+		var ox = ((((game.width-Germanletters[0][1])/x_scale) + 30)-(centerX/2)-10)
+		var oy = ((((Germanletters[0][4]-0)/2) + 30)-(centerY/2)-10)
+		
+		var masterdiv = document.getElementById('canvasesdiv');
+		var c = document.createElement('canvas');
+		c.setAttribute("id", Germanletters[0][0]+'canvas');
+		c.style.zIndex = "2";
+		c.className = "ovalCanvas";
+		c.style.position='absolute';
+		c.style.left = ox+'px';
+		c.style.top = oy+'px';
+		
+	//draw oval
+
+	//var canvas = document.getElementById('ovalCanvas');
+	var cxt = c.getContext('2d');
+
+	cxt.beginPath();
+	for (var i = 0 * Math.PI; i < 2 * Math.PI; i += 0.01 ) {
+		var xPos = centerX - (radiusX * Math.sin(i)) * Math.sin(rotation * Math.PI) + (radiusY * Math.cos(i)) * Math.cos(rotation * Math.PI);
+		var yPos = centerY + (radiusY * Math.cos(i)) * Math.sin(rotation * Math.PI) + (radiusX * Math.sin(i)) * Math.cos(rotation * Math.PI);
+
+		if (i == 0) {
+			cxt.moveTo(xPos, yPos);
+		} else {
+			cxt.lineTo(xPos, yPos);
+		}
+	}
+	cxt.fillStyle = '#8ED6FF';
+	cxt.fill();
+	cxt.lineWidth = 2;
+	cxt.strokeStyle = '#1dadff';
+	cxt.stroke();
+	cxt.closePath();
+	//From http://scienceprimer.com/draw-oval-html5-canvas
+	
+	canvasesdiv.appendChild(c);*/
+	//c.appendChild(ctx);
+	
+	console.log ("Peek-a-boo!")
 };

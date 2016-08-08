@@ -310,6 +310,7 @@
             minFreq = options.minFreq || DEFAULT_MIN_HZ,
             maxFreq =  options.maxFreq || DEFAULT_MAX_HZ,
             sampleRate = options.sampleRate;
+			
 
         // Build the mel scale filter banks
         filterBanks = initFilterBanks(NFFT / 2, numFilterBanks, minFreq, maxFreq, sampleRate);
