@@ -178,4 +178,14 @@
         return numeric.dot(numeric.dot(V, numeric.diag(Sinv)), numeric.transpose(U))
     };
 
+	MathUtils.xFormantToPixel = function(xform){
+		var newX = ((-0.32*xform)+677.78);
+		return newX;
+	};
+	
+	MathUtils.yFormantToPixel = function(yform){
+		var newY = ((0.65*yform)+94.27);
+		return newY;
+	};
+	
 }(window.numeric));

@@ -11,6 +11,8 @@
  */
 window.VowelWorm.Game = function( options ) {
     "use strict";
+
+    var game = this;
 	
 	/**>>>>>>> ae5b061f1d0660bdb59dd980c7dd801ac5f31fb2
      * @const
@@ -18,6 +20,7 @@ window.VowelWorm.Game = function( options ) {
      */
     var BACKNESS_MIN = 0;
 
+    /**
     /**
      * The maximum backness value. Used for transforming between formants and backness.
      * @const
@@ -40,7 +43,6 @@ window.VowelWorm.Game = function( options ) {
     var HEIGHT_MAX = 3;
 
 
-    var game = this;
     game.width = options.width || 700;
     game.height = options.height || 500;
     game.margin = 50;
@@ -52,6 +54,7 @@ window.VowelWorm.Game = function( options ) {
 
     game.minHz = 0;
     game.maxHz = 8000;
+	game.fb = 25;
 
     /**
      * Represents the threshold in dB that VowelWorm's audio should be at in
@@ -142,6 +145,8 @@ window.VowelWorm.Game = function( options ) {
     /**
      * @private
      */
+	 
+	//draws the circle (worm) that plots the input from the microphone (or other source)
     game.drawWorm = function(){
         var current_color = 0x00FF00;
         worms.forEach(function(container) {
@@ -155,6 +160,9 @@ window.VowelWorm.Game = function( options ) {
 
                 var x = coords.x;
                 var y = coords.y;
+				
+				//for debugging
+				console.log (x, y);
 
                 var circle = new PIXI.Sprite.fromImage("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZBAMAAAA2x5hQAAAAJ1BMVEUAAAD///////////////// //////////////////////////////+uPUo5AAAADHRSTlMAB+jh0bmoiU41HivIpyZzAAAAeklE QVQY02MAAsbpQYfCJwIZYE7LGSA40gjhLTsDBscWgDjcNmcgwBrEW3wGCg4DJRlzzsBAIgMDxxk4 OMHAIILgHRFgmHMGASYw1CDxChhikHgBDDpIPAWGM0jgAKocqj5UM1HtQ3ULijtR/YDqPwy/I8IF PcxQwxMAviHDkWPqCWAAAAAASUVORK5CYII=");
                 circle.position.x = x;
@@ -198,8 +206,10 @@ window.VowelWorm.Game = function( options ) {
     });
 
     var getCoords = function(worm){
-  
-        var buffer = worm.getFFT();
+		console.log("Here I am!");
+		
+		//Gets FFTs from audio
+        var buffer = worm.getFFT(); //https://developer.mozilla.org/en-US/search?q=getFFT
 
         if(isSilent(buffer)) {
           worm.resetPosition();
@@ -304,6 +314,7 @@ window.VowelWorm.Game = function( options ) {
             chart.position.x = 0 + game.margin;
             chart.position.y = 0 + game.margin;
             ipaChart.addChild(chart);
+			//Draws the vowels ("letters") on the gameboard
             // for(var i=0; i<letters.length; i++){
             //   var letter = new PIXI.Text(letters[i][0],{font: "35px sans-serif", fill: "black", align: "center"});
             //   letter.position.x = letters[i][1];
@@ -376,44 +387,54 @@ window.VowelWorm.Game = function( options ) {
 	];
 
 	var Germanletters = [
-		//[letter,targetF2, minF2, maxF2, targetF1, minF1, maxF1]
+		//[letter,targetF2, minF2, maxF2, targetF1, minF1, maxF1, RotationAngle]
 		// tests borders
-		['tl',2500,2500,2500,300,300,300],
-		['bl',2500,2500,2500,900,900,900],
-		['tr',1000,1000,1000,300,300,300],
-		['br',1000,1000,1000,900,900,900],
-		["a", 1384.5, 1224, 1583, 679.5, 529, 838], //a
-		["ah", 1286, 1166, 1439, 709, 570, 880], //ah
-		["\u00E4", 1791.5, 1517, 2100, 545, 443, 687], //ä
-		["\u00E4"+"h", 2034, 1902, 2166, 533, 482, 584], //äh
-		["eh", 2060, 1700, 2472, 401.5, 328, 495], //eh
-		["i", 1969.5, 1640, 2348, 367, 303, 442], //i
-		["ih", 2151, 1813, 2496, 309.5, 266, 385], //ih
-		["o", 1117, 992, 1279, 539.5, 455, 660], //o
-		["oh", 930, 774, 1102, 409, 352, 487], //oh
-		["\u00F6", 1635.5, 1376, 1870, 473, 407, 584], //ö
-		["\u00F6"+"h", 1552, 1383, 1739, 404.5, 333, 482], //öh
-		["u", 1121, 966, 1302, 416, 332, 504], //u
-		["uh", 1004.5, 835, 1220, 329.5, 283, 405], //uh
-		["\u00fc", 1521.5, 1345, 1735, 390, 333, 466], //üh
-		["\u00fc"+"h", 1586, 1362, 1833, 326, 278, 401], //üh
-		["e", 1633.5, 1391, 1948, 395, 321, 482], //e
-		["er", 1490, 1253, 1754, 546.5, 440, 685], //er
+		//['tl',2500,2500,2500,300,300,300],
+		//['bl',2500,2500,2500,900,900,900],
+		//['tr',1000,1000,1000,300,300,300],
+		//['br',1000,1000,1000,900,900,900],
+		["a", 1384.5, 1224, 1583, 679.5, 529, 838, 0], //a
+		["ah", 1286, 1166, 1439, 709, 570, 880, 0], //ah
+		["\u00E4", 1791.5, 1517, 2100, 545, 443, 687, 0], //ä
+		["\u00E4"+"h", 2034, 1902, 2166, 533, 482, 584, 0], //äh
+		["eh", 2060, 1700, 2472, 401.5, 328, 495, 0], //eh
+		["i", 1969.5, 1640, 2348, 367, 303, 442, 0], //i
+		["ih", 2151, 1813, 2496, 309.5, 266, 385, 0], //ih
+		["o", 1117, 992, 1279, 539.5, 455, 660, 0], //o
+		["oh", 930, 774, 1102, 409, 352, 487, 0], //oh
+		["\u00F6", 1635.5, 1376, 1870, 473, 407, 584, 0], //ö
+		["\u00F6"+"h", 1552, 1383, 1739, 404.5, 333, 482, 0], //öh
+		["u", 1121, 966, 1302, 416, 332, 504, 0], //u
+		["uh", 1004.5, 835, 1220, 329.5, 283, 405, 0], //uh
+		["\u00fc", 1521.5, 1345, 1735, 390, 333, 466, 0], //üh
+		["\u00fc"+"h", 1586, 1362, 1833, 326, 278, 401, 0], //üh
+		["e", 1633.5, 1391, 1948, 395, 321, 482, 0], //e
+		["er", 1490, 1253, 1754, 546.5, 440, 685, 0], //er
 	];
 
 	//Draws the vowels ("letters") on the gameboard
 			
 	for(var i=0; i<Germanletters.length; i++){
-		var text = "/"+Germanletters[i][0]+"/";
-		var x = window.MathUtils.mapToScale(Germanletters[i][1], window.AudioProcessor.F2_MAX, window.AudioProcessor.F2_MIN, 0, game.width);
-		var y = window.MathUtils.mapToScale(Germanletters[i][4], window.AudioProcessor.F1_MIN, window.AudioProcessor.F1_MAX, 0, game.height);
-		/*console.log (Germanletters[i][4], window.AudioProcessor.F1_MAX, window.AudioProcessor.F1_MIN, game.height, 0)*/
-		//console.log ("/"+Germanletters[i][0]+"/", x,y)
+		var text = Germanletters[i][0];
+		//var buttonCoords = transformToXAndY(Germanletters[i][1],Germanletters[i][4]);
+		//console.log(buttonCoords);
+		//var x = buttonCoords.x;
+		//var y = buttonCoords.y;
+		//var x = (-2.64*(Germanletters[i][1])+2031.27);
+		//var y = (1.2*(Germanletters[i][4])-12.22);
+		var x = window.MathUtils.xFormantToPixel(Germanletters[i][1]);
+		var y = window.MathUtils.yFormantToPixel(Germanletters[i][4]);
+		//var x = window.MathUtils.mapToScale(Germanletters[i][1], window.AudioProcessor.F2_MAX, window.AudioProcessor.F2_MIN, 0, game.width);
+		//var y = window.MathUtils.mapToScale(Germanletters[i][4], window.AudioProcessor.F1_MIN, window.AudioProcessor.F1_MAX, 0, game.height);
+		//console.log (Germanletters[i][4], window.AudioProcessor.F1_MAX, window.AudioProcessor.F1_MIN, game.height, 0)
+		console.log (Germanletters[i][0], x, y)
+		//http://illuminations.nctm.org/Activity.aspx?id=4186
 		
 		var buttcanvas= document.getElementById('VowelsButtons');//('ButtonCanvas');
 		
 		var button = document.createElement("button");
 		button.className = "btn btn-lg btn-primary btn-circle-3d";
+
 		button.setAttribute("id", Germanletters[i][0]);
 		var t = document.createTextNode(text);
 		button.appendChild(t);
@@ -423,41 +444,48 @@ window.VowelWorm.Game = function( options ) {
 		//button.style.top='10px';
 		//button.style.left='10px';
 		
-		/*if(Germanletters[i][0]=="i"){
+		if(Germanletters[i][0]=="i"){
 			button.setAttribute("onclick", "makeOval()");
-		}*/
+		}
 		
 		VowelsButtons.appendChild(button);
 	}
 
-	var mimi = 215;
-	var titi = 217;
-	
+/*
 	//Lets vowel button toggle the oval
-	/*
+		var ovalCanvas = Germanletters[0][0];
 		$(document).ready(function(){
 			$("#i").click(function(){
-				$(".ovalCanvas").toggle();
+				$("."+ovalCanvas).toggle();
 			});
 		});
 		
-		var centerX = 65;
-		var centerY = 55;
-		var radiusX = 40;
-		var radiusY = 69;
-		var rotation = 0.8;
+		//var centerX = ((window.MathUtils.xFormantToPixel(Germanletters[0][3])-window.MathUtils.xFormantToPixel(Germanletters[0][2]))/2)+window.MathUtils.xFormantToPixel(Germanletters[0][2]);
+		//var centerY = ((window.MathUtils.yFormantToPixel(Germanletters[0][5])-window.MathUtils.xFormantToPixel(Germanletters[0][6]))/2)+window.MathUtils.xFormantToPixel(Germanletters[0][6]);
+		var centerX = 200;
+		var centerY = 200;
+		var radiusX = window.MathUtils.xFormantToPixel(Germanletters[0][2])-window.MathUtils.xFormantToPixel(Germanletters[0][3]);
+		console.log(window.MathUtils.xFormantToPixel(Germanletters[0][2]));
+		console.log(window.MathUtils.xFormantToPixel(Germanletters[0][3]));
+		var radiusY = window.MathUtils.yFormantToPixel(Germanletters[0][6])-window.MathUtils.yFormantToPixel(Germanletters[0][5]);
+		console.log(window.MathUtils.yFormantToPixel(Germanletters[0][6]));
+		console.log(window.MathUtils.yFormantToPixel(Germanletters[0][5]));
+		var rotation = Germanletters[0][7];
 		
-		var ox = ((((game.width-Germanletters[0][1])/x_scale) + 30)-(centerX/2)-10)
-		var oy = ((((Germanletters[0][4]-0)/2) + 30)-(centerY/2)-10)
+		var ox = window.MathUtils.xFormantToPixel(Germanletters[0][3])-10;
+		var oy = window.MathUtils.yFormantToPixel(Germanletters[0][5])-10;
 		
 		var masterdiv = document.getElementById('canvasesdiv');
 		var c = document.createElement('canvas');
 		c.setAttribute("id", Germanletters[0][0]+'canvas');
 		c.style.zIndex = "2";
-		c.className = "ovalCanvas";
+		c.className = ovalCanvas;
 		c.style.position='absolute';
 		c.style.left = ox+'px';
 		c.style.top = oy+'px';
+		c.setAttribute("width", 500);
+		c.setAttribute("height", 500);
+		console.log(radiusX, radiusY);
 		
 	//draw oval
 
@@ -483,8 +511,8 @@ window.VowelWorm.Game = function( options ) {
 	cxt.closePath();
 	//From http://scienceprimer.com/draw-oval-html5-canvas
 	
-	canvasesdiv.appendChild(c);*/
-	//c.appendChild(ctx);
+	canvasesdiv.appendChild(c);
+	//c.appendChild(ctx);*/
 	
 	console.log ("Peek-a-boo!")
 };

@@ -15,27 +15,35 @@ p {
   margin-right: auto;
   text-align: center;
 }
+
 p, nav, a{
   font-family: 'Open Sans', sans-serif;
 }
+
 a {
   color: black;
   text-decoration: none;
   font-weight: bold;
 }
+
 a:hover {
   text-decoration: underline;
 }
+
 nav {
   text-align: center;
 }
+
 nav a {
   font-size: 80%;
 }
 
 body{
-  background-color: white;
-  color: rgb(0, 0, 0);
+  //background-color: white;
+  //color: rgb(0, 0, 0);
+  /*background: url("../img/body-bg.png") no-repeat scroll center 127px #fff;*/
+  background: url("../img/body-linen.png") no-repeat scroll center 127px #fff;
+
 }
 
 /*Super hacky way of manipulating the Vowelworm canvas created by PIXI*/
@@ -51,7 +59,12 @@ canvas{
 	/*text-align:center;*/
 }
 
+.container a:link, .container a:visited, .container a:hover, .container a:link{
+	color:white;
+}
+
 .page-header {
+  height: 110px;
   background-color: #025;
   background: radial-gradient(#004d99, #036, #025);
   margin-top: -8px;
@@ -63,6 +76,9 @@ canvas{
   font-weight: 100;
   right: 0;
   left: 0;
+  /*padding: 1rem;*/
+  text-align: center;
+  line-height: 5px;
 }
 
 .page-footer {
@@ -265,7 +281,7 @@ canvas{
 #footer {
  clear: both;
  position: relative;
- z-index: 10;
+ z-index: -10;
  height: 3em;
- margin-top: -3em;
+ margin-top: 3em;
 }
