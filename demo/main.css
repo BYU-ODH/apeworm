@@ -2,22 +2,18 @@ html, body, #container { height: 100%; }
 body > #container { height: auto; min-height: 100%; }
 #content { padding-bottom: 3em; }
 
-h1{
-  font-family: 'Open Sans', sans-serif;
-  margin-bottom: 50px;  
-  text-align: center;
-}
-
 p {
   text-align: justify;
-  width: 700px;
+  width: 90%;
   margin-left: auto;
   margin-right: auto;
-  text-align: center;
+  text-align: left;
 }
 
 p, nav, a{
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Thonburi","DroidSans","Droid Sans","sans-serif","Lucida Grande","Lucida Sans Unicode","Lucida Sans",Helvetica,Arial,sans-serif;
+  font-size: 13px;
+  line-height: 18px;
 }
 
 a {
@@ -39,10 +35,11 @@ nav a {
 }
 
 body{
-  //background-color: white;
-  //color: rgb(0, 0, 0);
+  background-color: #FFFFFF;
+  color: #000000;
   /*background: url("../img/body-bg.png") no-repeat scroll center 127px #fff;*/
-  background: url("../img/body-linen.png") no-repeat scroll center 127px #fff;
+  margin: 0;
+  /*background: url("http://web.byu.edu/sites/default/files/user%20image%20uploads/u481/body-linen.png") repeat-y scroll left 127px #fff repeat-y scroll right 127px #fff;*/
 
 }
 
@@ -63,22 +60,42 @@ canvas{
 	color:white;
 }
 
-.page-header {
+#header-top.wrapper {
   height: 110px;
   background-color: #025;
   background: radial-gradient(#004d99, #036, #025);
-  margin-top: -8px;
+  /*margin-top: -8px;
   margin-left: -8px;
-  margin-right: -8px;
+  margin-right: -8px;*/
   padding-top: 10px;
   color: white;
-  font-size: 50px;
-  font-weight: 100;
   right: 0;
   left: 0;
-  /*padding: 1rem;*/
-  text-align: center;
+  text-align: left;
   line-height: 5px;
+}
+
+#logo a.byu{
+	color: #fff;
+	text-indent: -999em;
+    overflow: hidden;
+    background-repeat: no-repeat;
+    text-align: left;
+    direction: ltr;
+    display: inline-block;
+    height: 26px;
+    background: transparent url("http://web.byu.edu/sites/default/files/style%20guide/logo1.png") 0px 0px no-repeat;
+	margin-left: 3%;
+	width: 500px;
+}
+
+a#site-name{
+	color: #fff;
+	text-shadow: 0 0 12px rgba(0,25,72,0.5);
+	font-family: "Sentinel SSm A","Sentinel SSm B","Sentinel A","Sentinel B","CreteRound","Palatino","DroidSerif","Droid Serif",Georgia,serif;
+    font-weight: 300;
+	font-size: 2.2em;
+	margin: 0 5% .25em;
 }
 
 .page-footer {

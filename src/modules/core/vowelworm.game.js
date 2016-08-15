@@ -427,7 +427,7 @@ window.VowelWorm.Game = function( options ) {
 		//var x = window.MathUtils.mapToScale(Germanletters[i][1], window.AudioProcessor.F2_MAX, window.AudioProcessor.F2_MIN, 0, game.width);
 		//var y = window.MathUtils.mapToScale(Germanletters[i][4], window.AudioProcessor.F1_MIN, window.AudioProcessor.F1_MAX, 0, game.height);
 		//console.log (Germanletters[i][4], window.AudioProcessor.F1_MAX, window.AudioProcessor.F1_MIN, game.height, 0)
-		console.log (Germanletters[i][0], x, y)
+		//console.log (Germanletters[i][0], x, y)
 		//http://illuminations.nctm.org/Activity.aspx?id=4186
 		
 		var buttcanvas= document.getElementById('VowelsButtons');//('ButtonCanvas');
