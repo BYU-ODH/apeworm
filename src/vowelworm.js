@@ -304,7 +304,7 @@
         // var backness = window.MathUtils.mapToScale(f2 - f1, 
         //     window.AudioProcessor.F2_MAX - window.AudioProcessor.F1_MAX, 
         //     window.AudioProcessor.F2_MIN - window.AudioProcessor.F1_MIN, BACKNESS_MIN, BACKNESS_MAX);
-
+		
         var backness = window.MathUtils.mapToScale(f2, 
             window.AudioProcessor.F2_MAX, window.AudioProcessor.F2_MIN, BACKNESS_MIN, BACKNESS_MAX);
 

@@ -47,10 +47,10 @@ window.VowelWorm.Game = function( options ) {
     game.height = options.height || 500;
     game.margin = 50;
 
-    game.x1 = 0;
-    game.x2 = 4.0;
-    game.y1 = 0;
-    game.y2 = 3.0;
+    game.x1 = -1.5;
+    game.x2 = 3.0;
+    game.y1 = -0.5;
+    game.y2 = 2.5;
 
     game.minHz = 0;
     game.maxHz = 8000;
@@ -162,7 +162,7 @@ window.VowelWorm.Game = function( options ) {
                 var y = coords.y;
 				
 				//for debugging
-				console.log (x, y);
+				//console.log (x, y);
 
                 var circle = new PIXI.Sprite.fromImage("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZBAMAAAA2x5hQAAAAJ1BMVEUAAAD///////////////// //////////////////////////////+uPUo5AAAADHRSTlMAB+jh0bmoiU41HivIpyZzAAAAeklE QVQY02MAAsbpQYfCJwIZYE7LGSA40gjhLTsDBscWgDjcNmcgwBrEW3wGCg4DJRlzzsBAIgMDxxk4 OMHAIILgHRFgmHMGASYw1CDxChhikHgBDDpIPAWGM0jgAKocqj5UM1HtQ3ULijtR/YDqPwy/I8IF PcxQwxMAviHDkWPqCWAAAAAASUVORK5CYII=");
                 circle.position.x = x;
@@ -206,7 +206,7 @@ window.VowelWorm.Game = function( options ) {
     });
 
     var getCoords = function(worm){
-		console.log("Here I am!");
+		//console.log("Here I am!");
 		
 		//Gets FFTs from audio
         var buffer = worm.getFFT(); //https://developer.mozilla.org/en-US/search?q=getFFT
@@ -218,6 +218,7 @@ window.VowelWorm.Game = function( options ) {
 
         // Get the position from the worm
         var position = worm.getPosition();
+		console.log (position[0], position[1]);
 
         // Transform (backness, height) to (x, y) canvas coordinates
         if(position.length) {
@@ -310,7 +311,9 @@ window.VowelWorm.Game = function( options ) {
                 ["o",384.5714404194302,284.96641792056766],
                 ["u",412.17314090483404,231.94657762575406]
             ];
-            var chart = new PIXI.Sprite.fromImage("Mouth.png");
+            var chart = new PIXI.Sprite.fromImage("profile.png");
+            chart.width = game.width;
+            chart.height = game.height;
             chart.position.x = 0 + game.margin;
             chart.position.y = 0 + game.margin;
             ipaChart.addChild(chart);

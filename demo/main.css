@@ -2,6 +2,8 @@ html, body, #container { height: 100%; }
 body > #container { height: auto; min-height: 100%; }
 #content { padding-bottom: 3em; }
 
+@font-face{ font-family: "Sentinel SSm A"; src: url(data:application/x-font-woff;base64,d09GRk9UVE8AACxuAA0AAAAASOgAAQ ... ); font-weight:300; font-style:normal; }
+
 p {
   text-align: justify;
   width: 90%;
@@ -11,9 +13,10 @@ p {
 }
 
 p, nav, a{
-  font-family: "Thonburi","DroidSans","Droid Sans","sans-serif","Lucida Grande","Lucida Sans Unicode","Lucida Sans",Helvetica,Arial,sans-serif;
-  font-size: 13px;
-  line-height: 18px;
+	color: #444;
+    font-family: "Thonburi","DroidSans","Droid Sans","sans-serif","Lucida Grande","Lucida Sans Unicode","Lucida Sans",Helvetica,Arial,sans-serif;
+    font-size: 13px;
+    line-height: 18px;
 }
 
 a {
@@ -60,6 +63,10 @@ canvas{
 	color:white;
 }
 
+.wrapper a:hover{
+	text-decoration: none;
+}
+
 #header-top.wrapper {
   height: 110px;
   background-color: #025;
@@ -78,24 +85,27 @@ canvas{
 #logo a.byu{
 	color: #fff;
 	text-indent: -999em;
+	font-size: 1.65em;
     overflow: hidden;
     background-repeat: no-repeat;
     text-align: left;
     direction: ltr;
     display: inline-block;
     height: 26px;
+	width: 500px;
     background: transparent url("http://web.byu.edu/sites/default/files/style%20guide/logo1.png") 0px 0px no-repeat;
 	margin-left: 3%;
-	width: 500px;
 }
 
 a#site-name{
 	color: #fff;
 	text-shadow: 0 0 12px rgba(0,25,72,0.5);
-	font-family: "Sentinel SSm A","Sentinel SSm B","Sentinel A","Sentinel B","CreteRound","Palatino","DroidSerif","Droid Serif",Georgia,serif;
-    font-weight: 300;
-	font-size: 2.2em;
+	font-family: Georgia, serif;
+	font-size: 37px;
+	font-weight: 200;
 	margin: 0 5% .25em;
+	line-height: 40px;
+	text-rendering:  optimizeLegibility;
 }
 
 .page-footer {
