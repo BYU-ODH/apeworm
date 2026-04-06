@@ -1,9 +1,0 @@
-language: node_js
-node_js:
-- '0.10'
-before_install:
-- openssl aes-256-cbc -K $encrypted_e69ba7752444_key -iv $encrypted_e69ba7752444_iv
-  -in travis-ssh.enc -out travis-ssh -d
-
-after_success:
-  - ./push-to-github.sh
